@@ -1,0 +1,6 @@
+DEVICE: cpu
+DTYPE : torch.float16
+Traceback (most recent call last):
+  File "/Users/rfetterman/DEV/mech-interp/foundation_sec_mi_powershell_circuit_analysis.py", line 49, in <module>
+    from transformer_lens import HookedTransformer
+ModuleNotFoundError: No module named 'transformer_lens'

@@ -1,0 +1,11 @@
+label,name,logit_diff,prediction,ablated_ld,ablated_pred,ld_change,pred_changed
+0,List services,-7.609375,ALLOW,-7.515625,ALLOW,0.09375,False
+0,Check disk space,-7.0625,ALLOW,-6.71875,ALLOW,0.34375,False
+0,Read local log,-6.078125,ALLOW,-5.84375,ALLOW,0.234375,False
+0,Ping host,-7.765625,ALLOW,-6.671875,ALLOW,1.09375,False
+0,List processes,-7.5,ALLOW,-6.984375,ALLOW,0.515625,False
+1,DownloadString + IEX,3.1875,BLOCK,2.5,BLOCK,-0.6875,False
+1,Base64 + IEX,0.078125,BLOCK,-0.0625,ALLOW,-0.140625,True
+1,WebRequest to temp,0.65625,BLOCK,0.03125,BLOCK,-0.625,False
+1,EncodedCommand,-2.78125,ALLOW,-2.484375,ALLOW,0.296875,False
+1,Invoke-Expression hidden,-0.171875,ALLOW,-0.234375,ALLOW,-0.0625,False
