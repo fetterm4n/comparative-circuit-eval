@@ -1,0 +1,12 @@
+{
+  "components": [
+    "attn",
+    "mlp"
+  ],
+  "device": "cuda",
+  "first_n_layers": null,
+  "num_pairs": 1,
+  "per_pair_csv": "mech-interp-circuit/artifacts/circuit_val_layer_ablation_smoke_h100_per_pair.csv",
+  "summary_csv": "mech-interp-circuit/artifacts/circuit_val_layer_ablation_smoke_h100_summary.csv",
+  "template_name": "meta-llama/Llama-3.1-8B-Instruct"
+}

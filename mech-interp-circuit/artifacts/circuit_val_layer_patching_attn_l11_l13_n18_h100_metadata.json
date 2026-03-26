@@ -1,0 +1,16 @@
+{
+  "components": [
+    "attn"
+  ],
+  "device": "cuda",
+  "first_n_layers": null,
+  "layers": [
+    11,
+    12,
+    13
+  ],
+  "num_pairs": 18,
+  "per_pair_csv": "mech-interp-circuit/artifacts/circuit_val_layer_patching_attn_l11_l13_n18_h100_per_pair.csv",
+  "summary_csv": "mech-interp-circuit/artifacts/circuit_val_layer_patching_attn_l11_l13_n18_h100_summary.csv",
+  "template_name": "meta-llama/Llama-3.1-8B-Instruct"
+}

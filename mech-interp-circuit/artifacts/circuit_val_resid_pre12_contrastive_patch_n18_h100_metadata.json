@@ -1,0 +1,14 @@
+{
+  "basis_labels": [
+    "mean_delta",
+    "logit_readout"
+  ],
+  "basis_path": "mech-interp-circuit/artifacts/circuit_val_resid_pre12_contrastive_n18_h100_basis.pt",
+  "device": "cuda",
+  "layer": 12,
+  "num_pairs": 18,
+  "per_pair_csv": "mech-interp-circuit/artifacts/circuit_val_resid_pre12_contrastive_patch_n18_h100_per_pair.csv",
+  "resid_kind": "pre",
+  "summary_csv": "mech-interp-circuit/artifacts/circuit_val_resid_pre12_contrastive_patch_n18_h100_summary.csv",
+  "template_name": "meta-llama/Llama-3.1-8B-Instruct"
+}

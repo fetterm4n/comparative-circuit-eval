@@ -8,6 +8,9 @@
 - [ ] Evasion experiments complete
 - [ ] Draft ready for submission
 
+**Current state:**
+The early detection portion of the circuit is now locally replicated on the H100 host. On the overlap-controlled 18-pair validation cohort, the full model reached 100% accuracy, attention recurrence remained concentrated in Layer 0, and reduced-layer causal ablation consistently identified `L0H11` and `L0H9` as the most portable causal contributors. Full-model layer ablation, late-layer patching, and residual/path patching now also support a later decision stage centered on attention layers `12-13` plus a broader MLP band. The complete circuit is still **not yet fully validated** because the late-stage path remains only partially decomposed, low-rank residual-subspace patching did not isolate a compact transport subspace, and the planned evasion analysis has not yet run.
+
 ---
 
 ## Abstract (Draft)
@@ -35,11 +38,17 @@ The scale-up dataset is approximately balanced, but it contains a long-tail of v
 ## 1. Circuit Hypothesis
 
 **Working Hypothesis:**
-A set of attention heads in mid-to-late layers aggregate signals from malicious indicator tokens (e.g., `IEX`, `FromBase64String`, `DownloadString`) and propagate these signals through the residual stream to drive malicious classification.
+A set of early attention heads detects suspicious PowerShell indicators (e.g., `IEX`, `FromBase64String`, `DownloadString`, `Invoke-WebRequest`, `-EncodedCommand`) and writes those signals into the residual stream, after which later layers convert that evidence into the final malicious/benign decision.
 
 **Candidate Components:**
-- Layers: [TO FILL]
-- Heads: [TO FILL]
+- Early detection layer: Layer 0
+- Strongest recurrent heads on the overlap-controlled cohort: `L0H9`, `L0H11`, `L0H23`, `L0H8`
+- Strongest portable causal core under reduced-layer ablation: `L0H11`, `L0H9`
+- Current full-model decision-stage candidate components:
+  - Attention-dominant band: layers `11-13`, with additional support at `9`, `17`, and `24`
+  - MLP-dominant band: layers `6`, `10`, and `13`, with secondary support at `15`, `24`, and `31`
+  - Strongest targeted late heads so far: `L12H5` and `L13H0`
+  - Late-stage neuron probes: distributed, with no single neuron yet matching the layer-level effects
 - Key Tokens:
   - IEX
   - FromBase64String
@@ -54,28 +63,70 @@ A set of attention heads in mid-to-late layers aggregate signals from malicious 
 ### 2.1 Attention Localization
 
 **Results:**
-- Preliminary smoke test only: in a 4-layer probe on a short benign/malicious pair, the top early heads were Layer 0 Heads 9, 7, 20, 4, and 10.
-- Preliminary recurrence test: across 5 short benign/malicious pairs in a 4-layer probe, Layer 0 Head 7 appeared in 5/5 pairs, while Layer 0 Heads 9 and 4 appeared in 4/5 pairs.
-- On the full-model-validated short-pair subset (4 pairs), the same early-layer pattern persisted: Layer 0 Head 7 appeared in 4/4 pairs, while Layer 0 Heads 4 and 9 appeared in 3/4 pairs.
-- After expanding the validated short-pair subset to 7 pairs, Layer 0 Head 9 became the most recurrent early head in the 4-layer probe, appearing in 6/7 pairs. Layer 0 Head 7 appeared in 4/7 pairs and Layer 0 Head 4 appeared in 3/7 pairs.
-- Re-running the same validated 7-pair recurrence probe with `first_n_layers = 8` produced the same top recurring heads and counts. In that setting, every top-k hit still came from Layer 0, which argues against the current signal being a trivial artifact of using only 4 layers.
-- On the new overlap-controlled validation set, we built 32 explicit benign/malicious pairs where both classes contain suspicious indicator strings, then restricted to a tractable `<=3000`-char subset with 19 pairs. The full model achieved 97.4% accuracy on that tractable overlap subset, leaving 18 fully correct pairs for MI.
-- On those 18 validated overlap pairs, the original root-repo Layer 0 head set generalized strongly in recurrence: Head 9 appeared in 13 pairs, Head 8 in 13, Head 23 in 12, and Head 11 in 11. In this broader setting, the root claim that the detector is concentrated in early Layer 0 heads survives better than the older short-pair-only candidate set.
-- Breaking the overlap-controlled recurrence results down by indicator family preserved the same overall picture. In `Invoke-Expression`, all four root heads (`H9`, `H11`, `H23`, `H8`) remained positive and recurrent across 4 validated pairs, with `H9` and `H11` strongest. In `FromBase64String`, `H8` and `H11` remained the clearest positive heads across 4 pairs, while `H23` weakened. In smaller families such as `DownloadFile`, `Invoke-WebRequest`, and `-EncodedCommand`, `H9` was usually the strongest positive head.
-- The main exception was `DownloadString`, where all four root heads were near zero or slightly negative in the attention-delta summary. That suggests the overlap-controlled circuit is not equally active across every indicator family, even though the broader early-layer recurrence claim still holds.
-- Secondary recurring heads in the same probe were Layer 0 Heads 14, 24, 20, and 10.
-- These rankings are not yet treated as validated paper findings; they require batch replication on the larger manifest.
-- Top heads: [TO FILL]
+- We built an overlap-controlled validation set where benign and malicious scripts share suspicious indicator strings, then restricted to a tractable `<=3000`-char paired subset.
+- On that tractable subset, the original imported baseline left 18 fully correct benign/malicious pairs for mechanistic analysis. The new local H100 baseline reproduced those 18 valid pairs with 36/36 correct predictions.
+- A local H100 recurrence run over those 18 pairs again concentrated attention in Layer 0. The top recurring heads were `L0H9` (`pair_count = 13`, `mean_delta = 0.00793`), `L0H11` (`10`, `0.00587`), `L0H23` (`7`, `0.00452`), and `L0H8` (`7`, `0.00259`).
+- This reproduces the earlier non-local summary closely and supports a stable early-detector claim: indicator-focused attention is concentrated in Layer 0 rather than emerging only in deeper blocks.
+- The overlap-controlled family breakdown remains heterogeneous. `Invoke-Expression` and `FromBase64String` preserve strong positive recurrence for the root head set, while `DownloadString` remains weaker and less consistent.
+- Practical interpretation: the broad detector generalizes across several indicator families, but it is better described as an early Layer 0 detector family than as a single universally dominant head.
+
+**Current best-supported early heads:**
+- `L0H9`: most recurrent overlap-controlled head
+- `L0H11`: second-most recurrent and later a strong causal ablation head
+- `L0H23`: recurrent, but mixed under causal interventions
+- `L0H8`: recurrent, but mixed under causal interventions
 
 **Artifacts:**
-- artifacts/attention_heatmap.png
+- artifacts/circuit_val_batch_attention_l4_n18_h100_summary.csv
+- artifacts/circuit_val_batch_attention_l4_n18_h100_metadata.json
 
 ---
 
 ### 2.2 Residual Stream Contributions
 
+**Current full-model layer-component localization:**
+- A new full-model layer ablation sweep on the 18-pair H100 cohort finally exposes a plausible later decision stage that the truncated 4-layer probes could not measure.
+- Attention ablation is most destructive in layers `13`, `11`, `12`, `9`, `17`, and `24`. The strongest cohort-level effect is `Layer 13 attention` (`mean Δ = -3.45`, `flip_rate = 0.50`).
+- MLP ablation is most destructive in layers `6`, `13`, and `10`, followed by `24`, `15`, and `31`. The strongest cohort-level effects are `Layer 6 MLP` (`mean Δ = -3.59`, `flip_rate = 0.39`) and `Layer 13 MLP` (`mean Δ = -3.52`, `flip_rate = 0.61`).
+- Full-model benign-to-malicious patching provides the strongest bidirectional support for the late attention band. Patching benign attention outputs into malicious prompts flips `72%` of pairs at `Layer 13` and `78%` at `Layer 12`, with very large negative mean shifts (`-4.57` and `-4.40`).
+- Full-model MLP patching is weaker but still directionally supportive at `Layer 10` (`mean Δ = -1.69`) and `Layer 6` (`-1.39`). `Layer 13 MLP` patching is much weaker (`-0.15`), suggesting that the attention side of the late-stage band is currently the cleaner patching signal.
+- A direct path-patching follow-up comparing early heads, residual entry, and late attention states suggests that the late attention band is the dominant transportable state in the current matched-control setup. Patching `attn12+attn13` together produced the strongest effect (`mean Δ = -5.74`, `flip_rate = 0.94`). Patching the residual stream entering that band at `resid_pre12` was also substantial (`mean Δ = -3.44`, `flip_rate = 0.44`). By contrast, patching the early detector heads `L0H11+L0H9` alone was much weaker (`mean Δ = -0.53`, `flip_rate = 0.11`).
+- The combined early+late+residual patch did not become stronger than late-attention patching alone. That means the current benign-source patch setup does not yet isolate a clean additive early-to-late path; some of the patched states likely interfere or overconstrain one another when copied together from benign controls.
+- A follow-up low-rank residual-subspace experiment at `resid_pre12` did not recover the strong whole-state residual effect. The top `1/2/4/8` PCA-style subspace directions explained `34.8%/51.8%/73.2%/88.6%` of benign-to-malicious residual variance, but patching them caused only tiny mean shifts (`-0.089`, `-0.011`, `+0.003`, `-0.030`) and at most `1/18` flips.
+- The same negative result held one layer later at `resid_pre13`. The top `1/2/4/8` dimensions explained `32.9%/48.8%/70.8%/87.2%` of variance, but patching them again produced only tiny effects (`-0.062`, `-0.004`, `+0.025`, `-0.087`) and at most `1/18` flips.
+- A follow-up contrastive-direction sweep performed materially better than PCA-style patching. At `resid_pre12`, patching the single mean benign-to-malicious residual direction caused a moderate negative shift (`mean Δ = -0.694`, `flip_rate = 0.167`), while the direct final-logit readout direction remained negligible (`mean Δ = -0.002`).
+- The same contrastive test strengthened one layer later at `resid_pre13`. Patching the single mean-delta direction produced `mean Δ = -1.323` with `flip_rate = 0.222`, again far stronger than any PCA-ranked subspace patch at the same site. The direct logit-readout direction still did essentially nothing (`mean Δ = -0.002`).
+- Tracing attention-head writes into that discovered `resid_pre13` mean-delta direction points primarily to `Layer 12`, which is also the only late attention layer that can write into `resid_pre13` in the strict causal sense. The strongest direct writers are `L12H15` (`mean Δproj = +0.0671`), `L12H5` (`+0.0441`), `L12H4` (`+0.0364`), `L12H2` (`+0.0254`), and `L12H28` (`+0.0207`), all positive on nearly every or every pair.
+- Several `Layer 13` heads also align with the same residual-space direction when their outputs are projected onto it, especially `L13H22` (`mean Δproj = +0.0289`), `L13H21` (`+0.0233`), and `L13H30` (`+0.0215`). These should be interpreted as downstream continuations of the same late decision geometry, not direct writers into `resid_pre13`.
+- Grouped causal follow-up confirms that the traced `Layer 12` writer set is not just geometrically aligned but causally meaningful. Patching the top-five writer bundle `L12H15/L12H5/L12H4/L12H2/L12H28` from benign into malicious prompts gives `mean Δ = -3.702` with `flip_rate = 0.50`, while ablating the same bundle gives `mean Δ = -1.567`.
+- A compactness check with only the top two traced writers, `L12H15` and `L12H5`, remains directionally negative but much weaker: grouped patching gives `mean Δ = -0.932` and grouped ablation gives `mean Δ = -0.756`, both with only `1/18` flips. That suggests the late writer stage is partially localized but still distributed across several Layer 12 heads rather than collapsing to a 2-head core.
+- A direct early-to-late probe now shows that the early detector pair does affect the late transport direction. Benign patching of `L0H11/L0H9` moves the discovered `resid_pre13` mean-delta projection by `+0.0286` on average (toward the benign side) while shifting the final logit by `-0.533`. Ablating `L0H11/L0H9` moves that same projection by `-0.0349` (toward the malicious side) with `mean logit Δ = -0.632`.
+- A combined grouped-causal follow-up shows only limited additivity. Patching `L0H11/L0H9` together with the top-five `Layer 12` writer bundle improves the grouped patch effect only slightly (`mean Δ = -3.913`, `flip_rate = 0.611`) relative to the late writer bundle alone (`-3.702`, `0.500`). Likewise, combined ablation is only modestly stronger than late-bundle ablation alone (`-1.807` vs `-1.567`) and does not increase flips.
+- An intervention-conditioned read-path trace adds an important refinement: the early detector pair does not appear to modulate the late bundle uniformly. Under `L0H11/L0H9` patching, the strongest `Layer 12` changes along the `resid_pre13` mean-delta direction land on `H12`, `H20`, `H10`, `H6`, `H4`, and then `H5`, while `H15` moves only weakly. Under `L0H11/L0H9` ablation, the clearest changes land on `H9`, `H8`, and `H6`, with `H5` again near zero and `H28` slightly negative.
+- Practical interpretation: the early detector family does influence the late decision stage, but the strongest read path from `L0H11/L0H9` into `Layer 12` is not identical to the strongest late writer bundle found by direct residual-direction tracing. The late stage therefore appears to contain at least two overlapping structures: a top-five writer bundle that most strongly drives the final late transport direction, and a partially different subset that is most sensitive to upstream early-head interventions.
+- A direct grouped-causal comparison confirms that those two late subsets play very different roles. The early-sensitive `Layer 12` subset (`H9/H8/H6/H12/H20/H10`) is strongly **anti-causal** for the malicious decision: benign patching makes malicious prompts *more* malicious (`mean Δ = +1.775`) and grouped ablation also makes them more malicious (`+1.439`). So this subset looks like a competing or corrective path rather than the core late malicious-evidence carrier.
+- Leave-one-out tests inside the top-five writer bundle show that `L12H15` is the single most important member. Dropping `H15` reduces grouped patching from `-3.702` to `-3.536` and grouped ablation from `-1.567` to `-0.932`. Dropping `H5` also weakens the bundle, but less strongly (`patch = -3.328`, `ablation = -1.245`).
+- A compact top-three writer core `L12H15/L12H5/L12H4` remains clearly causal (`patch = -3.275`, `ablation = -1.117`), but it still underperforms the full top-five writer bundle. So the best current late attention subcircuit remains the full `Layer 12` top-five set `H15/H5/H4/H2/H28`.
+- Additional leave-one-out tests suggest `H2` and `H28` are supportive but not primary. Dropping `H2` leaves grouped patching essentially unchanged (`-3.733`) and only modestly weakens ablation (`-1.402`). Dropping `H28` weakens both patching (`-3.296`) and ablation (`-1.296`), but again less than dropping `H15` or `H5`. So the current ranking inside the late bundle is roughly: `H15` most important, `H5` next, then `H4`, with `H2/H28` contributing smaller but still real mass.
+- Single-head routing splits the early detector pair more clearly. Under `L0H11` patching alone, the strongest `Layer 12` changes include `H12`, `H5`, `H4`, `H20`, `H10`, and a small but visible effect on `H15`. Under `L0H9` patching alone, the strongest changes land on `H9`, `H4`, `H10`, `H6`, and only weakly on the core writer heads. Practical interpretation: `L0H11` appears more directly coupled to the late malicious-evidence carrier, while `L0H9` may contribute more through the broader early-sensitive/corrective late geometry.
+- Direct grouped route tests now support that split. The `L0H11`-aligned late route `L12H15/L12H5/L12H4` is clearly causal (`patch = -3.275`, `ablation = -1.117`). By contrast, the `L0H9`-aligned late route `L12H9/L12H6/L12H10` is weak and mixed: grouped patching is slightly positive (`+0.270`) and grouped ablation is nearly neutral (`-0.019`). The cleanest currently supported end-to-end branch is therefore `L0H11 -> L12H15/H5/H4`, not a symmetric two-head early story.
+- A final comparison between the clean `L0H11` branch and the fuller late carrier shows the remaining tradeoff clearly. Combining `L0H11` with the top-three late route gives `patch = -3.490` and `ablation = -1.402`, while combining `L0H11` with the top-five late bundle gives `patch = -3.879` and `ablation = -1.802`. So the top-three route is the cleaner direct branch, but the top-five bundle remains the stronger full late-stage carrier.
+- Practical interpretation: the patchable late residual signal is real at the whole-state level, but it is **not** well captured by a simple low-rank variance-ranked subspace. The later decision carrier therefore appears more distributed, more nonlinear, or misaligned with PCA-style directions than the early head detector.
+- The contrastive-direction result refines that claim. Some of the late residual signal *is* concentrated along a task-aligned transport direction, especially at `resid_pre13`, but the useful direction is closer to the cohort mean malicious-vs-benign displacement than to the direct output readout axis.
+- Family-level summaries preserve the same broad picture. Across `Invoke-Expression`, `FromBase64String`, `Invoke-WebRequest`, `DownloadFile`, `DownloadString`, `IEX`, and `-EncodedCommand`, the strongest negative late-stage effects repeatedly land in the `11-13` attention band and the `6/10/13` MLP band.
+- A targeted full-model head search inside layers `11-13` did identify recurrent late heads, but they are materially weaker than the early Layer 0 detector heads. The clearest late-head ablations are `L12H5` (`mean Δ = -0.306`) and `L13H0` (`mean Δ = -0.240`), with the remaining discovered heads weaker or sign-mixed.
+- Targeted neuron discovery and direct neuron ablation inside MLP layers `6`, `10`, and `13` did **not** reveal any single-neuron analogue of the strong layer-level effects. The top recurrent candidate neurons produced only small mean shifts (roughly `-0.026` to `+0.148`) and zero flips across the 18-pair cohort.
+- Grouped ablation of the top discovered neurons in layers `6`, `10`, and `13` also failed to recover the strong negative layer-level MLP effects. The tested 3-neuron and 5-neuron groups produced small-to-moderate **positive** mean deltas instead of large negative ones, again with zero flips. That suggests the discovered neurons are not a compact malicious-evidence bundle; if anything, some may weakly suppress the final `BLOCK` preference.
+- Practical interpretation: the current best end-to-end circuit hypothesis is now a two-stage story. `Layer 0` heads detect suspicious indicators early, and a later decision stage centered on `attention layers 11-13` plus `MLP layers 6/10/13` converts that evidence into the final `BLOCK` preference.
+- With the new full-model patching results, the current best later-stage claim is sharper than before: `attention layers 12-13` look like the strongest transportable decision-state carriers, while `MLP layers 6 and 10` look important but more distributed.
+- The new path test strengthens the same point. The most decisive patchable state is not the early head pair by itself, but the late attention state around layers `12-13` and the residual entering that band.
+- The latest probing suggests that this later decision stage is at least partly **distributed**: some specific late heads matter, but the strongest MLP effects appear to come from layer-level or subnetwork-level computation rather than a single dominant neuron.
+- The grouped-neuron result sharpens that interpretation: even small recurrent neuron sets do not reproduce the layer-level MLP importance, so the late MLP stage is likely implemented by a broader or differently structured subspace than simple top-k neuron bundles.
+
 **Artifacts:**
-- artifacts/logit_lens/
+- artifacts/circuit_val_layer_ablation_full_h100_summary.csv
+- artifacts/circuit_val_layer_ablation_full_h100_family_summary.csv
+- artifacts/circuit_val_layer_ablation_full_h100_metadata.json
 
 ---
 
@@ -85,24 +136,17 @@ A set of attention heads in mid-to-late layers aggregate signals from malicious 
 
 | Head | Δ Logit Recovery | Flip Rate |
 |------|-----------------|----------|
-|      |                 |          |
+| `L0H23` | `-0.0945` | `0.8889` |
+| `L0H8`  | `-0.0299` | `0.7778` |
+| `L0H11` | `+0.0930` | `0.7778` |
+| `L0H9`  | `+0.0480` | `0.7222` |
 
-**Preliminary reduced-layer probe only:**
-- Using a 4-layer truncated model on 3 short pairs and candidate heads `0.7`, `0.9`, `0.4`, benign-to-malicious patching produced the largest mean negative shift for Layer 0 Head 4 (`mean Δ = -0.1491`), followed by Head 7 (`-0.0853`) and Head 9 (`-0.0602`).
-- This probe is exploratory rather than publication-grade causal validation because the 4-layer truncated model does not preserve stable malicious-positive logits on all short pairs.
-- Re-running on the subset of short pairs that the full model classifies correctly gave a partial 3-pair aggregate with the same candidate heads: Layer 0 Head 4 had the strongest mean patching shift (`mean Δ = -0.1089`), followed by Head 9 (`-0.0745`) and Head 7 (`-0.0531`).
-- Expanding the validated causal subset to 6 successful standalone pair runs preserved the same ranking: Layer 0 Head 4 had the strongest mean patching shift (`mean Δ = -0.1093`), followed by Head 7 (`-0.0584`) and Head 9 (`-0.0505`).
-- The three added validated pairs were `945.ps1`, `434.ps1`, and `332.ps1`. Their reduced-layer causal runs initially required a CPU fallback on this host because the original `hook_result` intervention path triggered an MPSGraph backend error on longer short pairs.
-- The 6-pair causal aggregate is now reproducible from the analysis script via the `aggregate-causal` command, with excluded-pair provenance recorded explicitly in artifact metadata.
-- Extending the 4-layer validated causal set to 9 successful pairs by adding `1719.ps1`, `3703.ps1`, and `2276.ps1` kept Layer 0 Head 4 as the top patching head by the summary ranking (`flip rate = 1.0`, `mean Δ = -0.0653`), although the mean patching effect weakened because the longer added pairs were more mixed under the truncated model. Layer 0 Head 7 remained slightly more negative on average (`mean Δ = -0.0736`) but no longer flipped all included pairs.
-- Switching the intervention path from `hook_result` to `hook_z` removed the MPSGraph blocker for 4-layer causal runs on this host. That change allowed both previously blocked pairs, `2752.ps1` and `624.ps1`, to run successfully on MPS.
-- On the resulting full 11-pair validated 4-layer causal aggregate, Layer 0 Head 4 remained the top patching head by the current summary ranking (`flip rate = 1.0`, `mean Δ = -0.0747`), followed by Head 7 (`-0.0906`, `flip rate = 0.91`) and Head 9 (`-0.0276`, `flip rate = 0.91`).
-- On the overlap-controlled validation set, a causal follow-up on the 8 shortest validated pairs using the root head set `L0H11`, `L0H8`, `L0H23`, and `L0H9` did not preserve the original patching ordering. Heads 8 and 23 had negative mean patching shifts (`-0.0595` and `-0.0508`), while Heads 11 and 9 moved positive on average. This is consistent with the benign comparison samples already containing similar indicator strings, making benign-to-malicious patch transfer harder to interpret as a pure "remove malicious evidence" intervention.
-- Family-level patch summaries on the same overlap-controlled causal slice show that this instability is systematic rather than random noise. `Invoke-Expression` favored negative patch effects for `H9` and `H11`, `FromBase64String` favored `H8` and `H23`, `IEX` favored `H11` and `H8`, and `Invoke-WebRequest` favored `H23` and `H8`. In other words, patching does not identify a single uniformly dominant head family-wide once the benign controls also contain the suspicious strings.
-- Expanding the same overlap-controlled causal slice from 8 shortest pairs to 12 shortest pairs did not clean up the patching story. In the 12-pair aggregate, `H23` became the most negative patching head (`mean Δ = -0.0835`, flip rate `0.83`), while `H11` and `H9` moved positive on average and `H8` stayed only weakly negative. This reinforces the interpretation that patching is a weak validator in the matched-indicator setting, because the benign source activations are not acting like a simple "malicious evidence removed" control.
-- Family-level patching on the 12-pair slice remained heterogeneous. `H11` led only in `-EncodedCommand` and `IEX`, `H23` led in `DownloadString` and `FromBase64String`, and `Invoke-Expression` split between `H9` and `H23`. We therefore do not treat patching as confirming a single portable four-head circuit on the overlap-controlled dataset.
-- Expanding further to the full 18-pair validated overlap-controlled cohort left the patching conclusion unchanged. `H23` remained the most negative patching head (`mean Δ = -0.0946`, flip rate `0.89`), `H8` stayed only weakly negative (`-0.0296`), and both `H11` and `H9` moved positive on average. On the dominant `Invoke-Expression` family, `H23` was again the most negative patching head, while `H11` was positive. This reinforces that matched-indicator patching is not isolating a single portable causal head in the way the original root-level hypothesis would require.
-- A deeper 8-layer follow-up on a very small validated subset (3 pairs: `784.ps1`, `2115.ps1`, `119.ps1`) did not preserve malicious-positive base logits for any of the malicious examples. In that misaligned operating regime, Layer 0 Head 7 became the strongest negative patching head (`mean Δ = -0.1296`), while Heads 9 and 4 moved positive on average.
+**Current interpretation:**
+- Local H100 reproduction on the full 18-pair overlap-controlled cohort matches the earlier imported batch summary almost exactly.
+- Patching remains directionally unstable in this matched-indicator setting. `L0H23` is the strongest negative patch head, but `L0H11` and `L0H9` move positive on average.
+- This does **not** look like a clean “remove malicious evidence” intervention, because the benign source prompts often still contain the same suspicious strings.
+- A new 8-layer H100 follow-up also ran successfully, but it did not fix the interpretability problem: all 18 malicious examples were already benign-leaning in the truncated 8-layer model (`positive_base_frac = 0.0`), so those deeper truncated patch effects are not valid evidence for the full circuit.
+- Conclusion: patching is useful as a consistency check, but it is **not** the main evidence for the portable causal core on the overlap-controlled dataset.
 
 ---
 
@@ -110,44 +154,45 @@ A set of attention heads in mid-to-late layers aggregate signals from malicious 
 
 | Head | Δ Logit Drop | Accuracy Drop |
 |------|-------------|--------------|
-|      |             |              |
+| `L0H11` | `-0.3006` | `flip_rate = 0.9444` |
+| `L0H9`  | `-0.2826` | `flip_rate = 0.9444` |
+| `L0H23` | `+0.2578` | `flip_rate = 0.6667` |
+| `L0H8`  | `+0.1104` | `flip_rate = 0.6111` |
 
-**Preliminary reduced-layer probe only:**
-- On the same 3 short pairs, ablation of Layer 0 Head 9 produced the strongest consistent negative shift (`mean Δ = -0.1854`), while Head 4 produced a weaker negative shift (`-0.0462`).
-- Layer 0 Head 7 moved in the opposite direction under ablation (`mean Δ = +0.2694`), suggesting it may play a suppressive or compensatory role in this reduced-layer setting rather than a direct malicious-evidence role.
-- On the 3-pair aggregate from the full-model-validated short subset, the same pattern remained: Layer 0 Head 9 had the strongest negative ablation shift (`mean Δ = -0.1743`), Head 4 was weaker (`-0.0716`), and Head 7 again moved in the opposite direction (`+0.3511`).
-- On the expanded 6-pair validated causal aggregate, the same ordering held and strengthened: Layer 0 Head 9 had the strongest negative ablation shift (`mean Δ = -0.2001`, flip rate `1.0`), Head 4 remained weaker (`-0.0529`), and Head 7 again moved in the opposite direction (`+0.4355`).
-- On the expanded 9-pair validated causal aggregate, the ablation result remained stable: Layer 0 Head 9 was still the strongest negative ablation head (`mean Δ = -0.2063`, flip rate `1.0`), Head 4 stayed much weaker (`-0.0306`), and Head 7 again moved in the opposite direction (`+0.3964`).
-- On the full 11-pair validated 4-layer causal aggregate after the `hook_z` fix, the ablation result remained stable: Layer 0 Head 9 was still the strongest negative ablation head (`mean Δ = -0.1979`, flip rate `1.0`), Head 4 stayed much weaker (`-0.0319`), and Head 7 again moved in the opposite direction (`+0.3737`).
-- On the overlap-controlled validation set, the root head set showed a different but still meaningful causal structure under ablation on the 8 shortest validated pairs: Head 11 had the strongest negative ablation shift (`mean Δ = -0.2834`, flip rate `0.875`), Head 9 was second (`-0.2187`, flip rate `0.875`), while Heads 23 and 8 moved positive on average. This suggests the original root-level claim is partially robust: Heads 11 and 9 still behave like genuine causal contributors on the broader indicator-overlap sample, but the full four-head story does not transfer cleanly under matched-indicator controls.
-- The family-level ablation slices strengthen that conclusion. `H11` and `H9` are the only heads that remain negative across every multi-pair overlap family we measured (`FromBase64String`, `Invoke-Expression`, and `Invoke-WebRequest`), and they are also the dominant negative heads in the singleton `DownloadFile` and `IEX` families. By contrast, `H23` is consistently positive in those same ablation summaries, and `H8` is mixed to positive. The broader experiment therefore supports a refined root claim: the early layer-0 detector generalizes, but its most portable causal core is concentrated in `H11` and `H9`, not uniformly across all four original heads.
-- Expanding the overlap-controlled causal slice to 12 shortest validated pairs strengthened that same ablation result rather than weakening it. In the 12-pair aggregate, `H11` remained the strongest negative ablation head (`mean Δ = -0.3584`, flip rate `0.92`) and `H9` remained second (`-0.3173`, flip rate `0.92`), while `H8` and `H23` stayed positive on average.
-- The 12-pair family-level ablation slices also became more persuasive because they added `-EncodedCommand` and `DownloadString` without breaking the pattern. Across all six represented families in the 12-pair slice, `H11` and `H9` were always the most negative heads, while `H23` stayed positive in every family and `H8` was positive in five of six families. This is the strongest current evidence that the broad overlap-controlled circuit has a stable causal core in `H11/H9`.
-- Expanding once more to the full 18-pair validated overlap-controlled cohort preserved the same ablation ordering. `H11` remained the strongest negative ablation head (`mean Δ = -0.3029`, flip rate `0.94`) and `H9` remained second (`-0.2826`, flip rate `0.94`), while `H23` (`+0.2572`) and `H8` (`+0.1097`) stayed positive on average.
-- The 18-pair family-level ablation slices now span all seven represented overlap families and still preserve the same qualitative result. In every family, `H11` and `H9` are the most negative heads, while `H23` is positive in every family and `H8` is positive in six of seven families. This is the strongest current reduced-layer evidence for the refined claim that the portable causal core of the overlap-controlled detector is `H11/H9`.
-- In the 8-layer, 3-pair follow-up where all base malicious logits were already negative, the ablation ranking also changed: Layer 0 Head 7 had the strongest negative ablation shift (`mean Δ = -0.0814`), Head 9 was weaker (`-0.0205`), and Head 4 moved positive (`+0.2122`). We therefore do not treat the 8-layer truncated causal ranking as confirming the 4-layer exploratory split.
+**Current interpretation:**
+- This is the strongest current causal result in the repo.
+- On the local H100 reproduction of the full 18-pair overlap-controlled cohort, `L0H11` and `L0H9` remain the only heads with strong, stable negative ablation effects.
+- Family-level summaries preserve the same pattern across all seven represented indicator families: `H11` and `H9` are the most negative heads, while `H23` is positive in every family and `H8` is positive in six of seven.
+- The refined causal claim is therefore stronger than the original four-head story: the portable early detection core is concentrated in `L0H11` and `L0H9`, while `L0H23` and `L0H8` appear recurrent but not uniformly causal in the same direction.
+- The new 8-layer H100 ablation follow-up likewise does not support a deeper truncated validation story. Although `H11` remains the most negative head there, every malicious example already has a negative base logit before intervention, so the 8-layer truncated model is still misaligned with the full-model task.
 
 ---
 
 ## 4. Generalization
 
-- Short-pair baseline subset: 10 samples (5 benign / 5 malicious)
-- Full-model baseline accuracy on that subset: 90%
-- Observed failure case in short-pair subset: `321.ps1` was misclassified as benign with logit diff `-0.0469`
-- Expanded short-pair baseline subset: 16 samples (8 benign / 8 malicious)
-- Full-model baseline accuracy on the expanded short-pair subset: 93.75%
-- Expanded validated short-pair subset: 7 pairs (14 rows); the only baseline failure remained `321.ps1`
-- Of those 7 validated pairs, all now have successful 4-layer reduced-layer causal runs on this host after replacing the MPS-failing `hook_result` intervention path.
-- Further-expanded short-pair baseline subset: 24 samples (12 benign / 12 malicious)
-- Full-model baseline accuracy on the 12-pair short subset: 95.83%
-- Further-expanded validated short-pair subset: 11 pairs (22 rows); the only baseline failure still remained `321.ps1`
-- Of those 11 validated pairs, all 11 now have successful 4-layer causal runs on this host. The previous MPSGraph failure and the long-running CPU tail were both artifacts of the old `hook_result` intervention path rather than immutable host limits.
-- On the 8-layer causal follow-up subset, none of the 3 malicious examples retained a malicious-positive base logit in the truncated model, which limits the interpretability of those deeper truncated causal effects.
-- For the overlap-controlled validation set, the full 32-pair manifest is broad enough for dataset construction but still too slow for interactive full-model MI on the longest samples. The tractable `<=3000` subset retained 19 complete pairs, of which 18 were fully correct under the full model and 8 shortest pairs were used for the first causal follow-up.
-- Within that 18-pair validated overlap-controlled subset, all seven represented indicator families (`Invoke-Expression`, `FromBase64String`, `Invoke-WebRequest`, `DownloadFile`, `DownloadString`, `IEX`, `-EncodedCommand`) were classified correctly by the full model. The broader MI story is therefore no longer resting on a single indicator type.
-- After tightening the reduced-layer batch code to run causal forwards under `torch.inference_mode()` and release per-pair tensors promptly, the overlap-controlled root-head causal pass scaled from 8 shortest pairs to 12 shortest pairs on this host without the earlier MPS memory failure.
-- With the same memory-tightened batch path, the overlap-controlled root-head causal pass also scaled to the full 18-pair validated cohort at 4 layers. However, the next depth increase remains blocked locally: the same 18-pair root-head causal run at `first_n_layers = 8` still exhausted MPS memory on this host before completion.
-- Implication: short-pair probes remain usable for exploratory MI if we track both full-model correctness and host/backend exclusions separately from model behavior.
+- The overlap-controlled tractable cohort contains 18 fully correct benign/malicious pairs spanning seven indicator families: `Invoke-Expression`, `FromBase64String`, `Invoke-WebRequest`, `DownloadFile`, `DownloadString`, `IEX`, and `-EncodedCommand`.
+- The local H100 baseline reproduced 36/36 correct predictions on this cohort, improving on the older imported baseline artifact that had one error before filtering.
+- Family-level baseline summaries show all seven families remain separable under the full model, with malicious mean logit differences positive and benign mean logit differences negative.
+- The early Layer 0 detector therefore generalizes beyond a single keyword family or a tiny hand-picked short-pair set.
+- The new full-model layer ablation sweep adds a plausible later decision-stage candidate that also generalizes across the 18-pair cohort, so the repo is no longer limited to an early-detector-only story.
+- What remains incomplete is finer-grained validation inside those later layers. We now have full-model layer-component localization and an initial late-head scan, but not yet a convincing head-level or path-level causal decomposition of the decision-stage band.
+- The new full-model patching sweep strengthens that same later-stage story in the opposite direction: replacing malicious late-layer states with benign ones in attention layers `12-13` sharply suppresses the `BLOCK` preference across the cohort.
+- The new 8-layer H100 batch causal run makes that limit explicit rather than speculative: despite running cleanly on GPU, all 18 malicious prompts remained benign-leaning in the truncated 8-layer model (`mean_base_logit_diff = -1.468`), so the deeper reduced model still cannot be treated as a faithful proxy for full-model malicious classification.
+- The new neuron probing also sharpens that conclusion: the late-stage MLP signal is real at the layer level, but it does not collapse to a few individually decisive neurons under the current probe. The next likely step is structured or grouped ablation inside those layers rather than single-neuron screening alone.
+- A first grouped-ablation pass also came back negative: the tested top-3 and top-5 neuron groups in layers `6`, `10`, and `13` did not behave like a compact causal circuit. The next likely step is subspace-level patching/ablation or activation clustering inside those MLPs rather than just ranking neurons by individual contribution.
+- The first explicit early-to-late path patching pass also shows that the path is not yet fully decomposed. We can move the decision by patching the late attention band and its incoming residual state, but the early-head patch alone is comparatively weak and the combined patch is not additive.
+- A direct follow-up using stage-conditioned residual-subspace patching did not simplify that story. At both `resid_pre12` and `resid_pre13`, low-rank PCA-like subspaces captured most variance but almost none of the whole-state causal effect, so the missing path is unlikely to be a small variance-dominant linear transport channel.
+- A more task-aligned follow-up did recover a nontrivial one-direction signal. The cohort mean malicious-vs-benign residual direction at `resid_pre13` moves the decision noticeably (`mean Δ = -1.323`, `flip_rate = 0.222`), while the direct `BLOCK-ALLOW` readout direction remains negligible. This suggests the late path is not pure output-readout copying, but it is also not fully distributed noise.
+- A direct head trace along that same residual direction now localizes the strongest late writer set to `Layer 12`, especially `H15`, `H5`, `H4`, `H2`, and `H28`. This is the clearest current bridge between the broad late attention band and the narrower `resid_pre13` transport direction.
+- A direct grouped-causal follow-up strengthens that bridge. The traced `Layer 12` top-five writer set reproduces a large fraction of the late decision effect under both patching and ablation, while the top-two subset does not. The best current late attention subcircuit is therefore a small-but-not-minimal Layer 12 bundle rather than one dominant head.
+- A direct early-to-late intervention probe also closes part of the remaining gap: `L0H11/L0H9` measurably move the `resid_pre13` mean-delta direction in the expected direction, which supports a real causal link from the early detector into the late writer stage. But the combined intervention remains non-additive, so the end-to-end path is still only partially decomposed.
+- The new intervention-conditioned trace sharpens that recommendation. The next likely step is to test a second late candidate subset centered on the heads most modulated by `L0H11/L0H9` (`L12H9`, `L12H8`, `L12H6`, with support from `L12H12/H20/H10`) and compare it directly against the top-five writer bundle.
+- That comparison is now done. The early-sensitive subset is anti-causal, while the traced top-five writer bundle remains the strongest late malicious-evidence carrier. The new single-head routing split also suggests `L0H11` and `L0H9` should not be treated as interchangeable upstream components.
+- The strongest paired-route comparison is now done. `L0H11 -> L12H15/H5/H4` is a plausible direct early-to-late malicious path; `L0H9 -> L12H9/H6/H10` is not.
+- That `L0H11` branch comparison is now done too. The practical writeup choice is no longer about uncertainty in the results, but about presentation:
+- Use `L0H11 -> L12H15/H5/H4` if the goal is the cleanest minimal direct path.
+- Use `L12H15/H5/H4/H2/H28` as the final late carrier if the goal is best explanatory power over the cohort.
+- The next likely step is therefore either to stop and consolidate the writeup around that distinction, or to do one last pass on the late carrier with family-level breakdowns to show whether `H2/H28` are only helping specific indicator families.
 
 ---
 
@@ -157,11 +202,23 @@ A set of attention heads in mid-to-late layers aggregate signals from malicious 
 |----------|---------------|----------------|
 |          |               |                |
 
+**Status:** not yet run in this repo.
+
+The codebase contains a conservative `generate_obfuscations` helper that only emits formatting-preserving variants, but there is no completed artifact-backed evasion evaluation yet. This remains a direct gap against the plan and against any claim that the complete circuit is validated.
+
 ---
 
 ## 6. Security Implications
 
-[TO FILL]
+- The model’s early malicious-code detector is interpretable enough to localize to a small Layer 0 head family, which is useful for auditing and targeted monitoring.
+- The strongest portable reduced-layer causal heads on the overlap-controlled cohort are `L0H11` and `L0H9`. Those heads are better candidates for future intervention or monitoring than the broader four-head set.
+- The broader four-head recurrence pattern (`H9`, `H11`, `H23`, `H8`) should not be overclaimed as a uniformly causal circuit. `H23` and `H8` recur in attention, but under ablation they often behave in the opposite direction from `H11/H9`.
+- The later decision stage is now partially localized too: full-model ablation points to an attention band around layers `11-13` and an MLP band around `6/10/13`, with layer `13` especially prominent. That is enough to guide follow-up inspection, but not enough yet to claim a fully decomposed decision circuit.
+- The newest evidence favors a particularly important late attention sub-band at `12-13`: those are the only late layers where benign patching flips a majority of malicious examples.
+- Within that late-stage band, the strongest currently validated heads are `L12H5` and `L13H0`, but their effects are still much smaller than the broad layer ablations. On the MLP side, no single neuron yet explains the layer-level signal, which suggests redundancy or distributed computation.
+- The new residual-subspace sweeps sharpen that same interpretation: even when we capture roughly `87-89%` of benign/malicious residual variance at `resid_pre12` and `resid_pre13`, low-rank subspace patching barely moves the decision. The late carrier is therefore not a compact PCA-like residual channel.
+- The new contrastive residual sweeps sharpen the picture further: there is a meaningful single transport direction at `resid_pre13`, but it aligns with the cohort mean malicious-vs-benign displacement rather than with the direct output readout vector. The late carrier is therefore structured, but not trivially equivalent to the final logit axis.
+- The complete safety story remains incomplete. We still do not know which specific late-layer subnetworks implement the decision-stage computation, how redundant those paths are, or how they behave under evasion.
 
 ---
 
@@ -236,6 +293,85 @@ A set of attention heads in mid-to-late layers aggregate signals from malicious 
 | artifacts/circuit_val_family_root_heads_n18short_patch_summary.csv | Family-level patching summary for the full 18-pair overlap-controlled causal slice |
 | artifacts/circuit_val_family_root_heads_n18short_ablation_summary.csv | Family-level ablation summary for the full 18-pair overlap-controlled causal slice |
 | artifacts/circuit_val_family_root_heads_n18short_metadata.json | Metadata for the full 18-pair family-level overlap summaries |
+| artifacts/circuit_val_pair_baseline_eval_t3000_h100.csv | Local H100 full-model baseline on the 18-pair overlap-controlled cohort |
+| artifacts/circuit_val_pair_manifest_t3000_valid_causal18_short_h100.csv | Local H100-refreshed valid-pair manifest for the 18-pair causal cohort |
+| artifacts/circuit_val_batch_attention_l4_n18_h100_summary.csv | Local H100 4-layer recurrence summary on the 18-pair overlap-controlled cohort |
+| artifacts/circuit_val_batch_attention_l4_n18_h100_metadata.json | Metadata for the local H100 18-pair attention recurrence run |
+| artifacts/circuit_val_batch_causal_root_l4_n18short_h100_patch_summary.csv | Local H100 root-head patch summary on the full 18-pair overlap-controlled cohort |
+| artifacts/circuit_val_batch_causal_root_l4_n18short_h100_ablation_summary.csv | Local H100 root-head ablation summary on the full 18-pair overlap-controlled cohort |
+| artifacts/circuit_val_batch_causal_root_l4_n18short_h100_metadata.json | Metadata for the local H100 4-layer batch causal run |
+| artifacts/circuit_val_family_root_heads_n18short_h100_baseline_summary.csv | Local H100 family-level baseline summary for the full 18-pair causal cohort |
+| artifacts/circuit_val_family_root_heads_n18short_h100_patch_summary.csv | Local H100 family-level patch summary for the full 18-pair causal cohort |
+| artifacts/circuit_val_family_root_heads_n18short_h100_ablation_summary.csv | Local H100 family-level ablation summary for the full 18-pair causal cohort |
+| artifacts/circuit_val_family_root_heads_n18short_h100_metadata.json | Metadata for the local H100 family-level summaries |
+| artifacts/circuit_val_batch_causal_root_l8_n18short_h100_patch_summary.csv | Local H100 8-layer root-head patch summary on the 18-pair overlap-controlled cohort |
+| artifacts/circuit_val_batch_causal_root_l8_n18short_h100_ablation_summary.csv | Local H100 8-layer root-head ablation summary on the 18-pair overlap-controlled cohort |
+| artifacts/circuit_val_batch_causal_root_l8_n18short_h100_metadata.json | Metadata for the local H100 8-layer batch causal follow-up |
+| artifacts/circuit_val_layer_ablation_smoke_h100_summary.csv | One-pair H100 full-model layer-component ablation smoketest |
+| artifacts/circuit_val_layer_ablation_smoke_h100_metadata.json | Metadata for the one-pair full-model layer ablation smoketest |
+| artifacts/circuit_val_layer_ablation_full_h100_summary.csv | Full 18-pair H100 full-model layer-component ablation summary |
+| artifacts/circuit_val_layer_ablation_full_h100_per_pair.csv | Per-pair outputs for the full 18-pair H100 layer-component ablation sweep |
+| artifacts/circuit_val_layer_ablation_full_h100_family_summary.csv | Family-level summary for the full 18-pair H100 layer-component ablation sweep |
+| artifacts/circuit_val_layer_ablation_full_h100_metadata.json | Metadata for the full 18-pair H100 layer-component ablation sweep |
+| artifacts/circuit_val_layer_patching_attn_l11_l13_n18_h100_summary.csv | Full-model benign-to-malicious patching summary for attention layers 11-13 |
+| artifacts/circuit_val_layer_patching_attn_l11_l13_n18_h100_metadata.json | Metadata for the late-attention patching sweep |
+| artifacts/circuit_val_layer_patching_mlp_l6_l10_l13_n18_h100_summary.csv | Full-model benign-to-malicious patching summary for MLP layers 6, 10, and 13 |
+| artifacts/circuit_val_layer_patching_mlp_l6_l10_l13_n18_h100_metadata.json | Metadata for the late-MLP patching sweep |
+| artifacts/circuit_val_path_patching_early_to_late_n18_h100_summary.csv | Path-patching comparison for early heads, late attention, and residual entry to the late band |
+| artifacts/circuit_val_path_patching_early_to_late_n18_h100_metadata.json | Metadata for the early-to-late path patching sweep |
+| artifacts/circuit_val_resid_pre12_subspace_n18_h100_metadata.json | Metadata for the `resid_pre12` low-rank residual-subspace discovery run |
+| artifacts/circuit_val_resid_pre12_subspace_patch_n18_h100_summary.csv | Low-rank subspace patching summary for `resid_pre12` across ranks 1, 2, 4, and 8 |
+| artifacts/circuit_val_resid_pre13_subspace_n18_h100_metadata.json | Metadata for the `resid_pre13` low-rank residual-subspace discovery run |
+| artifacts/circuit_val_resid_pre13_subspace_patch_n18_h100_summary.csv | Low-rank subspace patching summary for `resid_pre13` across ranks 1, 2, 4, and 8 |
+| artifacts/circuit_val_resid_pre12_contrastive_n18_h100_metadata.json | Metadata for the task-aligned contrastive residual-direction discovery run at `resid_pre12` |
+| artifacts/circuit_val_resid_pre12_contrastive_patch_n18_h100_summary.csv | Contrastive residual-direction patching summary for `resid_pre12` |
+| artifacts/circuit_val_resid_pre13_contrastive_n18_h100_metadata.json | Metadata for the task-aligned contrastive residual-direction discovery run at `resid_pre13` |
+| artifacts/circuit_val_resid_pre13_contrastive_patch_n18_h100_summary.csv | Contrastive residual-direction patching summary for `resid_pre13` |
+| artifacts/circuit_val_trace_resid_pre13_mean_delta_l12_l13_n18_h100_summary.csv | Head-level projection summary for late attention writes into the discovered `resid_pre13` mean-delta direction |
+| artifacts/circuit_val_trace_resid_pre13_mean_delta_l12_l13_n18_h100_metadata.json | Metadata for the late-head directional tracing sweep |
+| artifacts/circuit_val_path_patching_l12_writer_top5_n18_h100_summary.csv | Grouped patching summary for the top-five traced `Layer 12` writers into the `resid_pre13` mean-delta direction |
+| artifacts/circuit_val_head_group_ablation_l12_writer_top5_n18_h100_summary.csv | Grouped ablation summary for the top-five traced `Layer 12` writers |
+| artifacts/circuit_val_path_patching_l12_writer_top2_n18_h100_summary.csv | Grouped patching summary for the top-two traced `Layer 12` writers |
+| artifacts/circuit_val_head_group_ablation_l12_writer_top2_n18_h100_summary.csv | Grouped ablation summary for the top-two traced `Layer 12` writers |
+| artifacts/circuit_val_resid_pre13_mean_delta_early_patch_n18_h100_summary.csv | Effect of benign patching `L0H11/L0H9` on the discovered `resid_pre13` mean-delta direction and final logit |
+| artifacts/circuit_val_resid_pre13_mean_delta_early_ablate_n18_h100_summary.csv | Effect of ablating `L0H11/L0H9` on the discovered `resid_pre13` mean-delta direction and final logit |
+| artifacts/circuit_val_path_patching_early_plus_l12_writer_top5_n18_h100_summary.csv | Combined grouped patching summary for the early detector pair plus the top-five traced `Layer 12` writers |
+| artifacts/circuit_val_head_group_ablation_early_plus_l12_writer_top5_n18_h100_summary.csv | Combined grouped ablation summary for the early detector pair plus the top-five traced `Layer 12` writers |
+| artifacts/circuit_val_trace_resid_pre13_mean_delta_l12_under_early_patch_n18_h100_summary.csv | Layer 12 head-write changes along the discovered `resid_pre13` mean-delta direction under `L0H11/L0H9` patching |
+| artifacts/circuit_val_trace_resid_pre13_mean_delta_l12_under_early_ablate_n18_h100_summary.csv | Layer 12 head-write changes along the discovered `resid_pre13` mean-delta direction under `L0H11/L0H9` ablation |
+| artifacts/circuit_val_path_patching_l12_early_sensitive_n18_h100_summary.csv | Grouped patching summary for the early-sensitive `Layer 12` late-head subset |
+| artifacts/circuit_val_head_group_ablation_l12_early_sensitive_n18_h100_summary.csv | Grouped ablation summary for the early-sensitive `Layer 12` late-head subset |
+| artifacts/circuit_val_path_patching_l12_writer_minus_h15_n18_h100_summary.csv | Leave-one-out grouped patching summary for the late writer bundle without `L12H15` |
+| artifacts/circuit_val_head_group_ablation_l12_writer_minus_h15_n18_h100_summary.csv | Leave-one-out grouped ablation summary for the late writer bundle without `L12H15` |
+| artifacts/circuit_val_path_patching_l12_writer_minus_h5_n18_h100_summary.csv | Leave-one-out grouped patching summary for the late writer bundle without `L12H5` |
+| artifacts/circuit_val_head_group_ablation_l12_writer_minus_h5_n18_h100_summary.csv | Leave-one-out grouped ablation summary for the late writer bundle without `L12H5` |
+| artifacts/circuit_val_path_patching_l12_writer_minus_h2_n18_h100_summary.csv | Leave-one-out grouped patching summary for the late writer bundle without `L12H2` |
+| artifacts/circuit_val_head_group_ablation_l12_writer_minus_h2_n18_h100_summary.csv | Leave-one-out grouped ablation summary for the late writer bundle without `L12H2` |
+| artifacts/circuit_val_path_patching_l12_writer_minus_h28_n18_h100_summary.csv | Leave-one-out grouped patching summary for the late writer bundle without `L12H28` |
+| artifacts/circuit_val_head_group_ablation_l12_writer_minus_h28_n18_h100_summary.csv | Leave-one-out grouped ablation summary for the late writer bundle without `L12H28` |
+| artifacts/circuit_val_path_patching_l12_writer_top3_n18_h100_summary.csv | Grouped patching summary for the compact top-three `Layer 12` writer core |
+| artifacts/circuit_val_head_group_ablation_l12_writer_top3_n18_h100_summary.csv | Grouped ablation summary for the compact top-three `Layer 12` writer core |
+| artifacts/circuit_val_trace_resid_pre13_mean_delta_l12_under_h011_patch_n18_h100_summary.csv | Layer 12 head-write changes along the discovered `resid_pre13` mean-delta direction under `L0H11` patching alone |
+| artifacts/circuit_val_trace_resid_pre13_mean_delta_l12_under_h09_patch_n18_h100_summary.csv | Layer 12 head-write changes along the discovered `resid_pre13` mean-delta direction under `L0H9` patching alone |
+| artifacts/circuit_val_path_patching_l12_h011_route_n18_h100_summary.csv | Grouped patching summary for the `L0H11`-aligned late route `L12H15/L12H5/L12H4` |
+| artifacts/circuit_val_head_group_ablation_l12_h011_route_n18_h100_summary.csv | Grouped ablation summary for the `L0H11`-aligned late route |
+| artifacts/circuit_val_path_patching_l12_h09_route_n18_h100_summary.csv | Grouped patching summary for the `L0H9`-aligned late route `L12H9/L12H6/L12H10` |
+| artifacts/circuit_val_head_group_ablation_l12_h09_route_n18_h100_summary.csv | Grouped ablation summary for the `L0H9`-aligned late route |
+| artifacts/circuit_val_path_patching_h011_plus_l12_top3_n18_h100_summary.csv | Combined grouped patching summary for `L0H11` plus the compact top-three late route |
+| artifacts/circuit_val_head_group_ablation_h011_plus_l12_top3_n18_h100_summary.csv | Combined grouped ablation summary for `L0H11` plus the compact top-three late route |
+| artifacts/circuit_val_path_patching_h011_plus_l12_top5_n18_h100_summary.csv | Combined grouped patching summary for `L0H11` plus the fuller top-five late carrier |
+| artifacts/circuit_val_head_group_ablation_h011_plus_l12_top5_n18_h100_summary.csv | Combined grouped ablation summary for `L0H11` plus the fuller top-five late carrier |
+| artifacts/circuit_val_batch_attention_l11_l13_n18_h100_summary.csv | Targeted full-model head discovery summary restricted to layers 11-13 |
+| artifacts/circuit_val_batch_attention_l11_l13_n18_h100_metadata.json | Metadata for the targeted 11-13 full-model head discovery run |
+| artifacts/circuit_val_batch_causal_l11_l13_heads_n18_h100_patch_summary.csv | Full-model patch summary for the targeted late heads in layers 11-13 |
+| artifacts/circuit_val_batch_causal_l11_l13_heads_n18_h100_ablation_summary.csv | Full-model ablation summary for the targeted late heads in layers 11-13 |
+| artifacts/circuit_val_batch_causal_l11_l13_heads_n18_h100_metadata.json | Metadata for the targeted late-head causal validation run |
+| artifacts/circuit_val_batch_neuron_discovery_l6_l10_l13_n18_h100_summary.csv | Targeted neuron discovery summary for MLP layers 6, 10, and 13 |
+| artifacts/circuit_val_batch_neuron_discovery_l6_l10_l13_n18_h100_metadata.json | Metadata for the targeted neuron discovery run |
+| artifacts/circuit_val_batch_neuron_ablation_l6_l10_l13_n18_h100_summary.csv | Direct neuron ablation summary for selected neurons in MLP layers 6, 10, and 13 |
+| artifacts/circuit_val_batch_neuron_ablation_l6_l10_l13_n18_h100_metadata.json | Metadata for the targeted neuron ablation run |
+| artifacts/circuit_val_batch_neuron_group_ablation_l6_l10_l13_n18_h100_summary.csv | Grouped ablation summary for top discovered neuron sets in MLP layers 6, 10, and 13 |
+| artifacts/circuit_val_batch_neuron_group_ablation_l6_l10_l13_n18_h100_metadata.json | Metadata for the grouped neuron ablation run |
 | artifacts/valid_l8_causal_n3_mps_patch_summary.csv | 8-layer patch summary on a 3-pair validated subset |
 | artifacts/valid_l8_causal_n3_mps_ablation_summary.csv | 8-layer ablation summary on a 3-pair validated subset |
 | artifacts/valid_l8_causal_n3_mps_metadata.json | Provenance metadata for the 8-layer 3-pair causal follow-up |

@@ -255,6 +255,7 @@ def compute_attention_scores(
     n_layers: int,
     n_heads: int,
     indicator_positions: Sequence[int],
+    layer_filter: Optional[Sequence[int]] = None,
     query_pos: int = -1,
     topk: int = 15,
     n_control_sets: int = 30,
@@ -293,8 +294,12 @@ def compute_attention_scores(
     control_attn /= float(n_control_sets)
     delta = indicator_attn - control_attn
 
+    allowed_layers = set(layer_filter) if layer_filter is not None else None
+
     rows = []
     for layer in range(n_layers):
+        if allowed_layers is not None and layer not in allowed_layers:
+            continue
         for head in range(n_heads):
             rows.append(
                 {
@@ -303,6 +308,9 @@ def compute_attention_scores(
                     "attention_delta": float(delta[layer, head].item()),
                 }
             )
+    if not rows:
+        return pd.DataFrame(columns=["layer", "head", "attention_delta"])
+
     result = pd.DataFrame(rows)
     return result.sort_values("attention_delta", ascending=False).head(topk).reset_index(drop=True)
 
@@ -421,6 +429,524 @@ def run_head_ablation(
         )
         del ablated_logits
     return pd.DataFrame(rows).sort_values("delta_logit_diff")
+
+
+def run_layer_component_ablation(
+    model,
+    *,
+    tokens: torch.Tensor,
+    base_logit_diff: float,
+    allow_token_id: int,
+    block_token_id: int,
+    components: Sequence[str] = ("attn", "mlp"),
+) -> pd.DataFrame:
+    """Zero a whole layer component and measure the logit change."""
+    require_transformer_lens()
+
+    component_to_hook = {
+        "attn": "hook_attn_out",
+        "mlp": "hook_mlp_out",
+    }
+    invalid = [component for component in components if component not in component_to_hook]
+    if invalid:
+        raise ValueError(f"Unsupported layer components: {invalid!r}")
+
+    rows = []
+    for layer in range(model.cfg.n_layers):
+        for component in components:
+            hook_name = f"blocks.{layer}.{component_to_hook[component]}"
+
+            def ablate_fn(result, hook):
+                return torch.zeros_like(result)
+
+            with torch.inference_mode():
+                ablated_logits = model.run_with_hooks(
+                    tokens,
+                    return_type="logits",
+                    fwd_hooks=[(hook_name, ablate_fn)],
+                )
+            ablated_logit_diff = logit_diff_from_logits(ablated_logits, allow_token_id, block_token_id)
+            delta = ablated_logit_diff - base_logit_diff
+            rows.append(
+                {
+                    "layer": layer,
+                    "component": component,
+                    "base_logit_diff": base_logit_diff,
+                    "ablated_logit_diff": ablated_logit_diff,
+                    "delta_logit_diff": delta,
+                    "effect_pct": (delta / abs(base_logit_diff)) * 100 if base_logit_diff else 0.0,
+                }
+            )
+            del ablated_logits
+    return pd.DataFrame(rows).sort_values("delta_logit_diff")
+
+
+def run_layer_component_patching(
+    model,
+    *,
+    corrupted_tokens: torch.Tensor,
+    clean_cache,
+    layers: Sequence[int],
+    components: Sequence[str],
+    base_logit_diff: float,
+    allow_token_id: int,
+    block_token_id: int,
+) -> pd.DataFrame:
+    """Patch clean layer components into a corrupted forward pass."""
+    require_transformer_lens()
+
+    component_to_hook = {
+        "attn": "hook_attn_out",
+        "mlp": "hook_mlp_out",
+    }
+    invalid = [component for component in components if component not in component_to_hook]
+    if invalid:
+        raise ValueError(f"Unsupported layer components: {invalid!r}")
+
+    rows = []
+    for layer in layers:
+        for component in components:
+            hook_name = f"blocks.{layer}.{component_to_hook[component]}"
+            clean_value = clean_cache[hook_name]
+
+            def patch_fn(result, hook, *, patch_value=clean_value):
+                patched = result.clone()
+                clean_seq = patch_value.shape[1]
+                corrupt_seq = patched.shape[1]
+                shared_seq = min(clean_seq, corrupt_seq)
+                patched[:, -shared_seq:, :] = patch_value[:, -shared_seq:, :]
+                return patched
+
+            with torch.inference_mode():
+                patched_logits = model.run_with_hooks(
+                    corrupted_tokens,
+                    return_type="logits",
+                    fwd_hooks=[(hook_name, patch_fn)],
+                )
+            patched_logit_diff = logit_diff_from_logits(patched_logits, allow_token_id, block_token_id)
+            delta = patched_logit_diff - base_logit_diff
+            rows.append(
+                {
+                    "layer": layer,
+                    "component": component,
+                    "base_logit_diff": base_logit_diff,
+                    "patched_logit_diff": patched_logit_diff,
+                    "delta_logit_diff": delta,
+                    "effect_pct": (delta / abs(base_logit_diff)) * 100 if base_logit_diff else 0.0,
+                }
+            )
+            del patched_logits
+    return pd.DataFrame(rows).sort_values("delta_logit_diff")
+
+
+def parse_layer_component_list(raw_text: str) -> List[Tuple[int, str]]:
+    items: List[Tuple[int, str]] = []
+    for item in raw_text.split(","):
+        value = item.strip()
+        if not value:
+            continue
+        if "." not in value:
+            raise ValueError(f"Layer component specification must be layer.component, got {value!r}")
+        layer_text, component = value.split(".", 1)
+        items.append((int(layer_text), component.strip()))
+    if not items:
+        raise ValueError("At least one layer.component must be specified.")
+    return items
+
+
+def build_residual_hook_name(layer: int, resid_kind: str) -> str:
+    resid_kind = resid_kind.strip().lower()
+    kind_to_hook = {
+        "pre": "hook_resid_pre",
+        "mid": "hook_resid_mid",
+        "post": "hook_resid_post",
+    }
+    if resid_kind not in kind_to_hook:
+        raise ValueError(f"Unsupported residual kind: {resid_kind!r}")
+    return f"blocks.{layer}.{kind_to_hook[resid_kind]}"
+
+
+def run_multi_path_patching(
+    model,
+    *,
+    corrupted_tokens: torch.Tensor,
+    clean_cache,
+    base_logit_diff: float,
+    allow_token_id: int,
+    block_token_id: int,
+    head_specs: Optional[Sequence[Tuple[int, int]]] = None,
+    component_specs: Optional[Sequence[Tuple[int, str]]] = None,
+    residual_specs: Optional[Sequence[Tuple[int, str]]] = None,
+) -> Dict[str, object]:
+    """Patch multiple hooks together from a clean cache into a corrupted run."""
+    require_transformer_lens()
+
+    fwd_hooks = []
+    label_parts: List[str] = []
+
+    for layer, head in head_specs or []:
+        hook_name = f"blocks.{layer}.attn.hook_z"
+        clean_value = clean_cache[hook_name]
+
+        def patch_head_fn(result, hook, *, patch_head=head, patch_value=clean_value):
+            patched = result.clone()
+            clean_seq = patch_value.shape[1]
+            corrupt_seq = patched.shape[1]
+            shared_seq = min(clean_seq, corrupt_seq)
+            patched[:, -shared_seq:, patch_head, :] = patch_value[:, -shared_seq:, patch_head, :]
+            return patched
+
+        fwd_hooks.append((hook_name, patch_head_fn))
+        label_parts.append(f"h{layer}.{head}")
+
+    component_to_hook = {
+        "attn": "hook_attn_out",
+        "mlp": "hook_mlp_out",
+    }
+    for layer, component in component_specs or []:
+        component = component.strip()
+        if component not in component_to_hook:
+            raise ValueError(f"Unsupported component: {component!r}")
+        hook_name = f"blocks.{layer}.{component_to_hook[component]}"
+        clean_value = clean_cache[hook_name]
+
+        def patch_component_fn(result, hook, *, patch_value=clean_value):
+            patched = result.clone()
+            clean_seq = patch_value.shape[1]
+            corrupt_seq = patched.shape[1]
+            shared_seq = min(clean_seq, corrupt_seq)
+            patched[:, -shared_seq:, :] = patch_value[:, -shared_seq:, :]
+            return patched
+
+        fwd_hooks.append((hook_name, patch_component_fn))
+        label_parts.append(f"{component}{layer}")
+
+    for layer, resid_kind in residual_specs or []:
+        hook_name = build_residual_hook_name(layer, resid_kind)
+        clean_value = clean_cache[hook_name]
+
+        def patch_resid_fn(result, hook, *, patch_value=clean_value):
+            patched = result.clone()
+            clean_seq = patch_value.shape[1]
+            corrupt_seq = patched.shape[1]
+            shared_seq = min(clean_seq, corrupt_seq)
+            patched[:, -shared_seq:, :] = patch_value[:, -shared_seq:, :]
+            return patched
+
+        fwd_hooks.append((hook_name, patch_resid_fn))
+        label_parts.append(f"resid_{resid_kind}{layer}")
+
+    if not fwd_hooks:
+        raise ValueError("At least one patch specification is required.")
+
+    with torch.inference_mode():
+        patched_logits = model.run_with_hooks(
+            corrupted_tokens,
+            return_type="logits",
+            fwd_hooks=fwd_hooks,
+        )
+    patched_logit_diff = logit_diff_from_logits(patched_logits, allow_token_id, block_token_id)
+    delta = patched_logit_diff - base_logit_diff
+    del patched_logits
+    return {
+        "patch_label": "+".join(label_parts),
+        "base_logit_diff": base_logit_diff,
+        "patched_logit_diff": patched_logit_diff,
+        "delta_logit_diff": delta,
+        "effect_pct": (delta / abs(base_logit_diff)) * 100 if base_logit_diff else 0.0,
+    }
+
+
+def run_multi_head_ablation(
+    model,
+    *,
+    tokens: torch.Tensor,
+    head_specs: Sequence[Tuple[int, int]],
+    base_logit_diff: float,
+    allow_token_id: int,
+    block_token_id: int,
+) -> Dict[str, object]:
+    """Zero multiple attention heads together and measure logit change."""
+    require_transformer_lens()
+    if not head_specs:
+        raise ValueError("At least one head must be provided for grouped head ablation.")
+
+    hooks_by_name: Dict[str, List[int]] = {}
+    label_parts: List[str] = []
+    for layer, head in head_specs:
+        hook_name = f"blocks.{layer}.attn.hook_z"
+        hooks_by_name.setdefault(hook_name, []).append(head)
+        label_parts.append(f"h{layer}.{head}")
+
+    fwd_hooks = []
+    for hook_name, heads in hooks_by_name.items():
+        unique_heads = tuple(sorted(set(heads)))
+
+        def ablate_fn(result, hook, *, ablate_heads=unique_heads):
+            patched = result.clone()
+            for ablate_head in ablate_heads:
+                patched[:, :, ablate_head, :] = 0.0
+            return patched
+
+        fwd_hooks.append((hook_name, ablate_fn))
+
+    with torch.inference_mode():
+        ablated_logits = model.run_with_hooks(
+            tokens,
+            return_type="logits",
+            fwd_hooks=fwd_hooks,
+        )
+    ablated_logit_diff = logit_diff_from_logits(ablated_logits, allow_token_id, block_token_id)
+    delta = ablated_logit_diff - base_logit_diff
+    del ablated_logits
+    return {
+        "ablation_label": "+".join(label_parts),
+        "base_logit_diff": base_logit_diff,
+        "ablated_logit_diff": ablated_logit_diff,
+        "delta_logit_diff": delta,
+        "effect_pct": (delta / abs(base_logit_diff)) * 100 if base_logit_diff else 0.0,
+    }
+
+
+def compute_residual_subspace(
+    deltas: torch.Tensor,
+    *,
+    max_rank: int,
+) -> Tuple[torch.Tensor, List[float]]:
+    """Compute a low-rank basis from stacked residual-delta vectors."""
+    if deltas.ndim != 2:
+        raise ValueError("Residual delta tensor must be [n_samples, d_model].")
+    deltas = deltas.to(dtype=torch.float32)
+    n_samples, d_model = deltas.shape
+    rank = max(1, min(max_rank, n_samples, d_model))
+    centered = deltas - deltas.mean(dim=0, keepdim=True)
+    _, singular_values, vh = torch.linalg.svd(centered, full_matrices=False)
+    basis = vh[:rank].T.contiguous()
+    singular_energy = singular_values.square()
+    total_energy = float(singular_energy.sum().item()) if len(singular_energy) else 0.0
+    explained = []
+    running = 0.0
+    for value in singular_energy[:rank]:
+        running += float(value.item())
+        explained.append((running / total_energy) if total_energy else 0.0)
+    return basis, explained
+
+
+def orthonormalize_named_vectors(
+    named_vectors: Sequence[Tuple[str, torch.Tensor]],
+    *,
+    min_norm: float = 1e-8,
+) -> Tuple[torch.Tensor, List[str]]:
+    columns: List[torch.Tensor] = []
+    labels: List[str] = []
+    for label, raw_vector in named_vectors:
+        vector = raw_vector.detach().to(dtype=torch.float32, device="cpu").clone()
+        for existing in columns:
+            vector = vector - torch.dot(vector, existing) * existing
+        norm = float(vector.norm().item())
+        if norm <= min_norm:
+            continue
+        columns.append(vector / norm)
+        labels.append(label)
+
+    if not columns:
+        raise ValueError("No non-degenerate residual directions were available.")
+    basis = torch.stack(columns, dim=1).contiguous()
+    return basis, labels
+
+
+def compute_contrastive_residual_basis(
+    deltas: torch.Tensor,
+    *,
+    logit_dir: torch.Tensor,
+) -> Tuple[torch.Tensor, List[str], Dict[str, float]]:
+    """Build a small orthonormal basis from task-relevant residual directions."""
+    if deltas.ndim != 2:
+        raise ValueError("Residual delta tensor must be [n_samples, d_model].")
+    deltas = deltas.to(dtype=torch.float32, device="cpu")
+    mean_delta = deltas.mean(dim=0)
+    logit_dir = logit_dir.detach().to(dtype=torch.float32, device="cpu")
+    basis, labels = orthonormalize_named_vectors(
+        [
+            ("mean_delta", mean_delta),
+            ("logit_readout", logit_dir),
+        ]
+    )
+
+    mean_norm = float(mean_delta.norm().item())
+    logit_norm = float(logit_dir.norm().item())
+    if mean_norm > 0.0 and logit_norm > 0.0:
+        cosine = float(torch.dot(mean_delta / mean_norm, logit_dir / logit_norm).item())
+    else:
+        cosine = 0.0
+
+    diagnostics = {
+        "mean_delta_norm": mean_norm,
+        "logit_dir_norm": logit_norm,
+        "mean_delta_logit_dir_cosine": cosine,
+    }
+    return basis, labels, diagnostics
+
+
+def run_named_residual_basis_patching(
+    model,
+    *,
+    corrupted_tokens: torch.Tensor,
+    clean_cache,
+    layer: int,
+    resid_kind: str,
+    basis: torch.Tensor,
+    patch_label: str,
+    base_logit_diff: float,
+    allow_token_id: int,
+    block_token_id: int,
+) -> Dict[str, object]:
+    """Patch only the clean projection inside a specified residual basis."""
+    require_transformer_lens()
+
+    hook_name = build_residual_hook_name(layer, resid_kind)
+    clean_value = clean_cache[hook_name]
+
+    def patch_fn(result, hook, *, patch_value=clean_value, patch_basis=basis):
+        patched = result.clone()
+        clean_last = patch_value[:, -1, :]
+        corrupt_last = patched[:, -1, :]
+        clean_proj = (clean_last @ patch_basis) @ patch_basis.T
+        corrupt_proj = (corrupt_last @ patch_basis) @ patch_basis.T
+        patched[:, -1, :] = corrupt_last - corrupt_proj + clean_proj
+        return patched
+
+    with torch.inference_mode():
+        patched_logits = model.run_with_hooks(
+            corrupted_tokens,
+            return_type="logits",
+            fwd_hooks=[(hook_name, patch_fn)],
+        )
+    patched_logit_diff = logit_diff_from_logits(patched_logits, allow_token_id, block_token_id)
+    delta = patched_logit_diff - base_logit_diff
+    del patched_logits
+    return {
+        "patch_label": patch_label,
+        "layer": layer,
+        "resid_kind": resid_kind,
+        "subspace_dim": int(basis.shape[1]),
+        "base_logit_diff": base_logit_diff,
+        "patched_logit_diff": patched_logit_diff,
+        "delta_logit_diff": delta,
+        "effect_pct": (delta / abs(base_logit_diff)) * 100 if base_logit_diff else 0.0,
+    }
+
+
+def run_residual_subspace_patching(
+    model,
+    *,
+    corrupted_tokens: torch.Tensor,
+    clean_cache,
+    layer: int,
+    resid_kind: str,
+    basis: torch.Tensor,
+    subspace_dim: int,
+    base_logit_diff: float,
+    allow_token_id: int,
+    block_token_id: int,
+) -> Dict[str, object]:
+    """Patch only the benign projection inside a learned residual subspace."""
+    return run_named_residual_basis_patching(
+        model,
+        corrupted_tokens=corrupted_tokens,
+        clean_cache=clean_cache,
+        layer=layer,
+        resid_kind=resid_kind,
+        basis=basis[:, :subspace_dim],
+        patch_label=f"subspace_{resid_kind}{layer}_k{subspace_dim}",
+        base_logit_diff=base_logit_diff,
+        allow_token_id=allow_token_id,
+        block_token_id=block_token_id,
+    )
+
+
+def run_neuron_ablation(
+    model,
+    *,
+    tokens: torch.Tensor,
+    layer: int,
+    neurons: Sequence[int],
+    base_logit_diff: float,
+    allow_token_id: int,
+    block_token_id: int,
+) -> pd.DataFrame:
+    """Zero selected MLP neurons at hook_post and measure logit change."""
+    require_transformer_lens()
+
+    hook_name = f"blocks.{layer}.mlp.hook_post"
+    rows = []
+    for neuron in neurons:
+        def ablate_fn(result, hook, *, ablate_neuron=neuron):
+            patched = result.clone()
+            patched[:, :, ablate_neuron] = 0.0
+            return patched
+
+        with torch.inference_mode():
+            ablated_logits = model.run_with_hooks(
+                tokens,
+                return_type="logits",
+                fwd_hooks=[(hook_name, ablate_fn)],
+            )
+        ablated_logit_diff = logit_diff_from_logits(ablated_logits, allow_token_id, block_token_id)
+        delta = ablated_logit_diff - base_logit_diff
+        rows.append(
+            {
+                "layer": layer,
+                "neuron": neuron,
+                "base_logit_diff": base_logit_diff,
+                "ablated_logit_diff": ablated_logit_diff,
+                "delta_logit_diff": delta,
+                "effect_pct": (delta / abs(base_logit_diff)) * 100 if base_logit_diff else 0.0,
+            }
+        )
+        del ablated_logits
+    return pd.DataFrame(rows).sort_values("delta_logit_diff")
+
+
+def run_neuron_group_ablation(
+    model,
+    *,
+    tokens: torch.Tensor,
+    layer: int,
+    neurons: Sequence[int],
+    base_logit_diff: float,
+    allow_token_id: int,
+    block_token_id: int,
+) -> Dict[str, object]:
+    """Zero a group of MLP neurons at hook_post and measure the logit change."""
+    require_transformer_lens()
+
+    hook_name = f"blocks.{layer}.mlp.hook_post"
+    neuron_list = sorted({int(neuron) for neuron in neurons})
+
+    def ablate_fn(result, hook, *, ablate_neurons=neuron_list):
+        patched = result.clone()
+        patched[:, :, ablate_neurons] = 0.0
+        return patched
+
+    with torch.inference_mode():
+        ablated_logits = model.run_with_hooks(
+            tokens,
+            return_type="logits",
+            fwd_hooks=[(hook_name, ablate_fn)],
+        )
+    ablated_logit_diff = logit_diff_from_logits(ablated_logits, allow_token_id, block_token_id)
+    delta = ablated_logit_diff - base_logit_diff
+    del ablated_logits
+    return {
+        "layer": layer,
+        "group_size": len(neuron_list),
+        "neurons": ",".join(str(neuron) for neuron in neuron_list),
+        "base_logit_diff": base_logit_diff,
+        "ablated_logit_diff": ablated_logit_diff,
+        "delta_logit_diff": delta,
+        "effect_pct": (delta / abs(base_logit_diff)) * 100 if base_logit_diff else 0.0,
+    }
 
 
 def generate_obfuscations(script: str) -> List[Dict[str, str]]:
@@ -859,6 +1385,36 @@ def select_explicit_pairs(manifest: pd.DataFrame) -> List[Tuple[pd.Series, pd.Se
     return pairs
 
 
+def select_explicit_pair_by_id(manifest: pd.DataFrame, pair_idx: int) -> Tuple[pd.Series, pd.Series]:
+    if not {"pair_idx", "pair_role"}.issubset(manifest.columns):
+        raise ValueError("Manifest must contain pair_idx and pair_role columns.")
+
+    group = manifest[manifest["pair_idx"] == pair_idx]
+    if group.empty:
+        raise IndexError(f"Requested pair_idx {pair_idx} is out of bounds.")
+
+    roles = set(group["pair_role"].tolist())
+    if {"benign", "malicious"} - roles:
+        raise RuntimeError(f"pair_idx {pair_idx} does not contain both benign and malicious rows.")
+
+    benign_row = group[group["pair_role"] == "benign"].iloc[0]
+    malicious_row = group[group["pair_role"] == "malicious"].iloc[0]
+    return benign_row, malicious_row
+
+
+def resolve_pair_idx(
+    benign_row: pd.Series,
+    malicious_row: pd.Series,
+    *,
+    fallback_idx: int,
+) -> int:
+    for row in (benign_row, malicious_row):
+        pair_idx = optional_int_field(row, "pair_idx")
+        if pair_idx is not None:
+            return pair_idx
+    return fallback_idx
+
+
 def select_short_pairs(
     manifest: pd.DataFrame,
     *,
@@ -913,6 +1469,42 @@ def parse_head_list(heads_text: str) -> List[Tuple[int, int]]:
     if not heads:
         raise ValueError("At least one head must be specified.")
     return heads
+
+
+def parse_int_list(raw_text: str) -> List[int]:
+    values = []
+    for item in raw_text.split(","):
+        item = item.strip()
+        if item:
+            values.append(int(item))
+    if not values:
+        raise ValueError("Expected at least one integer value.")
+    return values
+
+
+def optional_layer_filter(layer_start: Optional[int], layer_end: Optional[int]) -> Optional[List[int]]:
+    if layer_start is None and layer_end is None:
+        return None
+    if layer_start is None or layer_end is None:
+        raise ValueError("Provide both layer_start and layer_end when filtering layers.")
+    if layer_end < layer_start:
+        raise ValueError("layer_end must be >= layer_start.")
+    return list(range(layer_start, layer_end + 1))
+
+
+def parse_neuron_list(neurons_text: str) -> List[Tuple[int, int]]:
+    neurons: List[Tuple[int, int]] = []
+    for item in neurons_text.split(","):
+        value = item.strip()
+        if not value:
+            continue
+        if "." not in value:
+            raise ValueError(f"Neuron specification must be layer.neuron, got {value!r}")
+        layer_text, neuron_text = value.split(".", 1)
+        neurons.append((int(layer_text), int(neuron_text)))
+    if not neurons:
+        raise ValueError("At least one neuron must be specified.")
+    return neurons
 
 
 def evaluate_prompts(
@@ -1294,9 +1886,14 @@ def cmd_export_short_pairs(args: argparse.Namespace) -> int:
 def cmd_filter_valid_pairs(args: argparse.Namespace) -> int:
     manifest = pd.read_csv(args.manifest)
     baseline = pd.read_csv(args.baseline_eval)
+    eval_columns = ["correct", "predicted_label", "logit_diff"]
+
+    # Some manifests are already enriched with prior baseline outputs.
+    # Drop stale evaluation columns so the fresh merge keeps canonical names.
+    manifest = manifest.drop(columns=[column for column in eval_columns if column in manifest.columns])
 
     merged = manifest.merge(
-        baseline[["filename", "label", "correct", "predicted_label", "logit_diff"]],
+        baseline[["filename", "label", *eval_columns]],
         on=["filename", "label"],
         how="left",
         validate="one_to_one",
@@ -1406,11 +2003,13 @@ def cmd_discover_heads(args: argparse.Namespace) -> int:
     _, benign_cache = model.run_with_cache(benign_tokens, return_type="logits")
     _, malicious_cache = model.run_with_cache(malicious_tokens, return_type="logits")
     indicator_positions = get_indicator_tokens(malicious_prompt, tokenizer)
+    layer_filter = optional_layer_filter(args.layer_start, args.layer_end)
     head_scores = compute_attention_scores(
         malicious_cache,
         n_layers=model.cfg.n_layers,
         n_heads=model.cfg.n_heads,
         indicator_positions=indicator_positions,
+        layer_filter=layer_filter,
         topk=args.topk,
     )
 
@@ -1430,6 +2029,7 @@ def cmd_discover_heads(args: argparse.Namespace) -> int:
             "indicator_positions": indicator_positions,
             "device": device,
             "first_n_layers": args.first_n_layers,
+            "layer_filter": layer_filter,
             "template_name": args.template_name,
             "topk": args.topk,
         },
@@ -1455,7 +2055,9 @@ def cmd_causal_pair(args: argparse.Namespace) -> int:
     require_transformer_lens()
 
     manifest = pd.read_csv(args.manifest)
-    if args.short_pair_index is not None:
+    if args.pair_idx is not None:
+        benign_row, malicious_row = select_explicit_pair_by_id(manifest, args.pair_idx)
+    elif args.short_pair_index is not None:
         pairs = select_short_pairs(
             manifest,
             num_pairs=args.short_pair_index + 1,
@@ -1597,11 +2199,13 @@ def cmd_batch_discover_heads(args: argparse.Namespace) -> int:
         use_attn_result=False,
     )
     model.eval()
+    layer_filter = optional_layer_filter(args.layer_start, args.layer_end)
 
     pair_rows: List[Dict[str, object]] = []
     head_rows: List[Dict[str, object]] = []
 
-    for pair_idx, (benign_row, malicious_row) in enumerate(pairs, start=1):
+    for fallback_idx, (benign_row, malicious_row) in enumerate(pairs, start=1):
+        pair_idx = resolve_pair_idx(benign_row, malicious_row, fallback_idx=fallback_idx)
         benign_prompt = make_prompt(benign_row["content"])
         malicious_prompt = make_prompt(malicious_row["content"])
         malicious_indicator_positions = get_indicator_tokens(malicious_prompt, tokenizer)
@@ -1616,6 +2220,7 @@ def cmd_batch_discover_heads(args: argparse.Namespace) -> int:
             n_layers=model.cfg.n_layers,
             n_heads=model.cfg.n_heads,
             indicator_positions=malicious_indicator_positions,
+            layer_filter=layer_filter,
             topk=args.topk,
         )
         head_scores["pair_idx"] = pair_idx
@@ -1674,6 +2279,7 @@ def cmd_batch_discover_heads(args: argparse.Namespace) -> int:
             "summary_csv": str(summary_path),
             "num_pairs": len(pairs),
             "first_n_layers": args.first_n_layers,
+            "layer_filter": layer_filter,
             "topk": args.topk,
             "device": device,
             "template_name": args.template_name,
@@ -1723,6 +2329,299 @@ def summarize_causal_effects(df: pd.DataFrame, *, delta_column: str, flip_column
             flip_rate=(flip_column, "mean"),
         )
         .sort_values(["flip_rate", "mean_delta"], ascending=[False, True])
+        .reset_index(drop=True)
+    )
+    return summary
+
+
+def summarize_layer_component_effects(df: pd.DataFrame) -> pd.DataFrame:
+    working = df.copy()
+    pair_key = "__pair_key"
+    working[pair_key] = pd.Series(pd.NA, index=working.index, dtype="object")
+    if "pair_idx" in working.columns:
+        pair_idx_series = working["pair_idx"].where(pd.notna(working["pair_idx"]), pd.NA)
+        working[pair_key] = pair_idx_series.astype("string").astype("object")
+
+    if {"benign_filename", "malicious_filename"}.issubset(working.columns):
+        missing_mask = working[pair_key].isna()
+        working.loc[missing_mask, pair_key] = (
+            working.loc[missing_mask, "benign_filename"].astype(str)
+            + "::"
+            + working.loc[missing_mask, "malicious_filename"].astype(str)
+        )
+
+    summary = (
+        working.groupby(["layer", "component"], as_index=False)
+        .agg(
+            pair_count=(pair_key, "nunique"),
+            mean_delta=("delta_logit_diff", "mean"),
+            max_delta=("delta_logit_diff", "max"),
+            min_delta=("delta_logit_diff", "min"),
+            flip_rate=("flip_to_benign", "mean"),
+            mean_base_logit_diff=("base_logit_diff", "mean"),
+        )
+        .sort_values(["component", "mean_delta"], ascending=[True, True])
+        .reset_index(drop=True)
+    )
+    return summary
+
+
+def summarize_layer_component_patch_effects(df: pd.DataFrame) -> pd.DataFrame:
+    working = df.copy()
+    pair_key = "__pair_key"
+    working[pair_key] = pd.Series(pd.NA, index=working.index, dtype="object")
+    if "pair_idx" in working.columns:
+        pair_idx_series = working["pair_idx"].where(pd.notna(working["pair_idx"]), pd.NA)
+        working[pair_key] = pair_idx_series.astype("string").astype("object")
+
+    if {"benign_filename", "malicious_filename"}.issubset(working.columns):
+        missing_mask = working[pair_key].isna()
+        working.loc[missing_mask, pair_key] = (
+            working.loc[missing_mask, "benign_filename"].astype(str)
+            + "::"
+            + working.loc[missing_mask, "malicious_filename"].astype(str)
+        )
+
+    summary = (
+        working.groupby(["layer", "component"], as_index=False)
+        .agg(
+            pair_count=(pair_key, "nunique"),
+            mean_delta=("delta_logit_diff", "mean"),
+            max_delta=("delta_logit_diff", "max"),
+            min_delta=("delta_logit_diff", "min"),
+            flip_rate=("flip_to_benign", "mean"),
+            mean_base_logit_diff=("base_logit_diff", "mean"),
+        )
+        .sort_values(["component", "mean_delta"], ascending=[True, True])
+        .reset_index(drop=True)
+    )
+    return summary
+
+
+def summarize_neuron_effects(df: pd.DataFrame) -> pd.DataFrame:
+    working = df.copy()
+    pair_key = "__pair_key"
+    working[pair_key] = pd.Series(pd.NA, index=working.index, dtype="object")
+    if "pair_idx" in working.columns:
+        pair_idx_series = working["pair_idx"].where(pd.notna(working["pair_idx"]), pd.NA)
+        working[pair_key] = pair_idx_series.astype("string").astype("object")
+
+    if {"benign_filename", "malicious_filename"}.issubset(working.columns):
+        missing_mask = working[pair_key].isna()
+        working.loc[missing_mask, pair_key] = (
+            working.loc[missing_mask, "benign_filename"].astype(str)
+            + "::"
+            + working.loc[missing_mask, "malicious_filename"].astype(str)
+        )
+
+    summary = (
+        working.groupby(["layer", "neuron"], as_index=False)
+        .agg(
+            pair_count=(pair_key, "nunique"),
+            mean_delta=("delta_logit_diff", "mean"),
+            max_delta=("delta_logit_diff", "max"),
+            min_delta=("delta_logit_diff", "min"),
+            flip_rate=("flip_to_benign", "mean"),
+            mean_base_logit_diff=("base_logit_diff", "mean"),
+        )
+        .sort_values(["layer", "mean_delta"], ascending=[True, True])
+        .reset_index(drop=True)
+    )
+    return summary
+
+
+def summarize_neuron_group_effects(df: pd.DataFrame) -> pd.DataFrame:
+    working = df.copy()
+    pair_key = "__pair_key"
+    working[pair_key] = pd.Series(pd.NA, index=working.index, dtype="object")
+    if "pair_idx" in working.columns:
+        pair_idx_series = working["pair_idx"].where(pd.notna(working["pair_idx"]), pd.NA)
+        working[pair_key] = pair_idx_series.astype("string").astype("object")
+
+    if {"benign_filename", "malicious_filename"}.issubset(working.columns):
+        missing_mask = working[pair_key].isna()
+        working.loc[missing_mask, pair_key] = (
+            working.loc[missing_mask, "benign_filename"].astype(str)
+            + "::"
+            + working.loc[missing_mask, "malicious_filename"].astype(str)
+        )
+
+    summary = (
+        working.groupby(["layer", "group_size", "neurons"], as_index=False)
+        .agg(
+            pair_count=(pair_key, "nunique"),
+            mean_delta=("delta_logit_diff", "mean"),
+            max_delta=("delta_logit_diff", "max"),
+            min_delta=("delta_logit_diff", "min"),
+            flip_rate=("flip_to_benign", "mean"),
+            mean_base_logit_diff=("base_logit_diff", "mean"),
+        )
+        .sort_values(["layer", "group_size"], ascending=[True, True])
+        .reset_index(drop=True)
+    )
+    return summary
+
+
+def summarize_path_patch_effects(df: pd.DataFrame) -> pd.DataFrame:
+    working = df.copy()
+    pair_key = "__pair_key"
+    working[pair_key] = pd.Series(pd.NA, index=working.index, dtype="object")
+    if "pair_idx" in working.columns:
+        pair_idx_series = working["pair_idx"].where(pd.notna(working["pair_idx"]), pd.NA)
+        working[pair_key] = pair_idx_series.astype("string").astype("object")
+
+    if {"benign_filename", "malicious_filename"}.issubset(working.columns):
+        missing_mask = working[pair_key].isna()
+        working.loc[missing_mask, pair_key] = (
+            working.loc[missing_mask, "benign_filename"].astype(str)
+            + "::"
+            + working.loc[missing_mask, "malicious_filename"].astype(str)
+        )
+
+    summary = (
+        working.groupby("patch_label", as_index=False)
+        .agg(
+            pair_count=(pair_key, "nunique"),
+            mean_delta=("delta_logit_diff", "mean"),
+            max_delta=("delta_logit_diff", "max"),
+            min_delta=("delta_logit_diff", "min"),
+            flip_rate=("flip_to_benign", "mean"),
+            mean_base_logit_diff=("base_logit_diff", "mean"),
+        )
+        .sort_values("mean_delta")
+        .reset_index(drop=True)
+    )
+    return summary
+
+
+def summarize_residual_subspace_patch_effects(df: pd.DataFrame) -> pd.DataFrame:
+    working = df.copy()
+    pair_key = "__pair_key"
+    working[pair_key] = pd.Series(pd.NA, index=working.index, dtype="object")
+    if "pair_idx" in working.columns:
+        pair_idx_series = working["pair_idx"].where(pd.notna(working["pair_idx"]), pd.NA)
+        working[pair_key] = pair_idx_series.astype("string").astype("object")
+
+    if {"benign_filename", "malicious_filename"}.issubset(working.columns):
+        missing_mask = working[pair_key].isna()
+        working.loc[missing_mask, pair_key] = (
+            working.loc[missing_mask, "benign_filename"].astype(str)
+            + "::"
+            + working.loc[missing_mask, "malicious_filename"].astype(str)
+        )
+
+    summary = (
+        working.groupby(["layer", "resid_kind", "subspace_dim"], as_index=False)
+        .agg(
+            pair_count=(pair_key, "nunique"),
+            mean_delta=("delta_logit_diff", "mean"),
+            max_delta=("delta_logit_diff", "max"),
+            min_delta=("delta_logit_diff", "min"),
+            flip_rate=("flip_to_benign", "mean"),
+            mean_base_logit_diff=("base_logit_diff", "mean"),
+        )
+        .sort_values("subspace_dim")
+        .reset_index(drop=True)
+    )
+    return summary
+
+
+def summarize_directional_head_writes(df: pd.DataFrame) -> pd.DataFrame:
+    working = df.copy()
+    pair_key = "__pair_key"
+    working[pair_key] = pd.Series(pd.NA, index=working.index, dtype="object")
+    if "pair_idx" in working.columns:
+        pair_idx_series = working["pair_idx"].where(pd.notna(working["pair_idx"]), pd.NA)
+        working[pair_key] = pair_idx_series.astype("string").astype("object")
+
+    if {"benign_filename", "malicious_filename"}.issubset(working.columns):
+        missing_mask = working[pair_key].isna()
+        working.loc[missing_mask, pair_key] = (
+            working.loc[missing_mask, "benign_filename"].astype(str)
+            + "::"
+            + working.loc[missing_mask, "malicious_filename"].astype(str)
+        )
+
+    summary = (
+        working.groupby(["layer", "head"], as_index=False)
+        .agg(
+            pair_count=(pair_key, "nunique"),
+            mean_benign_projection=("benign_projection", "mean"),
+            mean_malicious_projection=("malicious_projection", "mean"),
+            mean_delta_projection=("delta_projection", "mean"),
+            max_delta_projection=("delta_projection", "max"),
+            min_delta_projection=("delta_projection", "min"),
+            positive_delta_frac=("delta_projection", lambda series: float((series > 0).mean())),
+        )
+        .sort_values("mean_delta_projection", ascending=False)
+        .reset_index(drop=True)
+    )
+    return summary
+
+
+def summarize_directional_head_intervention_effects(df: pd.DataFrame) -> pd.DataFrame:
+    working = df.copy()
+    pair_key = "__pair_key"
+    working[pair_key] = pd.Series(pd.NA, index=working.index, dtype="object")
+    if "pair_idx" in working.columns:
+        pair_idx_series = working["pair_idx"].where(pd.notna(working["pair_idx"]), pd.NA)
+        working[pair_key] = pair_idx_series.astype("string").astype("object")
+
+    if {"benign_filename", "malicious_filename"}.issubset(working.columns):
+        missing_mask = working[pair_key].isna()
+        working.loc[missing_mask, pair_key] = (
+            working.loc[missing_mask, "benign_filename"].astype(str)
+            + "::"
+            + working.loc[missing_mask, "malicious_filename"].astype(str)
+        )
+
+    summary = (
+        working.groupby(["layer", "head"], as_index=False)
+        .agg(
+            pair_count=(pair_key, "nunique"),
+            mean_base_projection=("base_projection", "mean"),
+            mean_intervened_projection=("intervened_projection", "mean"),
+            mean_projection_delta=("projection_delta", "mean"),
+            max_projection_delta=("projection_delta", "max"),
+            min_projection_delta=("projection_delta", "min"),
+            positive_projection_delta_frac=("projection_delta", lambda series: float((series > 0).mean())),
+        )
+        .sort_values("mean_projection_delta", ascending=False)
+        .reset_index(drop=True)
+    )
+    return summary
+
+
+def summarize_residual_direction_interventions(df: pd.DataFrame) -> pd.DataFrame:
+    working = df.copy()
+    pair_key = "__pair_key"
+    working[pair_key] = pd.Series(pd.NA, index=working.index, dtype="object")
+    if "pair_idx" in working.columns:
+        pair_idx_series = working["pair_idx"].where(pd.notna(working["pair_idx"]), pd.NA)
+        working[pair_key] = pair_idx_series.astype("string").astype("object")
+
+    if {"benign_filename", "malicious_filename"}.issubset(working.columns):
+        missing_mask = working[pair_key].isna()
+        working.loc[missing_mask, pair_key] = (
+            working.loc[missing_mask, "benign_filename"].astype(str)
+            + "::"
+            + working.loc[missing_mask, "malicious_filename"].astype(str)
+        )
+
+    summary = (
+        working.groupby("intervention_label", as_index=False)
+        .agg(
+            pair_count=(pair_key, "nunique"),
+            mean_base_logit_diff=("base_logit_diff", "mean"),
+            mean_intervened_logit_diff=("intervened_logit_diff", "mean"),
+            mean_logit_delta=("logit_delta", "mean"),
+            flip_rate=("flip_to_benign", "mean"),
+            mean_base_projection=("base_projection", "mean"),
+            mean_intervened_projection=("intervened_projection", "mean"),
+            mean_projection_delta=("projection_delta", "mean"),
+            positive_projection_delta_frac=("projection_delta", lambda series: float((series > 0).mean())),
+        )
+        .sort_values("mean_logit_delta")
         .reset_index(drop=True)
     )
     return summary
@@ -1883,7 +2782,8 @@ def cmd_batch_causal(args: argparse.Namespace) -> int:
     patch_rows: List[Dict[str, object]] = []
     ablation_rows: List[Dict[str, object]] = []
 
-    for pair_idx, (benign_row, malicious_row) in enumerate(pairs, start=1):
+    for fallback_idx, (benign_row, malicious_row) in enumerate(pairs, start=1):
+        pair_idx = resolve_pair_idx(benign_row, malicious_row, fallback_idx=fallback_idx)
         pair_hf_model = hf_model
         pair_tokenizer = tokenizer
         pair_model = model
@@ -2021,6 +2921,1822 @@ def cmd_batch_causal(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_batch_layer_ablation(args: argparse.Namespace) -> int:
+    require_transformer_lens()
+
+    manifest = pd.read_csv(args.manifest)
+    pairs = select_short_pairs(
+        manifest,
+        num_pairs=args.num_pairs,
+        malicious_requires_indicator=not args.allow_zero_indicator_malicious,
+    )
+    if not pairs:
+        raise RuntimeError("No eligible benign/malicious pairs found for batch layer ablation.")
+
+    hf_model, tokenizer, device = load_hf_model_and_tokenizer(
+        args.model_name,
+        device=args.device,
+        torch_dtype=args.torch_dtype,
+    )
+    model = build_hooked_transformer(
+        hf_model,
+        tokenizer,
+        device=device,
+        torch_dtype=args.torch_dtype,
+        template_name=args.template_name,
+        first_n_layers=args.first_n_layers,
+        use_attn_result=False,
+    )
+    model.eval()
+
+    allow_token_id = tokenizer.encode(" ALLOW", add_special_tokens=False)[0]
+    block_token_id = tokenizer.encode(" BLOCK", add_special_tokens=False)[0]
+    components = tuple(component.strip() for component in args.components.split(",") if component.strip())
+
+    layer_rows: List[Dict[str, object]] = []
+    for fallback_idx, (benign_row, malicious_row) in enumerate(pairs, start=1):
+        pair_idx = resolve_pair_idx(benign_row, malicious_row, fallback_idx=fallback_idx)
+        malicious_prompt = make_prompt(malicious_row["content"])
+        malicious_tokens = model.to_tokens(malicious_prompt)
+
+        with torch.inference_mode():
+            malicious_logits = model(malicious_tokens, return_type="logits")
+        base_malicious_diff = logit_diff_from_logits(malicious_logits, allow_token_id, block_token_id)
+
+        pair_df = run_layer_component_ablation(
+            model,
+            tokens=malicious_tokens,
+            base_logit_diff=base_malicious_diff,
+            allow_token_id=allow_token_id,
+            block_token_id=block_token_id,
+            components=components,
+        )
+        pair_df["pair_idx"] = pair_idx
+        pair_df["pair_indicator"] = benign_row.get("pair_indicator", malicious_row.get("pair_indicator"))
+        pair_df["benign_filename"] = benign_row["filename"]
+        pair_df["malicious_filename"] = malicious_row["filename"]
+        pair_df["flip_to_benign"] = pair_df["ablated_logit_diff"] <= 0
+        layer_rows.extend(pair_df.to_dict(orient="records"))
+
+        del malicious_logits
+        del malicious_tokens
+        maybe_clear_device_cache(device)
+
+    layer_df = pd.DataFrame(layer_rows)
+    summary_df = summarize_layer_component_effects(layer_df)
+
+    output_prefix = Path(args.output_prefix or (DEFAULT_ARTIFACT_DIR / "batch_layer_ablation"))
+    output_prefix.parent.mkdir(parents=True, exist_ok=True)
+    per_pair_path = output_prefix.with_name(output_prefix.name + "_per_pair.csv")
+    summary_path = output_prefix.with_name(output_prefix.name + "_summary.csv")
+    metadata_path = output_prefix.with_name(output_prefix.name + "_metadata.json")
+
+    layer_df.to_csv(per_pair_path, index=False)
+    summary_df.to_csv(summary_path, index=False)
+    write_json(
+        metadata_path,
+        {
+            "components": list(components),
+            "num_pairs": len(pairs),
+            "first_n_layers": args.first_n_layers,
+            "device": device,
+            "template_name": args.template_name,
+            "per_pair_csv": str(per_pair_path),
+            "summary_csv": str(summary_path),
+        },
+    )
+
+    print(
+        json.dumps(
+            {
+                "metadata": str(metadata_path),
+                "summary_csv": str(summary_path),
+                "top_effect": summary_df.iloc[0].to_dict() if len(summary_df) else None,
+                "num_pairs": len(pairs),
+            },
+            indent=2,
+            sort_keys=True,
+        )
+    )
+    return 0
+
+
+def cmd_batch_neuron_discover(args: argparse.Namespace) -> int:
+    require_transformer_lens()
+
+    manifest = pd.read_csv(args.manifest)
+    pairs = select_short_pairs(
+        manifest,
+        num_pairs=args.num_pairs,
+        malicious_requires_indicator=not args.allow_zero_indicator_malicious,
+    )
+    if not pairs:
+        raise RuntimeError("No eligible benign/malicious pairs found for batch neuron discovery.")
+
+    target_layers = parse_int_list(args.layers)
+    hf_model, tokenizer, device = load_hf_model_and_tokenizer(
+        args.model_name,
+        device=args.device,
+        torch_dtype=args.torch_dtype,
+    )
+    model = build_hooked_transformer(
+        hf_model,
+        tokenizer,
+        device=device,
+        torch_dtype=args.torch_dtype,
+        template_name=args.template_name,
+        first_n_layers=args.first_n_layers,
+        use_attn_result=False,
+    )
+    model.eval()
+
+    allow_token_id = tokenizer.encode(" ALLOW", add_special_tokens=False)[0]
+    block_token_id = tokenizer.encode(" BLOCK", add_special_tokens=False)[0]
+    logit_dir = (model.W_U[:, block_token_id] - model.W_U[:, allow_token_id]).detach()
+
+    rows: List[Dict[str, object]] = []
+    for fallback_idx, (benign_row, malicious_row) in enumerate(pairs, start=1):
+        pair_idx = resolve_pair_idx(benign_row, malicious_row, fallback_idx=fallback_idx)
+        benign_prompt = make_prompt(benign_row["content"])
+        malicious_prompt = make_prompt(malicious_row["content"])
+        benign_tokens = model.to_tokens(benign_prompt)
+        malicious_tokens = model.to_tokens(malicious_prompt)
+
+        with torch.inference_mode():
+            _, benign_cache = model.run_with_cache(benign_tokens, return_type="logits")
+            _, malicious_cache = model.run_with_cache(malicious_tokens, return_type="logits")
+
+        for layer in target_layers:
+            benign_post = benign_cache[f"blocks.{layer}.mlp.hook_post"][0, -1].detach().clone()
+            malicious_post = malicious_cache[f"blocks.{layer}.mlp.hook_post"][0, -1].detach().clone()
+            delta_post = malicious_post - benign_post
+            neuron_logit_weights = torch.matmul(model.blocks[layer].mlp.W_out, logit_dir).detach().clone()
+            contribution_delta = delta_post * neuron_logit_weights
+            malicious_contribution = malicious_post * neuron_logit_weights
+
+            topk = min(args.topk_per_layer, int(contribution_delta.shape[0]))
+            top_values, top_indices = torch.topk(contribution_delta, k=topk)
+            for score, neuron in zip(top_values.tolist(), top_indices.tolist()):
+                rows.append(
+                    {
+                        "pair_idx": pair_idx,
+                        "pair_indicator": benign_row.get("pair_indicator", malicious_row.get("pair_indicator")),
+                        "layer": layer,
+                        "neuron": int(neuron),
+                        "contribution_delta": float(score),
+                        "malicious_contribution": float(malicious_contribution[neuron].item()),
+                        "activation_delta": float(delta_post[neuron].item()),
+                        "benign_filename": benign_row["filename"],
+                        "malicious_filename": malicious_row["filename"],
+                    }
+                )
+
+        del benign_cache
+        del malicious_cache
+        del benign_tokens
+        del malicious_tokens
+        maybe_clear_device_cache(device)
+
+    per_pair_df = pd.DataFrame(rows)
+    summary_df = (
+        per_pair_df.groupby(["layer", "neuron"], as_index=False)
+        .agg(
+            pair_count=("pair_idx", "nunique"),
+            mean_contribution_delta=("contribution_delta", "mean"),
+            max_contribution_delta=("contribution_delta", "max"),
+            mean_malicious_contribution=("malicious_contribution", "mean"),
+            mean_activation_delta=("activation_delta", "mean"),
+        )
+        .sort_values(["layer", "mean_contribution_delta"], ascending=[True, False])
+        .reset_index(drop=True)
+    )
+
+    output_prefix = Path(args.output_prefix or (DEFAULT_ARTIFACT_DIR / "batch_neuron_discovery"))
+    output_prefix.parent.mkdir(parents=True, exist_ok=True)
+    per_pair_path = output_prefix.with_name(output_prefix.name + "_per_pair.csv")
+    summary_path = output_prefix.with_name(output_prefix.name + "_summary.csv")
+    metadata_path = output_prefix.with_name(output_prefix.name + "_metadata.json")
+    per_pair_df.to_csv(per_pair_path, index=False)
+    summary_df.to_csv(summary_path, index=False)
+    write_json(
+        metadata_path,
+        {
+            "layers": target_layers,
+            "num_pairs": len(pairs),
+            "topk_per_layer": args.topk_per_layer,
+            "first_n_layers": args.first_n_layers,
+            "device": device,
+            "template_name": args.template_name,
+            "per_pair_csv": str(per_pair_path),
+            "summary_csv": str(summary_path),
+        },
+    )
+
+    print(
+        json.dumps(
+            {
+                "metadata": str(metadata_path),
+                "summary_csv": str(summary_path),
+                "top_rows": summary_df.groupby("layer").head(min(args.topk_per_layer, 5)).to_dict(orient="records"),
+                "num_pairs": len(pairs),
+            },
+            indent=2,
+            sort_keys=True,
+        )
+    )
+    return 0
+
+
+def cmd_batch_neuron_ablation(args: argparse.Namespace) -> int:
+    require_transformer_lens()
+
+    manifest = pd.read_csv(args.manifest)
+    pairs = select_short_pairs(
+        manifest,
+        num_pairs=args.num_pairs,
+        malicious_requires_indicator=not args.allow_zero_indicator_malicious,
+    )
+    if not pairs:
+        raise RuntimeError("No eligible benign/malicious pairs found for batch neuron ablation.")
+
+    if args.neurons:
+        neuron_specs = parse_neuron_list(args.neurons)
+    elif args.neuron_summary:
+        summary_df = pd.read_csv(args.neuron_summary)
+        neuron_specs = []
+        for layer in sorted(summary_df["layer"].unique().tolist()):
+            layer_df = summary_df[summary_df["layer"] == layer].sort_values(
+                "mean_contribution_delta", ascending=False
+            )
+            for _, row in layer_df.head(args.top_k_per_layer).iterrows():
+                neuron_specs.append((int(row["layer"]), int(row["neuron"])))
+    else:
+        raise ValueError("Provide either --neurons or --neuron-summary.")
+
+    grouped_neurons: Dict[int, List[int]] = {}
+    for layer, neuron in neuron_specs:
+        grouped_neurons.setdefault(layer, []).append(neuron)
+
+    hf_model, tokenizer, device = load_hf_model_and_tokenizer(
+        args.model_name,
+        device=args.device,
+        torch_dtype=args.torch_dtype,
+    )
+    model = build_hooked_transformer(
+        hf_model,
+        tokenizer,
+        device=device,
+        torch_dtype=args.torch_dtype,
+        template_name=args.template_name,
+        first_n_layers=args.first_n_layers,
+        use_attn_result=False,
+    )
+    model.eval()
+
+    allow_token_id = tokenizer.encode(" ALLOW", add_special_tokens=False)[0]
+    block_token_id = tokenizer.encode(" BLOCK", add_special_tokens=False)[0]
+
+    rows: List[Dict[str, object]] = []
+    for fallback_idx, (benign_row, malicious_row) in enumerate(pairs, start=1):
+        pair_idx = resolve_pair_idx(benign_row, malicious_row, fallback_idx=fallback_idx)
+        malicious_prompt = make_prompt(malicious_row["content"])
+        malicious_tokens = model.to_tokens(malicious_prompt)
+
+        with torch.inference_mode():
+            malicious_logits = model(malicious_tokens, return_type="logits")
+        base_malicious_diff = logit_diff_from_logits(malicious_logits, allow_token_id, block_token_id)
+
+        for layer, neurons in grouped_neurons.items():
+            pair_df = run_neuron_ablation(
+                model,
+                tokens=malicious_tokens,
+                layer=layer,
+                neurons=neurons,
+                base_logit_diff=base_malicious_diff,
+                allow_token_id=allow_token_id,
+                block_token_id=block_token_id,
+            )
+            pair_df["pair_idx"] = pair_idx
+            pair_df["pair_indicator"] = benign_row.get("pair_indicator", malicious_row.get("pair_indicator"))
+            pair_df["benign_filename"] = benign_row["filename"]
+            pair_df["malicious_filename"] = malicious_row["filename"]
+            pair_df["flip_to_benign"] = pair_df["ablated_logit_diff"] <= 0
+            rows.extend(pair_df.to_dict(orient="records"))
+
+        del malicious_logits
+        del malicious_tokens
+        maybe_clear_device_cache(device)
+
+    per_pair_df = pd.DataFrame(rows)
+    summary_df = summarize_neuron_effects(per_pair_df)
+
+    output_prefix = Path(args.output_prefix or (DEFAULT_ARTIFACT_DIR / "batch_neuron_ablation"))
+    output_prefix.parent.mkdir(parents=True, exist_ok=True)
+    per_pair_path = output_prefix.with_name(output_prefix.name + "_per_pair.csv")
+    summary_path = output_prefix.with_name(output_prefix.name + "_summary.csv")
+    metadata_path = output_prefix.with_name(output_prefix.name + "_metadata.json")
+    per_pair_df.to_csv(per_pair_path, index=False)
+    summary_df.to_csv(summary_path, index=False)
+    write_json(
+        metadata_path,
+        {
+            "neurons": [{"layer": layer, "neuron": neuron} for layer, neuron in neuron_specs],
+            "num_pairs": len(pairs),
+            "first_n_layers": args.first_n_layers,
+            "device": device,
+            "template_name": args.template_name,
+            "per_pair_csv": str(per_pair_path),
+            "summary_csv": str(summary_path),
+        },
+    )
+
+    print(
+        json.dumps(
+            {
+                "metadata": str(metadata_path),
+                "summary_csv": str(summary_path),
+                "top_rows": summary_df.groupby("layer").head(min(args.top_k_per_layer, 5)).to_dict(orient="records"),
+                "num_pairs": len(pairs),
+            },
+            indent=2,
+            sort_keys=True,
+        )
+    )
+    return 0
+
+
+def cmd_batch_neuron_group_ablation(args: argparse.Namespace) -> int:
+    require_transformer_lens()
+
+    manifest = pd.read_csv(args.manifest)
+    pairs = select_short_pairs(
+        manifest,
+        num_pairs=args.num_pairs,
+        malicious_requires_indicator=not args.allow_zero_indicator_malicious,
+    )
+    if not pairs:
+        raise RuntimeError("No eligible benign/malicious pairs found for grouped neuron ablation.")
+
+    neuron_summary = pd.read_csv(args.neuron_summary)
+    target_layers = parse_int_list(args.layers)
+    group_sizes = parse_int_list(args.group_sizes)
+
+    neurons_by_layer: Dict[int, Dict[int, List[int]]] = {}
+    for layer in target_layers:
+        layer_df = neuron_summary[neuron_summary["layer"] == layer].sort_values(
+            ["pair_count", "mean_contribution_delta"], ascending=[False, False]
+        )
+        if layer_df.empty:
+            raise ValueError(f"No neuron discovery rows found for layer {layer}.")
+        neurons_by_layer[layer] = {}
+        ordered = layer_df["neuron"].astype(int).tolist()
+        for group_size in group_sizes:
+            if len(ordered) < group_size:
+                raise ValueError(f"Layer {layer} has only {len(ordered)} discovered neurons, need {group_size}.")
+            neurons_by_layer[layer][group_size] = ordered[:group_size]
+
+    hf_model, tokenizer, device = load_hf_model_and_tokenizer(
+        args.model_name,
+        device=args.device,
+        torch_dtype=args.torch_dtype,
+    )
+    model = build_hooked_transformer(
+        hf_model,
+        tokenizer,
+        device=device,
+        torch_dtype=args.torch_dtype,
+        template_name=args.template_name,
+        first_n_layers=args.first_n_layers,
+        use_attn_result=False,
+    )
+    model.eval()
+
+    allow_token_id = tokenizer.encode(" ALLOW", add_special_tokens=False)[0]
+    block_token_id = tokenizer.encode(" BLOCK", add_special_tokens=False)[0]
+
+    rows: List[Dict[str, object]] = []
+    for fallback_idx, (benign_row, malicious_row) in enumerate(pairs, start=1):
+        pair_idx = resolve_pair_idx(benign_row, malicious_row, fallback_idx=fallback_idx)
+        malicious_prompt = make_prompt(malicious_row["content"])
+        malicious_tokens = model.to_tokens(malicious_prompt)
+
+        with torch.inference_mode():
+            malicious_logits = model(malicious_tokens, return_type="logits")
+        base_malicious_diff = logit_diff_from_logits(malicious_logits, allow_token_id, block_token_id)
+
+        for layer in target_layers:
+            for group_size in group_sizes:
+                result = run_neuron_group_ablation(
+                    model,
+                    tokens=malicious_tokens,
+                    layer=layer,
+                    neurons=neurons_by_layer[layer][group_size],
+                    base_logit_diff=base_malicious_diff,
+                    allow_token_id=allow_token_id,
+                    block_token_id=block_token_id,
+                )
+                result["pair_idx"] = pair_idx
+                result["pair_indicator"] = benign_row.get("pair_indicator", malicious_row.get("pair_indicator"))
+                result["benign_filename"] = benign_row["filename"]
+                result["malicious_filename"] = malicious_row["filename"]
+                result["flip_to_benign"] = result["ablated_logit_diff"] <= 0
+                rows.append(result)
+
+        del malicious_logits
+        del malicious_tokens
+        maybe_clear_device_cache(device)
+
+    per_pair_df = pd.DataFrame(rows)
+    summary_df = summarize_neuron_group_effects(per_pair_df)
+
+    output_prefix = Path(args.output_prefix or (DEFAULT_ARTIFACT_DIR / "batch_neuron_group_ablation"))
+    output_prefix.parent.mkdir(parents=True, exist_ok=True)
+    per_pair_path = output_prefix.with_name(output_prefix.name + "_per_pair.csv")
+    summary_path = output_prefix.with_name(output_prefix.name + "_summary.csv")
+    metadata_path = output_prefix.with_name(output_prefix.name + "_metadata.json")
+    per_pair_df.to_csv(per_pair_path, index=False)
+    summary_df.to_csv(summary_path, index=False)
+    write_json(
+        metadata_path,
+        {
+            "layers": target_layers,
+            "group_sizes": group_sizes,
+            "num_pairs": len(pairs),
+            "first_n_layers": args.first_n_layers,
+            "device": device,
+            "template_name": args.template_name,
+            "per_pair_csv": str(per_pair_path),
+            "summary_csv": str(summary_path),
+        },
+    )
+
+    print(
+        json.dumps(
+            {
+                "metadata": str(metadata_path),
+                "summary_csv": str(summary_path),
+                "rows": summary_df.to_dict(orient="records"),
+                "num_pairs": len(pairs),
+            },
+            indent=2,
+            sort_keys=True,
+        )
+    )
+    return 0
+
+
+def cmd_batch_layer_patching(args: argparse.Namespace) -> int:
+    require_transformer_lens()
+
+    manifest = pd.read_csv(args.manifest)
+    pairs = select_short_pairs(
+        manifest,
+        num_pairs=args.num_pairs,
+        malicious_requires_indicator=not args.allow_zero_indicator_malicious,
+    )
+    if not pairs:
+        raise RuntimeError("No eligible benign/malicious pairs found for layer patching.")
+
+    target_layers = parse_int_list(args.layers)
+    components = tuple(component.strip() for component in args.components.split(",") if component.strip())
+    hf_model, tokenizer, device = load_hf_model_and_tokenizer(
+        args.model_name,
+        device=args.device,
+        torch_dtype=args.torch_dtype,
+    )
+    model = build_hooked_transformer(
+        hf_model,
+        tokenizer,
+        device=device,
+        torch_dtype=args.torch_dtype,
+        template_name=args.template_name,
+        first_n_layers=args.first_n_layers,
+        use_attn_result=False,
+    )
+    model.eval()
+
+    allow_token_id = tokenizer.encode(" ALLOW", add_special_tokens=False)[0]
+    block_token_id = tokenizer.encode(" BLOCK", add_special_tokens=False)[0]
+
+    rows: List[Dict[str, object]] = []
+    for fallback_idx, (benign_row, malicious_row) in enumerate(pairs, start=1):
+        pair_idx = resolve_pair_idx(benign_row, malicious_row, fallback_idx=fallback_idx)
+        benign_prompt = make_prompt(benign_row["content"])
+        malicious_prompt = make_prompt(malicious_row["content"])
+        benign_tokens = model.to_tokens(benign_prompt)
+        malicious_tokens = model.to_tokens(malicious_prompt)
+
+        with torch.inference_mode():
+            _, benign_cache = model.run_with_cache(benign_tokens, return_type="logits")
+            malicious_logits = model(malicious_tokens, return_type="logits")
+        base_malicious_diff = logit_diff_from_logits(malicious_logits, allow_token_id, block_token_id)
+
+        pair_df = run_layer_component_patching(
+            model,
+            corrupted_tokens=malicious_tokens,
+            clean_cache=benign_cache,
+            layers=target_layers,
+            components=components,
+            base_logit_diff=base_malicious_diff,
+            allow_token_id=allow_token_id,
+            block_token_id=block_token_id,
+        )
+        pair_df["pair_idx"] = pair_idx
+        pair_df["pair_indicator"] = benign_row.get("pair_indicator", malicious_row.get("pair_indicator"))
+        pair_df["benign_filename"] = benign_row["filename"]
+        pair_df["malicious_filename"] = malicious_row["filename"]
+        pair_df["flip_to_benign"] = pair_df["patched_logit_diff"] <= 0
+        rows.extend(pair_df.to_dict(orient="records"))
+
+        del benign_cache
+        del malicious_logits
+        del benign_tokens
+        del malicious_tokens
+        maybe_clear_device_cache(device)
+
+    per_pair_df = pd.DataFrame(rows)
+    summary_df = summarize_layer_component_patch_effects(per_pair_df)
+
+    output_prefix = Path(args.output_prefix or (DEFAULT_ARTIFACT_DIR / "batch_layer_patching"))
+    output_prefix.parent.mkdir(parents=True, exist_ok=True)
+    per_pair_path = output_prefix.with_name(output_prefix.name + "_per_pair.csv")
+    summary_path = output_prefix.with_name(output_prefix.name + "_summary.csv")
+    metadata_path = output_prefix.with_name(output_prefix.name + "_metadata.json")
+    per_pair_df.to_csv(per_pair_path, index=False)
+    summary_df.to_csv(summary_path, index=False)
+    write_json(
+        metadata_path,
+        {
+            "layers": target_layers,
+            "components": list(components),
+            "num_pairs": len(pairs),
+            "first_n_layers": args.first_n_layers,
+            "device": device,
+            "template_name": args.template_name,
+            "per_pair_csv": str(per_pair_path),
+            "summary_csv": str(summary_path),
+        },
+    )
+
+    print(
+        json.dumps(
+            {
+                "metadata": str(metadata_path),
+                "summary_csv": str(summary_path),
+                "rows": summary_df.to_dict(orient="records"),
+                "num_pairs": len(pairs),
+            },
+            indent=2,
+            sort_keys=True,
+        )
+    )
+    return 0
+
+
+def cmd_batch_path_patching(args: argparse.Namespace) -> int:
+    require_transformer_lens()
+
+    manifest = pd.read_csv(args.manifest)
+    pairs = select_short_pairs(
+        manifest,
+        num_pairs=args.num_pairs,
+        malicious_requires_indicator=not args.allow_zero_indicator_malicious,
+    )
+    if not pairs:
+        raise RuntimeError("No eligible benign/malicious pairs found for path patching.")
+
+    patch_variants: List[Dict[str, object]] = []
+    if args.heads:
+        patch_variants.append({"heads": parse_head_list(args.heads), "components": [], "residuals": []})
+    if args.components:
+        patch_variants.append({"heads": [], "components": parse_layer_component_list(args.components), "residuals": []})
+    if args.residuals:
+        residual_specs = [(layer, args.resid_kind) for layer in parse_int_list(args.residuals)]
+        patch_variants.append({"heads": [], "components": [], "residuals": residual_specs})
+    if args.combined:
+        patch_variants.append(
+            {
+                "heads": parse_head_list(args.heads) if args.heads else [],
+                "components": parse_layer_component_list(args.components) if args.components else [],
+                "residuals": [(layer, args.resid_kind) for layer in parse_int_list(args.residuals)] if args.residuals else [],
+            }
+        )
+
+    if not patch_variants:
+        raise ValueError("Provide at least one of --heads, --components, --residuals, or --combined.")
+
+    hf_model, tokenizer, device = load_hf_model_and_tokenizer(
+        args.model_name,
+        device=args.device,
+        torch_dtype=args.torch_dtype,
+    )
+    model = build_hooked_transformer(
+        hf_model,
+        tokenizer,
+        device=device,
+        torch_dtype=args.torch_dtype,
+        template_name=args.template_name,
+        first_n_layers=args.first_n_layers,
+        use_attn_result=False,
+    )
+    model.eval()
+
+    allow_token_id = tokenizer.encode(" ALLOW", add_special_tokens=False)[0]
+    block_token_id = tokenizer.encode(" BLOCK", add_special_tokens=False)[0]
+
+    rows: List[Dict[str, object]] = []
+    for fallback_idx, (benign_row, malicious_row) in enumerate(pairs, start=1):
+        pair_idx = resolve_pair_idx(benign_row, malicious_row, fallback_idx=fallback_idx)
+        benign_prompt = make_prompt(benign_row["content"])
+        malicious_prompt = make_prompt(malicious_row["content"])
+        benign_tokens = model.to_tokens(benign_prompt)
+        malicious_tokens = model.to_tokens(malicious_prompt)
+
+        with torch.inference_mode():
+            _, benign_cache = model.run_with_cache(benign_tokens, return_type="logits")
+            malicious_logits = model(malicious_tokens, return_type="logits")
+        base_malicious_diff = logit_diff_from_logits(malicious_logits, allow_token_id, block_token_id)
+
+        for variant in patch_variants:
+            result = run_multi_path_patching(
+                model,
+                corrupted_tokens=malicious_tokens,
+                clean_cache=benign_cache,
+                base_logit_diff=base_malicious_diff,
+                allow_token_id=allow_token_id,
+                block_token_id=block_token_id,
+                head_specs=variant["heads"],
+                component_specs=variant["components"],
+                residual_specs=variant["residuals"],
+            )
+            result["pair_idx"] = pair_idx
+            result["pair_indicator"] = benign_row.get("pair_indicator", malicious_row.get("pair_indicator"))
+            result["benign_filename"] = benign_row["filename"]
+            result["malicious_filename"] = malicious_row["filename"]
+            result["flip_to_benign"] = result["patched_logit_diff"] <= 0
+            rows.append(result)
+
+        del benign_cache
+        del malicious_logits
+        del benign_tokens
+        del malicious_tokens
+        maybe_clear_device_cache(device)
+
+    per_pair_df = pd.DataFrame(rows)
+    summary_df = summarize_path_patch_effects(per_pair_df)
+
+    output_prefix = Path(args.output_prefix or (DEFAULT_ARTIFACT_DIR / "batch_path_patching"))
+    output_prefix.parent.mkdir(parents=True, exist_ok=True)
+    per_pair_path = output_prefix.with_name(output_prefix.name + "_per_pair.csv")
+    summary_path = output_prefix.with_name(output_prefix.name + "_summary.csv")
+    metadata_path = output_prefix.with_name(output_prefix.name + "_metadata.json")
+    per_pair_df.to_csv(per_pair_path, index=False)
+    summary_df.to_csv(summary_path, index=False)
+    write_json(
+        metadata_path,
+        {
+            "heads": args.heads,
+            "components": args.components,
+            "residuals": args.residuals,
+            "resid_kind": args.resid_kind,
+            "combined": bool(args.combined),
+            "num_pairs": len(pairs),
+            "first_n_layers": args.first_n_layers,
+            "device": device,
+            "template_name": args.template_name,
+            "per_pair_csv": str(per_pair_path),
+            "summary_csv": str(summary_path),
+        },
+    )
+
+    print(
+        json.dumps(
+            {
+                "metadata": str(metadata_path),
+                "summary_csv": str(summary_path),
+                "rows": summary_df.to_dict(orient="records"),
+                "num_pairs": len(pairs),
+            },
+            indent=2,
+            sort_keys=True,
+        )
+    )
+    return 0
+
+
+def cmd_discover_residual_subspace(args: argparse.Namespace) -> int:
+    require_transformer_lens()
+
+    manifest = pd.read_csv(args.manifest)
+    pairs = select_short_pairs(
+        manifest,
+        num_pairs=args.num_pairs,
+        malicious_requires_indicator=not args.allow_zero_indicator_malicious,
+    )
+    if not pairs:
+        raise RuntimeError("No eligible benign/malicious pairs found for residual subspace discovery.")
+
+    hf_model, tokenizer, device = load_hf_model_and_tokenizer(
+        args.model_name,
+        device=args.device,
+        torch_dtype=args.torch_dtype,
+    )
+    model = build_hooked_transformer(
+        hf_model,
+        tokenizer,
+        device=device,
+        torch_dtype=args.torch_dtype,
+        template_name=args.template_name,
+        first_n_layers=args.first_n_layers,
+        use_attn_result=False,
+    )
+    model.eval()
+
+    hook_name = build_residual_hook_name(args.layer, args.resid_kind)
+    delta_rows: List[torch.Tensor] = []
+    pair_rows: List[Dict[str, object]] = []
+    for fallback_idx, (benign_row, malicious_row) in enumerate(pairs, start=1):
+        pair_idx = resolve_pair_idx(benign_row, malicious_row, fallback_idx=fallback_idx)
+        benign_tokens = model.to_tokens(make_prompt(benign_row["content"]))
+        malicious_tokens = model.to_tokens(make_prompt(malicious_row["content"]))
+
+        with torch.inference_mode():
+            _, benign_cache = model.run_with_cache(benign_tokens, return_type="logits")
+            _, malicious_cache = model.run_with_cache(malicious_tokens, return_type="logits")
+
+        benign_vec = benign_cache[hook_name][0, -1, :].detach().clone().cpu()
+        malicious_vec = malicious_cache[hook_name][0, -1, :].detach().clone().cpu()
+        delta_vec = malicious_vec - benign_vec
+        delta_rows.append(delta_vec)
+        pair_rows.append(
+            {
+                "pair_idx": pair_idx,
+                "pair_indicator": benign_row.get("pair_indicator", malicious_row.get("pair_indicator")),
+                "benign_filename": benign_row["filename"],
+                "malicious_filename": malicious_row["filename"],
+                "delta_norm": float(delta_vec.norm().item()),
+            }
+        )
+
+        del benign_cache
+        del malicious_cache
+        del benign_tokens
+        del malicious_tokens
+        maybe_clear_device_cache(device)
+
+    delta_tensor = torch.stack(delta_rows, dim=0)
+    basis, explained = compute_residual_subspace(delta_tensor, max_rank=args.max_rank)
+
+    output_prefix = Path(args.output_prefix or (DEFAULT_ARTIFACT_DIR / "residual_subspace"))
+    output_prefix.parent.mkdir(parents=True, exist_ok=True)
+    basis_path = output_prefix.with_name(output_prefix.name + "_basis.pt")
+    pairs_path = output_prefix.with_name(output_prefix.name + "_pairs.csv")
+    metadata_path = output_prefix.with_name(output_prefix.name + "_metadata.json")
+    torch.save(
+        {
+            "basis": basis,
+            "layer": args.layer,
+            "resid_kind": args.resid_kind,
+            "explained_cumulative": explained,
+        },
+        basis_path,
+    )
+    pd.DataFrame(pair_rows).to_csv(pairs_path, index=False)
+    write_json(
+        metadata_path,
+        {
+            "layer": args.layer,
+            "resid_kind": args.resid_kind,
+            "num_pairs": len(pairs),
+            "max_rank": args.max_rank,
+            "explained_cumulative": explained,
+            "basis_path": str(basis_path),
+            "pairs_csv": str(pairs_path),
+            "device": device,
+            "template_name": args.template_name,
+        },
+    )
+
+    print(
+        json.dumps(
+            {
+                "metadata": str(metadata_path),
+                "basis_path": str(basis_path),
+                "pairs_csv": str(pairs_path),
+                "explained_cumulative": explained,
+                "num_pairs": len(pairs),
+            },
+            indent=2,
+            sort_keys=True,
+        )
+    )
+    return 0
+
+
+def cmd_batch_residual_subspace_patching(args: argparse.Namespace) -> int:
+    require_transformer_lens()
+
+    manifest = pd.read_csv(args.manifest)
+    pairs = select_short_pairs(
+        manifest,
+        num_pairs=args.num_pairs,
+        malicious_requires_indicator=not args.allow_zero_indicator_malicious,
+    )
+    if not pairs:
+        raise RuntimeError("No eligible benign/malicious pairs found for residual subspace patching.")
+
+    bundle = torch.load(args.basis_path, map_location="cpu")
+    basis = bundle["basis"].detach().cpu()
+    layer = int(bundle["layer"])
+    resid_kind = str(bundle["resid_kind"])
+    subspace_dims = parse_int_list(args.subspace_dims)
+    max_dim = basis.shape[1]
+    for subspace_dim in subspace_dims:
+        if subspace_dim > max_dim:
+            raise ValueError(f"Requested subspace dim {subspace_dim} exceeds basis rank {max_dim}.")
+
+    hf_model, tokenizer, device = load_hf_model_and_tokenizer(
+        args.model_name,
+        device=args.device,
+        torch_dtype=args.torch_dtype,
+    )
+    model = build_hooked_transformer(
+        hf_model,
+        tokenizer,
+        device=device,
+        torch_dtype=args.torch_dtype,
+        template_name=args.template_name,
+        first_n_layers=args.first_n_layers,
+        use_attn_result=False,
+    )
+    model.eval()
+
+    allow_token_id = tokenizer.encode(" ALLOW", add_special_tokens=False)[0]
+    block_token_id = tokenizer.encode(" BLOCK", add_special_tokens=False)[0]
+    basis = basis.to(device=device, dtype=model.cfg.dtype)
+
+    rows: List[Dict[str, object]] = []
+    for fallback_idx, (benign_row, malicious_row) in enumerate(pairs, start=1):
+        pair_idx = resolve_pair_idx(benign_row, malicious_row, fallback_idx=fallback_idx)
+        benign_tokens = model.to_tokens(make_prompt(benign_row["content"]))
+        malicious_tokens = model.to_tokens(make_prompt(malicious_row["content"]))
+
+        with torch.inference_mode():
+            _, benign_cache = model.run_with_cache(benign_tokens, return_type="logits")
+            malicious_logits = model(malicious_tokens, return_type="logits")
+        base_malicious_diff = logit_diff_from_logits(malicious_logits, allow_token_id, block_token_id)
+
+        for subspace_dim in subspace_dims:
+            result = run_residual_subspace_patching(
+                model,
+                corrupted_tokens=malicious_tokens,
+                clean_cache=benign_cache,
+                layer=layer,
+                resid_kind=resid_kind,
+                basis=basis,
+                subspace_dim=subspace_dim,
+                base_logit_diff=base_malicious_diff,
+                allow_token_id=allow_token_id,
+                block_token_id=block_token_id,
+            )
+            result["pair_idx"] = pair_idx
+            result["pair_indicator"] = benign_row.get("pair_indicator", malicious_row.get("pair_indicator"))
+            result["benign_filename"] = benign_row["filename"]
+            result["malicious_filename"] = malicious_row["filename"]
+            result["flip_to_benign"] = result["patched_logit_diff"] <= 0
+            rows.append(result)
+
+        del benign_cache
+        del malicious_logits
+        del benign_tokens
+        del malicious_tokens
+        maybe_clear_device_cache(device)
+
+    per_pair_df = pd.DataFrame(rows)
+    summary_df = summarize_residual_subspace_patch_effects(per_pair_df)
+
+    output_prefix = Path(args.output_prefix or (DEFAULT_ARTIFACT_DIR / "residual_subspace_patching"))
+    output_prefix.parent.mkdir(parents=True, exist_ok=True)
+    per_pair_path = output_prefix.with_name(output_prefix.name + "_per_pair.csv")
+    summary_path = output_prefix.with_name(output_prefix.name + "_summary.csv")
+    metadata_path = output_prefix.with_name(output_prefix.name + "_metadata.json")
+    per_pair_df.to_csv(per_pair_path, index=False)
+    summary_df.to_csv(summary_path, index=False)
+    write_json(
+        metadata_path,
+        {
+            "basis_path": str(args.basis_path),
+            "layer": layer,
+            "resid_kind": resid_kind,
+            "subspace_dims": subspace_dims,
+            "num_pairs": len(pairs),
+            "device": device,
+            "template_name": args.template_name,
+            "per_pair_csv": str(per_pair_path),
+            "summary_csv": str(summary_path),
+        },
+    )
+
+    print(
+        json.dumps(
+            {
+                "metadata": str(metadata_path),
+                "summary_csv": str(summary_path),
+                "rows": summary_df.to_dict(orient="records"),
+                "num_pairs": len(pairs),
+            },
+            indent=2,
+            sort_keys=True,
+        )
+    )
+    return 0
+
+
+def cmd_discover_contrastive_residual_directions(args: argparse.Namespace) -> int:
+    require_transformer_lens()
+
+    manifest = pd.read_csv(args.manifest)
+    pairs = select_short_pairs(
+        manifest,
+        num_pairs=args.num_pairs,
+        malicious_requires_indicator=not args.allow_zero_indicator_malicious,
+    )
+    if not pairs:
+        raise RuntimeError("No eligible benign/malicious pairs found for contrastive residual discovery.")
+
+    hf_model, tokenizer, device = load_hf_model_and_tokenizer(
+        args.model_name,
+        device=args.device,
+        torch_dtype=args.torch_dtype,
+    )
+    model = build_hooked_transformer(
+        hf_model,
+        tokenizer,
+        device=device,
+        torch_dtype=args.torch_dtype,
+        template_name=args.template_name,
+        first_n_layers=args.first_n_layers,
+        use_attn_result=False,
+    )
+    model.eval()
+
+    allow_token_id = tokenizer.encode(" ALLOW", add_special_tokens=False)[0]
+    block_token_id = tokenizer.encode(" BLOCK", add_special_tokens=False)[0]
+    logit_dir = (model.W_U[:, block_token_id] - model.W_U[:, allow_token_id]).detach().cpu()
+
+    hook_name = build_residual_hook_name(args.layer, args.resid_kind)
+    delta_rows: List[torch.Tensor] = []
+    pair_rows: List[Dict[str, object]] = []
+    for fallback_idx, (benign_row, malicious_row) in enumerate(pairs, start=1):
+        pair_idx = resolve_pair_idx(benign_row, malicious_row, fallback_idx=fallback_idx)
+        benign_tokens = model.to_tokens(make_prompt(benign_row["content"]))
+        malicious_tokens = model.to_tokens(make_prompt(malicious_row["content"]))
+
+        with torch.inference_mode():
+            _, benign_cache = model.run_with_cache(benign_tokens, return_type="logits")
+            _, malicious_cache = model.run_with_cache(malicious_tokens, return_type="logits")
+
+        benign_vec = benign_cache[hook_name][0, -1, :].detach().clone().cpu()
+        malicious_vec = malicious_cache[hook_name][0, -1, :].detach().clone().cpu()
+        delta_vec = malicious_vec - benign_vec
+        delta_rows.append(delta_vec)
+        pair_rows.append(
+            {
+                "pair_idx": pair_idx,
+                "pair_indicator": benign_row.get("pair_indicator", malicious_row.get("pair_indicator")),
+                "benign_filename": benign_row["filename"],
+                "malicious_filename": malicious_row["filename"],
+                "delta_norm": float(delta_vec.norm().item()),
+            }
+        )
+
+        del benign_cache
+        del malicious_cache
+        del benign_tokens
+        del malicious_tokens
+        maybe_clear_device_cache(device)
+
+    delta_tensor = torch.stack(delta_rows, dim=0)
+    basis, labels, diagnostics = compute_contrastive_residual_basis(delta_tensor, logit_dir=logit_dir)
+
+    output_prefix = Path(args.output_prefix or (DEFAULT_ARTIFACT_DIR / "contrastive_residual_directions"))
+    output_prefix.parent.mkdir(parents=True, exist_ok=True)
+    basis_path = output_prefix.with_name(output_prefix.name + "_basis.pt")
+    pairs_path = output_prefix.with_name(output_prefix.name + "_pairs.csv")
+    metadata_path = output_prefix.with_name(output_prefix.name + "_metadata.json")
+    torch.save(
+        {
+            "basis": basis,
+            "basis_labels": labels,
+            "layer": args.layer,
+            "resid_kind": args.resid_kind,
+            "diagnostics": diagnostics,
+        },
+        basis_path,
+    )
+    pd.DataFrame(pair_rows).to_csv(pairs_path, index=False)
+    write_json(
+        metadata_path,
+        {
+            "layer": args.layer,
+            "resid_kind": args.resid_kind,
+            "num_pairs": len(pairs),
+            "basis_labels": labels,
+            "diagnostics": diagnostics,
+            "basis_path": str(basis_path),
+            "pairs_csv": str(pairs_path),
+            "device": device,
+            "template_name": args.template_name,
+        },
+    )
+
+    print(
+        json.dumps(
+            {
+                "metadata": str(metadata_path),
+                "basis_path": str(basis_path),
+                "pairs_csv": str(pairs_path),
+                "basis_labels": labels,
+                "diagnostics": diagnostics,
+                "num_pairs": len(pairs),
+            },
+            indent=2,
+            sort_keys=True,
+        )
+    )
+    return 0
+
+
+def cmd_batch_contrastive_residual_patching(args: argparse.Namespace) -> int:
+    require_transformer_lens()
+
+    manifest = pd.read_csv(args.manifest)
+    pairs = select_short_pairs(
+        manifest,
+        num_pairs=args.num_pairs,
+        malicious_requires_indicator=not args.allow_zero_indicator_malicious,
+    )
+    if not pairs:
+        raise RuntimeError("No eligible benign/malicious pairs found for contrastive residual patching.")
+
+    bundle = torch.load(args.basis_path, map_location="cpu")
+    basis = bundle["basis"].detach().cpu()
+    labels = list(bundle.get("basis_labels", [f"dir_{index}" for index in range(basis.shape[1])]))
+    layer = int(bundle["layer"])
+    resid_kind = str(bundle["resid_kind"])
+    if basis.shape[1] != len(labels):
+        raise ValueError("Contrastive basis labels do not match basis rank.")
+
+    hf_model, tokenizer, device = load_hf_model_and_tokenizer(
+        args.model_name,
+        device=args.device,
+        torch_dtype=args.torch_dtype,
+    )
+    model = build_hooked_transformer(
+        hf_model,
+        tokenizer,
+        device=device,
+        torch_dtype=args.torch_dtype,
+        template_name=args.template_name,
+        first_n_layers=args.first_n_layers,
+        use_attn_result=False,
+    )
+    model.eval()
+
+    allow_token_id = tokenizer.encode(" ALLOW", add_special_tokens=False)[0]
+    block_token_id = tokenizer.encode(" BLOCK", add_special_tokens=False)[0]
+    basis = basis.to(device=device, dtype=model.cfg.dtype)
+
+    rows: List[Dict[str, object]] = []
+    for fallback_idx, (benign_row, malicious_row) in enumerate(pairs, start=1):
+        pair_idx = resolve_pair_idx(benign_row, malicious_row, fallback_idx=fallback_idx)
+        benign_tokens = model.to_tokens(make_prompt(benign_row["content"]))
+        malicious_tokens = model.to_tokens(make_prompt(malicious_row["content"]))
+
+        with torch.inference_mode():
+            _, benign_cache = model.run_with_cache(benign_tokens, return_type="logits")
+            malicious_logits = model(malicious_tokens, return_type="logits")
+        base_malicious_diff = logit_diff_from_logits(malicious_logits, allow_token_id, block_token_id)
+
+        for index, label in enumerate(labels):
+            result = run_named_residual_basis_patching(
+                model,
+                corrupted_tokens=malicious_tokens,
+                clean_cache=benign_cache,
+                layer=layer,
+                resid_kind=resid_kind,
+                basis=basis[:, index : index + 1],
+                patch_label=f"contrastive_{resid_kind}{layer}_{label}",
+                base_logit_diff=base_malicious_diff,
+                allow_token_id=allow_token_id,
+                block_token_id=block_token_id,
+            )
+            result["basis_label"] = label
+            result["basis_mode"] = "single"
+            result["pair_idx"] = pair_idx
+            result["pair_indicator"] = benign_row.get("pair_indicator", malicious_row.get("pair_indicator"))
+            result["benign_filename"] = benign_row["filename"]
+            result["malicious_filename"] = malicious_row["filename"]
+            result["flip_to_benign"] = result["patched_logit_diff"] <= 0
+            rows.append(result)
+
+        if len(labels) > 1:
+            result = run_named_residual_basis_patching(
+                model,
+                corrupted_tokens=malicious_tokens,
+                clean_cache=benign_cache,
+                layer=layer,
+                resid_kind=resid_kind,
+                basis=basis,
+                patch_label=f"contrastive_{resid_kind}{layer}_all",
+                base_logit_diff=base_malicious_diff,
+                allow_token_id=allow_token_id,
+                block_token_id=block_token_id,
+            )
+            result["basis_label"] = "+".join(labels)
+            result["basis_mode"] = "all"
+            result["pair_idx"] = pair_idx
+            result["pair_indicator"] = benign_row.get("pair_indicator", malicious_row.get("pair_indicator"))
+            result["benign_filename"] = benign_row["filename"]
+            result["malicious_filename"] = malicious_row["filename"]
+            result["flip_to_benign"] = result["patched_logit_diff"] <= 0
+            rows.append(result)
+
+        del benign_cache
+        del malicious_logits
+        del benign_tokens
+        del malicious_tokens
+        maybe_clear_device_cache(device)
+
+    per_pair_df = pd.DataFrame(rows)
+    summary_df = summarize_path_patch_effects(per_pair_df)
+
+    output_prefix = Path(args.output_prefix or (DEFAULT_ARTIFACT_DIR / "contrastive_residual_patching"))
+    output_prefix.parent.mkdir(parents=True, exist_ok=True)
+    per_pair_path = output_prefix.with_name(output_prefix.name + "_per_pair.csv")
+    summary_path = output_prefix.with_name(output_prefix.name + "_summary.csv")
+    metadata_path = output_prefix.with_name(output_prefix.name + "_metadata.json")
+    per_pair_df.to_csv(per_pair_path, index=False)
+    summary_df.to_csv(summary_path, index=False)
+    write_json(
+        metadata_path,
+        {
+            "basis_path": str(args.basis_path),
+            "basis_labels": labels,
+            "layer": layer,
+            "resid_kind": resid_kind,
+            "num_pairs": len(pairs),
+            "device": device,
+            "template_name": args.template_name,
+            "per_pair_csv": str(per_pair_path),
+            "summary_csv": str(summary_path),
+        },
+    )
+
+    print(
+        json.dumps(
+            {
+                "metadata": str(metadata_path),
+                "summary_csv": str(summary_path),
+                "rows": summary_df.to_dict(orient="records"),
+                "num_pairs": len(pairs),
+            },
+            indent=2,
+            sort_keys=True,
+        )
+    )
+    return 0
+
+
+def cmd_batch_trace_residual_direction_heads(args: argparse.Namespace) -> int:
+    require_transformer_lens()
+
+    manifest = pd.read_csv(args.manifest)
+    pairs = select_short_pairs(
+        manifest,
+        num_pairs=args.num_pairs,
+        malicious_requires_indicator=not args.allow_zero_indicator_malicious,
+    )
+    if not pairs:
+        raise RuntimeError("No eligible benign/malicious pairs found for residual-direction head tracing.")
+
+    bundle = torch.load(args.basis_path, map_location="cpu")
+    basis = bundle["basis"].detach().cpu()
+    labels = list(bundle.get("basis_labels", [f"dir_{index}" for index in range(basis.shape[1])]))
+    layer = int(bundle["layer"])
+    resid_kind = str(bundle["resid_kind"])
+    if args.basis_label not in labels:
+        raise ValueError(f"Basis label {args.basis_label!r} not found in {labels!r}.")
+    basis_index = labels.index(args.basis_label)
+    direction = basis[:, basis_index].detach().cpu()
+    target_layers = parse_int_list(args.layers)
+
+    hf_model, tokenizer, device = load_hf_model_and_tokenizer(
+        args.model_name,
+        device=args.device,
+        torch_dtype=args.torch_dtype,
+    )
+    model = build_hooked_transformer(
+        hf_model,
+        tokenizer,
+        device=device,
+        torch_dtype=args.torch_dtype,
+        template_name=args.template_name,
+        first_n_layers=args.first_n_layers,
+        use_attn_result=False,
+    )
+    model.eval()
+
+    needed_hooks = {f"blocks.{trace_layer}.attn.hook_z" for trace_layer in target_layers}
+    direction = direction.to(device=device, dtype=model.cfg.dtype)
+    layer_write_directions = {
+        trace_layer: torch.einsum("hdm,m->hd", model.blocks[trace_layer].attn.W_O, direction)
+        for trace_layer in target_layers
+    }
+
+    rows: List[Dict[str, object]] = []
+    for fallback_idx, (benign_row, malicious_row) in enumerate(pairs, start=1):
+        pair_idx = resolve_pair_idx(benign_row, malicious_row, fallback_idx=fallback_idx)
+        benign_tokens = model.to_tokens(make_prompt(benign_row["content"]))
+        malicious_tokens = model.to_tokens(make_prompt(malicious_row["content"]))
+
+        with torch.inference_mode():
+            _, benign_cache = model.run_with_cache(
+                benign_tokens,
+                return_type="logits",
+                names_filter=lambda name: name in needed_hooks,
+            )
+            _, malicious_cache = model.run_with_cache(
+                malicious_tokens,
+                return_type="logits",
+                names_filter=lambda name: name in needed_hooks,
+            )
+
+        for trace_layer in target_layers:
+            hook_name = f"blocks.{trace_layer}.attn.hook_z"
+            write_direction = layer_write_directions[trace_layer]
+            benign_z = benign_cache[hook_name][0, -1, :, :].detach().clone()
+            malicious_z = malicious_cache[hook_name][0, -1, :, :].detach().clone()
+            benign_projection = (benign_z * write_direction).sum(dim=-1).detach().float().cpu()
+            malicious_projection = (malicious_z * write_direction).sum(dim=-1).detach().float().cpu()
+            delta_projection = malicious_projection - benign_projection
+
+            for head in range(model.cfg.n_heads):
+                rows.append(
+                    {
+                        "trace_target_layer": layer,
+                        "trace_target_resid_kind": resid_kind,
+                        "basis_label": args.basis_label,
+                        "layer": trace_layer,
+                        "head": head,
+                        "pair_idx": pair_idx,
+                        "pair_indicator": benign_row.get("pair_indicator", malicious_row.get("pair_indicator")),
+                        "benign_filename": benign_row["filename"],
+                        "malicious_filename": malicious_row["filename"],
+                        "benign_projection": float(benign_projection[head].item()),
+                        "malicious_projection": float(malicious_projection[head].item()),
+                        "delta_projection": float(delta_projection[head].item()),
+                    }
+                )
+
+        del benign_cache
+        del malicious_cache
+        del benign_tokens
+        del malicious_tokens
+        maybe_clear_device_cache(device)
+
+    per_pair_df = pd.DataFrame(rows)
+    summary_df = summarize_directional_head_writes(per_pair_df)
+    if args.topk is not None and args.topk > 0:
+        summary_df = summary_df.head(args.topk).copy()
+
+    output_prefix = Path(args.output_prefix or (DEFAULT_ARTIFACT_DIR / "directional_head_trace"))
+    output_prefix.parent.mkdir(parents=True, exist_ok=True)
+    per_pair_path = output_prefix.with_name(output_prefix.name + "_per_pair.csv")
+    summary_path = output_prefix.with_name(output_prefix.name + "_summary.csv")
+    metadata_path = output_prefix.with_name(output_prefix.name + "_metadata.json")
+    per_pair_df.to_csv(per_pair_path, index=False)
+    summary_df.to_csv(summary_path, index=False)
+    write_json(
+        metadata_path,
+        {
+            "basis_path": str(args.basis_path),
+            "basis_label": args.basis_label,
+            "trace_target_layer": layer,
+            "trace_target_resid_kind": resid_kind,
+            "layers": target_layers,
+            "num_pairs": len(pairs),
+            "device": device,
+            "template_name": args.template_name,
+            "per_pair_csv": str(per_pair_path),
+            "summary_csv": str(summary_path),
+        },
+    )
+
+    print(
+        json.dumps(
+            {
+                "metadata": str(metadata_path),
+                "summary_csv": str(summary_path),
+                "rows": summary_df.to_dict(orient="records"),
+                "num_pairs": len(pairs),
+            },
+            indent=2,
+            sort_keys=True,
+        )
+    )
+    return 0
+
+
+def cmd_batch_head_group_ablation(args: argparse.Namespace) -> int:
+    require_transformer_lens()
+
+    manifest = pd.read_csv(args.manifest)
+    pairs = select_short_pairs(
+        manifest,
+        num_pairs=args.num_pairs,
+        malicious_requires_indicator=not args.allow_zero_indicator_malicious,
+    )
+    if not pairs:
+        raise RuntimeError("No eligible benign/malicious pairs found for grouped head ablation.")
+
+    head_specs = parse_head_list(args.heads)
+    hf_model, tokenizer, device = load_hf_model_and_tokenizer(
+        args.model_name,
+        device=args.device,
+        torch_dtype=args.torch_dtype,
+    )
+    model = build_hooked_transformer(
+        hf_model,
+        tokenizer,
+        device=device,
+        torch_dtype=args.torch_dtype,
+        template_name=args.template_name,
+        first_n_layers=args.first_n_layers,
+        use_attn_result=False,
+    )
+    model.eval()
+
+    allow_token_id = tokenizer.encode(" ALLOW", add_special_tokens=False)[0]
+    block_token_id = tokenizer.encode(" BLOCK", add_special_tokens=False)[0]
+
+    rows: List[Dict[str, object]] = []
+    for fallback_idx, (benign_row, malicious_row) in enumerate(pairs, start=1):
+        pair_idx = resolve_pair_idx(benign_row, malicious_row, fallback_idx=fallback_idx)
+        malicious_tokens = model.to_tokens(make_prompt(malicious_row["content"]))
+
+        with torch.inference_mode():
+            malicious_logits = model(malicious_tokens, return_type="logits")
+        base_malicious_diff = logit_diff_from_logits(malicious_logits, allow_token_id, block_token_id)
+
+        result = run_multi_head_ablation(
+            model,
+            tokens=malicious_tokens,
+            head_specs=head_specs,
+            base_logit_diff=base_malicious_diff,
+            allow_token_id=allow_token_id,
+            block_token_id=block_token_id,
+        )
+        result["pair_idx"] = pair_idx
+        result["pair_indicator"] = benign_row.get("pair_indicator", malicious_row.get("pair_indicator"))
+        result["benign_filename"] = benign_row["filename"]
+        result["malicious_filename"] = malicious_row["filename"]
+        result["flip_to_benign"] = result["ablated_logit_diff"] <= 0
+        rows.append(result)
+
+        del malicious_logits
+        del malicious_tokens
+        maybe_clear_device_cache(device)
+
+    per_pair_df = pd.DataFrame(rows)
+    summary_df = summarize_path_patch_effects(
+        per_pair_df.rename(columns={"ablation_label": "patch_label"})
+    ).rename(columns={"patch_label": "ablation_label"})
+
+    output_prefix = Path(args.output_prefix or (DEFAULT_ARTIFACT_DIR / "batch_head_group_ablation"))
+    output_prefix.parent.mkdir(parents=True, exist_ok=True)
+    per_pair_path = output_prefix.with_name(output_prefix.name + "_per_pair.csv")
+    summary_path = output_prefix.with_name(output_prefix.name + "_summary.csv")
+    metadata_path = output_prefix.with_name(output_prefix.name + "_metadata.json")
+    per_pair_df.to_csv(per_pair_path, index=False)
+    summary_df.to_csv(summary_path, index=False)
+    write_json(
+        metadata_path,
+        {
+            "heads": [{"layer": layer, "head": head} for layer, head in head_specs],
+            "num_pairs": len(pairs),
+            "first_n_layers": args.first_n_layers,
+            "device": device,
+            "template_name": args.template_name,
+            "per_pair_csv": str(per_pair_path),
+            "summary_csv": str(summary_path),
+        },
+    )
+
+    print(
+        json.dumps(
+            {
+                "metadata": str(metadata_path),
+                "summary_csv": str(summary_path),
+                "rows": summary_df.to_dict(orient="records"),
+                "num_pairs": len(pairs),
+            },
+            indent=2,
+            sort_keys=True,
+        )
+    )
+    return 0
+
+
+def cmd_batch_residual_direction_intervention(args: argparse.Namespace) -> int:
+    require_transformer_lens()
+
+    manifest = pd.read_csv(args.manifest)
+    pairs = select_short_pairs(
+        manifest,
+        num_pairs=args.num_pairs,
+        malicious_requires_indicator=not args.allow_zero_indicator_malicious,
+    )
+    if not pairs:
+        raise RuntimeError("No eligible benign/malicious pairs found for residual-direction intervention testing.")
+
+    bundle = torch.load(args.basis_path, map_location="cpu")
+    basis = bundle["basis"].detach().cpu()
+    labels = list(bundle.get("basis_labels", [f"dir_{index}" for index in range(basis.shape[1])]))
+    target_layer = int(bundle["layer"])
+    target_resid_kind = str(bundle["resid_kind"])
+    if args.basis_label not in labels:
+        raise ValueError(f"Basis label {args.basis_label!r} not found in {labels!r}.")
+    basis_index = labels.index(args.basis_label)
+    direction = basis[:, basis_index].detach().cpu()
+    head_specs = parse_head_list(args.heads)
+    mode = args.mode.strip().lower()
+    if mode not in {"patch", "ablate"}:
+        raise ValueError(f"Unsupported mode: {args.mode!r}")
+
+    hf_model, tokenizer, device = load_hf_model_and_tokenizer(
+        args.model_name,
+        device=args.device,
+        torch_dtype=args.torch_dtype,
+    )
+    model = build_hooked_transformer(
+        hf_model,
+        tokenizer,
+        device=device,
+        torch_dtype=args.torch_dtype,
+        template_name=args.template_name,
+        first_n_layers=args.first_n_layers,
+        use_attn_result=False,
+    )
+    model.eval()
+
+    allow_token_id = tokenizer.encode(" ALLOW", add_special_tokens=False)[0]
+    block_token_id = tokenizer.encode(" BLOCK", add_special_tokens=False)[0]
+    direction = direction.to(device=device, dtype=model.cfg.dtype)
+    target_hook_name = build_residual_hook_name(target_layer, target_resid_kind)
+    intervention_label = f"{mode}_" + "+".join(f"h{layer}.{head}" for layer, head in head_specs)
+    head_hook_names = {f"blocks.{layer}.attn.hook_z" for layer, head in head_specs}
+    cache_hook_names = set(head_hook_names)
+    cache_hook_names.add(target_hook_name)
+
+    rows: List[Dict[str, object]] = []
+    for fallback_idx, (benign_row, malicious_row) in enumerate(pairs, start=1):
+        pair_idx = resolve_pair_idx(benign_row, malicious_row, fallback_idx=fallback_idx)
+        benign_tokens = model.to_tokens(make_prompt(benign_row["content"]))
+        malicious_tokens = model.to_tokens(make_prompt(malicious_row["content"]))
+
+        with torch.inference_mode():
+            _, benign_cache = model.run_with_cache(
+                benign_tokens,
+                return_type="logits",
+                names_filter=lambda name: name in cache_hook_names,
+            )
+            malicious_logits, malicious_cache = model.run_with_cache(
+                malicious_tokens,
+                return_type="logits",
+                names_filter=lambda name: name == target_hook_name,
+            )
+        base_logit_diff = logit_diff_from_logits(malicious_logits, allow_token_id, block_token_id)
+        base_projection = float(
+            torch.dot(
+                malicious_cache[target_hook_name][0, -1, :].detach().clone().to(dtype=model.cfg.dtype),
+                direction,
+            ).item()
+        )
+
+        if mode == "patch":
+            hooks = []
+            for layer, head in head_specs:
+                hook_name = f"blocks.{layer}.attn.hook_z"
+                clean_value = benign_cache[hook_name]
+
+                def patch_head_fn(result, hook, *, patch_head=head, patch_value=clean_value):
+                    patched = result.clone()
+                    clean_seq = patch_value.shape[1]
+                    corrupt_seq = patched.shape[1]
+                    shared_seq = min(clean_seq, corrupt_seq)
+                    patched[:, -shared_seq:, patch_head, :] = patch_value[:, -shared_seq:, patch_head, :]
+                    return patched
+
+                hooks.append((hook_name, patch_head_fn))
+        else:
+            hooks_by_name: Dict[str, List[int]] = {}
+            for layer, head in head_specs:
+                hook_name = f"blocks.{layer}.attn.hook_z"
+                hooks_by_name.setdefault(hook_name, []).append(head)
+            hooks = []
+            for hook_name, heads in hooks_by_name.items():
+                unique_heads = tuple(sorted(set(heads)))
+
+                def ablate_fn(result, hook, *, ablate_heads=unique_heads):
+                    patched = result.clone()
+                    for ablate_head in ablate_heads:
+                        patched[:, :, ablate_head, :] = 0.0
+                    return patched
+
+                hooks.append((hook_name, ablate_fn))
+
+        with torch.inference_mode():
+            with model.hooks(fwd_hooks=hooks):
+                intervened_logits, intervened_cache = model.run_with_cache(
+                    malicious_tokens,
+                    return_type="logits",
+                    names_filter=lambda name: name == target_hook_name,
+                )
+        intervened_logit_diff = logit_diff_from_logits(intervened_logits, allow_token_id, block_token_id)
+        intervened_projection = float(
+            torch.dot(
+                intervened_cache[target_hook_name][0, -1, :].detach().clone().to(dtype=model.cfg.dtype),
+                direction,
+            ).item()
+        )
+
+        rows.append(
+            {
+                "intervention_label": intervention_label,
+                "mode": mode,
+                "basis_label": args.basis_label,
+                "target_layer": target_layer,
+                "target_resid_kind": target_resid_kind,
+                "pair_idx": pair_idx,
+                "pair_indicator": benign_row.get("pair_indicator", malicious_row.get("pair_indicator")),
+                "benign_filename": benign_row["filename"],
+                "malicious_filename": malicious_row["filename"],
+                "base_logit_diff": base_logit_diff,
+                "intervened_logit_diff": intervened_logit_diff,
+                "logit_delta": intervened_logit_diff - base_logit_diff,
+                "flip_to_benign": intervened_logit_diff <= 0,
+                "base_projection": base_projection,
+                "intervened_projection": intervened_projection,
+                "projection_delta": intervened_projection - base_projection,
+            }
+        )
+
+        del benign_cache
+        del malicious_cache
+        del malicious_logits
+        del intervened_cache
+        del intervened_logits
+        del benign_tokens
+        del malicious_tokens
+        maybe_clear_device_cache(device)
+
+    per_pair_df = pd.DataFrame(rows)
+    summary_df = summarize_residual_direction_interventions(per_pair_df)
+
+    output_prefix = Path(args.output_prefix or (DEFAULT_ARTIFACT_DIR / "residual_direction_intervention"))
+    output_prefix.parent.mkdir(parents=True, exist_ok=True)
+    per_pair_path = output_prefix.with_name(output_prefix.name + "_per_pair.csv")
+    summary_path = output_prefix.with_name(output_prefix.name + "_summary.csv")
+    metadata_path = output_prefix.with_name(output_prefix.name + "_metadata.json")
+    per_pair_df.to_csv(per_pair_path, index=False)
+    summary_df.to_csv(summary_path, index=False)
+    write_json(
+        metadata_path,
+        {
+            "basis_path": str(args.basis_path),
+            "basis_label": args.basis_label,
+            "heads": [{"layer": layer, "head": head} for layer, head in head_specs],
+            "mode": mode,
+            "target_layer": target_layer,
+            "target_resid_kind": target_resid_kind,
+            "num_pairs": len(pairs),
+            "device": device,
+            "template_name": args.template_name,
+            "per_pair_csv": str(per_pair_path),
+            "summary_csv": str(summary_path),
+        },
+    )
+
+    print(
+        json.dumps(
+            {
+                "metadata": str(metadata_path),
+                "summary_csv": str(summary_path),
+                "rows": summary_df.to_dict(orient="records"),
+                "num_pairs": len(pairs),
+            },
+            indent=2,
+            sort_keys=True,
+        )
+    )
+    return 0
+
+
+def cmd_batch_trace_direction_under_intervention(args: argparse.Namespace) -> int:
+    require_transformer_lens()
+
+    manifest = pd.read_csv(args.manifest)
+    pairs = select_short_pairs(
+        manifest,
+        num_pairs=args.num_pairs,
+        malicious_requires_indicator=not args.allow_zero_indicator_malicious,
+    )
+    if not pairs:
+        raise RuntimeError("No eligible benign/malicious pairs found for intervention-conditioned direction tracing.")
+
+    bundle = torch.load(args.basis_path, map_location="cpu")
+    basis = bundle["basis"].detach().cpu()
+    labels = list(bundle.get("basis_labels", [f"dir_{index}" for index in range(basis.shape[1])]))
+    trace_target_layer = int(bundle["layer"])
+    trace_target_resid_kind = str(bundle["resid_kind"])
+    if args.basis_label not in labels:
+        raise ValueError(f"Basis label {args.basis_label!r} not found in {labels!r}.")
+    basis_index = labels.index(args.basis_label)
+    direction = basis[:, basis_index].detach().cpu()
+    target_layers = parse_int_list(args.layers)
+    source_heads = parse_head_list(args.source_heads)
+    mode = args.mode.strip().lower()
+    if mode not in {"patch", "ablate"}:
+        raise ValueError(f"Unsupported mode: {args.mode!r}")
+
+    hf_model, tokenizer, device = load_hf_model_and_tokenizer(
+        args.model_name,
+        device=args.device,
+        torch_dtype=args.torch_dtype,
+    )
+    model = build_hooked_transformer(
+        hf_model,
+        tokenizer,
+        device=device,
+        torch_dtype=args.torch_dtype,
+        template_name=args.template_name,
+        first_n_layers=args.first_n_layers,
+        use_attn_result=False,
+    )
+    model.eval()
+
+    source_hook_names = {f"blocks.{layer}.attn.hook_z" for layer, head in source_heads}
+    target_hook_names = {f"blocks.{trace_layer}.attn.hook_z" for trace_layer in target_layers}
+    benign_cache_names = source_hook_names
+    malicious_cache_names = target_hook_names
+
+    direction = direction.to(device=device, dtype=model.cfg.dtype)
+    layer_write_directions = {
+        trace_layer: torch.einsum("hdm,m->hd", model.blocks[trace_layer].attn.W_O, direction)
+        for trace_layer in target_layers
+    }
+    intervention_label = f"{mode}_" + "+".join(f"h{layer}.{head}" for layer, head in source_heads)
+
+    rows: List[Dict[str, object]] = []
+    for fallback_idx, (benign_row, malicious_row) in enumerate(pairs, start=1):
+        pair_idx = resolve_pair_idx(benign_row, malicious_row, fallback_idx=fallback_idx)
+        benign_tokens = model.to_tokens(make_prompt(benign_row["content"]))
+        malicious_tokens = model.to_tokens(make_prompt(malicious_row["content"]))
+
+        with torch.inference_mode():
+            _, benign_cache = model.run_with_cache(
+                benign_tokens,
+                return_type="logits",
+                names_filter=lambda name: name in benign_cache_names,
+            )
+            _, malicious_cache = model.run_with_cache(
+                malicious_tokens,
+                return_type="logits",
+                names_filter=lambda name: name in malicious_cache_names,
+            )
+
+        if mode == "patch":
+            hooks = []
+            for layer, head in source_heads:
+                hook_name = f"blocks.{layer}.attn.hook_z"
+                clean_value = benign_cache[hook_name]
+
+                def patch_head_fn(result, hook, *, patch_head=head, patch_value=clean_value):
+                    patched = result.clone()
+                    clean_seq = patch_value.shape[1]
+                    corrupt_seq = patched.shape[1]
+                    shared_seq = min(clean_seq, corrupt_seq)
+                    patched[:, -shared_seq:, patch_head, :] = patch_value[:, -shared_seq:, patch_head, :]
+                    return patched
+
+                hooks.append((hook_name, patch_head_fn))
+        else:
+            hooks_by_name: Dict[str, List[int]] = {}
+            for layer, head in source_heads:
+                hook_name = f"blocks.{layer}.attn.hook_z"
+                hooks_by_name.setdefault(hook_name, []).append(head)
+            hooks = []
+            for hook_name, heads in hooks_by_name.items():
+                unique_heads = tuple(sorted(set(heads)))
+
+                def ablate_fn(result, hook, *, ablate_heads=unique_heads):
+                    patched = result.clone()
+                    for ablate_head in ablate_heads:
+                        patched[:, :, ablate_head, :] = 0.0
+                    return patched
+
+                hooks.append((hook_name, ablate_fn))
+
+        with torch.inference_mode():
+            with model.hooks(fwd_hooks=hooks):
+                _, intervened_cache = model.run_with_cache(
+                    malicious_tokens,
+                    return_type="logits",
+                    names_filter=lambda name: name in malicious_cache_names,
+                )
+
+        for trace_layer in target_layers:
+            hook_name = f"blocks.{trace_layer}.attn.hook_z"
+            write_direction = layer_write_directions[trace_layer]
+            base_z = malicious_cache[hook_name][0, -1, :, :].detach().clone()
+            intervened_z = intervened_cache[hook_name][0, -1, :, :].detach().clone()
+            base_projection = (base_z * write_direction).sum(dim=-1).detach().float().cpu()
+            intervened_projection = (intervened_z * write_direction).sum(dim=-1).detach().float().cpu()
+            projection_delta = intervened_projection - base_projection
+
+            for head in range(model.cfg.n_heads):
+                rows.append(
+                    {
+                        "intervention_label": intervention_label,
+                        "mode": mode,
+                        "trace_target_layer": trace_target_layer,
+                        "trace_target_resid_kind": trace_target_resid_kind,
+                        "basis_label": args.basis_label,
+                        "layer": trace_layer,
+                        "head": head,
+                        "pair_idx": pair_idx,
+                        "pair_indicator": benign_row.get("pair_indicator", malicious_row.get("pair_indicator")),
+                        "benign_filename": benign_row["filename"],
+                        "malicious_filename": malicious_row["filename"],
+                        "base_projection": float(base_projection[head].item()),
+                        "intervened_projection": float(intervened_projection[head].item()),
+                        "projection_delta": float(projection_delta[head].item()),
+                    }
+                )
+
+        del benign_cache
+        del malicious_cache
+        del intervened_cache
+        del benign_tokens
+        del malicious_tokens
+        maybe_clear_device_cache(device)
+
+    per_pair_df = pd.DataFrame(rows)
+    summary_df = summarize_directional_head_intervention_effects(per_pair_df)
+    if args.topk is not None and args.topk > 0:
+        summary_df = summary_df.head(args.topk).copy()
+
+    output_prefix = Path(args.output_prefix or (DEFAULT_ARTIFACT_DIR / "direction_trace_under_intervention"))
+    output_prefix.parent.mkdir(parents=True, exist_ok=True)
+    per_pair_path = output_prefix.with_name(output_prefix.name + "_per_pair.csv")
+    summary_path = output_prefix.with_name(output_prefix.name + "_summary.csv")
+    metadata_path = output_prefix.with_name(output_prefix.name + "_metadata.json")
+    per_pair_df.to_csv(per_pair_path, index=False)
+    summary_df.to_csv(summary_path, index=False)
+    write_json(
+        metadata_path,
+        {
+            "basis_path": str(args.basis_path),
+            "basis_label": args.basis_label,
+            "source_heads": [{"layer": layer, "head": head} for layer, head in source_heads],
+            "mode": mode,
+            "trace_target_layer": trace_target_layer,
+            "trace_target_resid_kind": trace_target_resid_kind,
+            "layers": target_layers,
+            "num_pairs": len(pairs),
+            "device": device,
+            "template_name": args.template_name,
+            "per_pair_csv": str(per_pair_path),
+            "summary_csv": str(summary_path),
+        },
+    )
+
+    print(
+        json.dumps(
+            {
+                "metadata": str(metadata_path),
+                "summary_csv": str(summary_path),
+                "rows": summary_df.to_dict(orient="records"),
+                "num_pairs": len(pairs),
+            },
+            indent=2,
+            sort_keys=True,
+        )
+    )
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -2148,6 +4864,8 @@ def build_parser() -> argparse.ArgumentParser:
     discover_parser.add_argument("--benign-rank", type=int, default=0)
     discover_parser.add_argument("--malicious-rank", type=int, default=0)
     discover_parser.add_argument("--first-n-layers", type=int, default=None)
+    discover_parser.add_argument("--layer-start", type=int, default=None)
+    discover_parser.add_argument("--layer-end", type=int, default=None)
     discover_parser.add_argument("--topk", type=int, default=10)
     discover_parser.add_argument("--output", type=Path, default=DEFAULT_ARTIFACT_DIR / "attention_top_heads.csv")
     discover_parser.set_defaults(func=cmd_discover_heads)
@@ -2206,6 +4924,8 @@ def build_parser() -> argparse.ArgumentParser:
     batch_discover_parser.add_argument("--torch-dtype", choices=["float16", "bfloat16", "float32"], default="float16")
     batch_discover_parser.add_argument("--num-pairs", type=int, default=5)
     batch_discover_parser.add_argument("--first-n-layers", type=int, default=4)
+    batch_discover_parser.add_argument("--layer-start", type=int, default=None)
+    batch_discover_parser.add_argument("--layer-end", type=int, default=None)
     batch_discover_parser.add_argument("--topk", type=int, default=5)
     batch_discover_parser.add_argument("--allow-zero-indicator-malicious", action="store_true")
     batch_discover_parser.add_argument(
@@ -2235,6 +4955,357 @@ def build_parser() -> argparse.ArgumentParser:
         default=DEFAULT_ARTIFACT_DIR / "batch_causal_l4",
     )
     batch_causal_parser.set_defaults(func=cmd_batch_causal)
+
+    batch_layer_ablation_parser = subparsers.add_parser(
+        "batch-layer-ablation",
+        help="Ablate full-layer attention/MLP components across multiple pairs.",
+    )
+    batch_layer_ablation_parser.add_argument("--manifest", type=Path, default=DEFAULT_ARTIFACT_DIR / "analysis_manifest.csv")
+    batch_layer_ablation_parser.add_argument("--model-name", default=DEFAULT_MODEL_NAME)
+    batch_layer_ablation_parser.add_argument("--template-name", default="meta-llama/Llama-3.1-8B-Instruct")
+    batch_layer_ablation_parser.add_argument("--device", default=None)
+    batch_layer_ablation_parser.add_argument("--torch-dtype", choices=["float16", "bfloat16", "float32"], default="float16")
+    batch_layer_ablation_parser.add_argument("--num-pairs", type=int, default=3)
+    batch_layer_ablation_parser.add_argument("--first-n-layers", type=int, default=None)
+    batch_layer_ablation_parser.add_argument("--components", default="attn,mlp")
+    batch_layer_ablation_parser.add_argument("--allow-zero-indicator-malicious", action="store_true")
+    batch_layer_ablation_parser.add_argument(
+        "--output-prefix",
+        type=Path,
+        default=DEFAULT_ARTIFACT_DIR / "batch_layer_ablation",
+    )
+    batch_layer_ablation_parser.set_defaults(func=cmd_batch_layer_ablation)
+
+    batch_layer_patching_parser = subparsers.add_parser(
+        "batch-layer-patching",
+        help="Patch full-layer attention/MLP components from benign into malicious prompts.",
+    )
+    batch_layer_patching_parser.add_argument("--manifest", type=Path, default=DEFAULT_ARTIFACT_DIR / "analysis_manifest.csv")
+    batch_layer_patching_parser.add_argument("--model-name", default=DEFAULT_MODEL_NAME)
+    batch_layer_patching_parser.add_argument("--template-name", default="meta-llama/Llama-3.1-8B-Instruct")
+    batch_layer_patching_parser.add_argument("--device", default=None)
+    batch_layer_patching_parser.add_argument("--torch-dtype", choices=["float16", "bfloat16", "float32"], default="float16")
+    batch_layer_patching_parser.add_argument("--num-pairs", type=int, default=3)
+    batch_layer_patching_parser.add_argument("--first-n-layers", type=int, default=None)
+    batch_layer_patching_parser.add_argument("--layers", required=True)
+    batch_layer_patching_parser.add_argument("--components", default="attn,mlp")
+    batch_layer_patching_parser.add_argument("--allow-zero-indicator-malicious", action="store_true")
+    batch_layer_patching_parser.add_argument(
+        "--output-prefix",
+        type=Path,
+        default=DEFAULT_ARTIFACT_DIR / "batch_layer_patching",
+    )
+    batch_layer_patching_parser.set_defaults(func=cmd_batch_layer_patching)
+
+    batch_path_patching_parser = subparsers.add_parser(
+        "batch-path-patching",
+        help="Patch early heads, late components, and/or residual states together across pairs.",
+    )
+    batch_path_patching_parser.add_argument("--manifest", type=Path, default=DEFAULT_ARTIFACT_DIR / "analysis_manifest.csv")
+    batch_path_patching_parser.add_argument("--model-name", default=DEFAULT_MODEL_NAME)
+    batch_path_patching_parser.add_argument("--template-name", default="meta-llama/Llama-3.1-8B-Instruct")
+    batch_path_patching_parser.add_argument("--device", default=None)
+    batch_path_patching_parser.add_argument("--torch-dtype", choices=["float16", "bfloat16", "float32"], default="float16")
+    batch_path_patching_parser.add_argument("--num-pairs", type=int, default=3)
+    batch_path_patching_parser.add_argument("--first-n-layers", type=int, default=None)
+    batch_path_patching_parser.add_argument("--heads", default=None)
+    batch_path_patching_parser.add_argument("--components", default=None)
+    batch_path_patching_parser.add_argument("--residuals", default=None)
+    batch_path_patching_parser.add_argument("--resid-kind", default="pre")
+    batch_path_patching_parser.add_argument("--combined", action="store_true")
+    batch_path_patching_parser.add_argument("--allow-zero-indicator-malicious", action="store_true")
+    batch_path_patching_parser.add_argument(
+        "--output-prefix",
+        type=Path,
+        default=DEFAULT_ARTIFACT_DIR / "batch_path_patching",
+    )
+    batch_path_patching_parser.set_defaults(func=cmd_batch_path_patching)
+
+    batch_neuron_discover_parser = subparsers.add_parser(
+        "batch-neuron-discover",
+        help="Discover candidate MLP neurons in selected layers via logit-aligned contribution deltas.",
+    )
+    batch_neuron_discover_parser.add_argument("--manifest", type=Path, default=DEFAULT_ARTIFACT_DIR / "analysis_manifest.csv")
+    batch_neuron_discover_parser.add_argument("--model-name", default=DEFAULT_MODEL_NAME)
+    batch_neuron_discover_parser.add_argument("--template-name", default="meta-llama/Llama-3.1-8B-Instruct")
+    batch_neuron_discover_parser.add_argument("--device", default=None)
+    batch_neuron_discover_parser.add_argument("--torch-dtype", choices=["float16", "bfloat16", "float32"], default="float16")
+    batch_neuron_discover_parser.add_argument("--num-pairs", type=int, default=3)
+    batch_neuron_discover_parser.add_argument("--first-n-layers", type=int, default=None)
+    batch_neuron_discover_parser.add_argument("--layers", required=True)
+    batch_neuron_discover_parser.add_argument("--topk-per-layer", type=int, default=20)
+    batch_neuron_discover_parser.add_argument("--allow-zero-indicator-malicious", action="store_true")
+    batch_neuron_discover_parser.add_argument(
+        "--output-prefix",
+        type=Path,
+        default=DEFAULT_ARTIFACT_DIR / "batch_neuron_discovery",
+    )
+    batch_neuron_discover_parser.set_defaults(func=cmd_batch_neuron_discover)
+
+    batch_neuron_ablation_parser = subparsers.add_parser(
+        "batch-neuron-ablation",
+        help="Ablate selected MLP neurons across multiple pairs.",
+    )
+    batch_neuron_ablation_parser.add_argument("--manifest", type=Path, default=DEFAULT_ARTIFACT_DIR / "analysis_manifest.csv")
+    batch_neuron_ablation_parser.add_argument("--model-name", default=DEFAULT_MODEL_NAME)
+    batch_neuron_ablation_parser.add_argument("--template-name", default="meta-llama/Llama-3.1-8B-Instruct")
+    batch_neuron_ablation_parser.add_argument("--device", default=None)
+    batch_neuron_ablation_parser.add_argument("--torch-dtype", choices=["float16", "bfloat16", "float32"], default="float16")
+    batch_neuron_ablation_parser.add_argument("--num-pairs", type=int, default=3)
+    batch_neuron_ablation_parser.add_argument("--first-n-layers", type=int, default=None)
+    batch_neuron_ablation_parser.add_argument("--neurons", default=None)
+    batch_neuron_ablation_parser.add_argument("--neuron-summary", type=Path, default=None)
+    batch_neuron_ablation_parser.add_argument("--top-k-per-layer", type=int, default=5)
+    batch_neuron_ablation_parser.add_argument("--allow-zero-indicator-malicious", action="store_true")
+    batch_neuron_ablation_parser.add_argument(
+        "--output-prefix",
+        type=Path,
+        default=DEFAULT_ARTIFACT_DIR / "batch_neuron_ablation",
+    )
+    batch_neuron_ablation_parser.set_defaults(func=cmd_batch_neuron_ablation)
+
+    batch_neuron_group_ablation_parser = subparsers.add_parser(
+        "batch-neuron-group-ablation",
+        help="Ablate discovered neuron groups together across multiple pairs.",
+    )
+    batch_neuron_group_ablation_parser.add_argument("--manifest", type=Path, default=DEFAULT_ARTIFACT_DIR / "analysis_manifest.csv")
+    batch_neuron_group_ablation_parser.add_argument("--model-name", default=DEFAULT_MODEL_NAME)
+    batch_neuron_group_ablation_parser.add_argument("--template-name", default="meta-llama/Llama-3.1-8B-Instruct")
+    batch_neuron_group_ablation_parser.add_argument("--device", default=None)
+    batch_neuron_group_ablation_parser.add_argument("--torch-dtype", choices=["float16", "bfloat16", "float32"], default="float16")
+    batch_neuron_group_ablation_parser.add_argument("--num-pairs", type=int, default=3)
+    batch_neuron_group_ablation_parser.add_argument("--first-n-layers", type=int, default=None)
+    batch_neuron_group_ablation_parser.add_argument("--layers", required=True)
+    batch_neuron_group_ablation_parser.add_argument("--group-sizes", default="3,5")
+    batch_neuron_group_ablation_parser.add_argument("--neuron-summary", type=Path, required=True)
+    batch_neuron_group_ablation_parser.add_argument("--allow-zero-indicator-malicious", action="store_true")
+    batch_neuron_group_ablation_parser.add_argument(
+        "--output-prefix",
+        type=Path,
+        default=DEFAULT_ARTIFACT_DIR / "batch_neuron_group_ablation",
+    )
+    batch_neuron_group_ablation_parser.set_defaults(func=cmd_batch_neuron_group_ablation)
+
+    discover_residual_subspace_parser = subparsers.add_parser(
+        "discover-residual-subspace",
+        help="Compute a low-rank residual-delta basis between benign and malicious prompts.",
+    )
+    discover_residual_subspace_parser.add_argument(
+        "--manifest", type=Path, default=DEFAULT_ARTIFACT_DIR / "analysis_manifest.csv"
+    )
+    discover_residual_subspace_parser.add_argument("--model-name", default=DEFAULT_MODEL_NAME)
+    discover_residual_subspace_parser.add_argument("--template-name", default="meta-llama/Llama-3.1-8B-Instruct")
+    discover_residual_subspace_parser.add_argument("--device", default=None)
+    discover_residual_subspace_parser.add_argument(
+        "--torch-dtype", choices=["float16", "bfloat16", "float32"], default="float16"
+    )
+    discover_residual_subspace_parser.add_argument("--num-pairs", type=int, default=3)
+    discover_residual_subspace_parser.add_argument("--first-n-layers", type=int, default=None)
+    discover_residual_subspace_parser.add_argument("--layer", type=int, required=True)
+    discover_residual_subspace_parser.add_argument("--resid-kind", choices=["pre", "mid", "post"], default="pre")
+    discover_residual_subspace_parser.add_argument("--max-rank", type=int, default=8)
+    discover_residual_subspace_parser.add_argument("--allow-zero-indicator-malicious", action="store_true")
+    discover_residual_subspace_parser.add_argument(
+        "--output-prefix",
+        type=Path,
+        default=DEFAULT_ARTIFACT_DIR / "residual_subspace",
+    )
+    discover_residual_subspace_parser.set_defaults(func=cmd_discover_residual_subspace)
+
+    batch_residual_subspace_patching_parser = subparsers.add_parser(
+        "batch-residual-subspace-patching",
+        help="Patch low-rank residual subspaces from benign into malicious prompts across pairs.",
+    )
+    batch_residual_subspace_patching_parser.add_argument(
+        "--manifest", type=Path, default=DEFAULT_ARTIFACT_DIR / "analysis_manifest.csv"
+    )
+    batch_residual_subspace_patching_parser.add_argument("--basis-path", type=Path, required=True)
+    batch_residual_subspace_patching_parser.add_argument("--model-name", default=DEFAULT_MODEL_NAME)
+    batch_residual_subspace_patching_parser.add_argument(
+        "--template-name", default="meta-llama/Llama-3.1-8B-Instruct"
+    )
+    batch_residual_subspace_patching_parser.add_argument("--device", default=None)
+    batch_residual_subspace_patching_parser.add_argument(
+        "--torch-dtype", choices=["float16", "bfloat16", "float32"], default="float16"
+    )
+    batch_residual_subspace_patching_parser.add_argument("--num-pairs", type=int, default=3)
+    batch_residual_subspace_patching_parser.add_argument("--first-n-layers", type=int, default=None)
+    batch_residual_subspace_patching_parser.add_argument("--subspace-dims", default="1,2,4,8")
+    batch_residual_subspace_patching_parser.add_argument("--allow-zero-indicator-malicious", action="store_true")
+    batch_residual_subspace_patching_parser.add_argument(
+        "--output-prefix",
+        type=Path,
+        default=DEFAULT_ARTIFACT_DIR / "residual_subspace_patching",
+    )
+    batch_residual_subspace_patching_parser.set_defaults(func=cmd_batch_residual_subspace_patching)
+
+    discover_contrastive_residual_parser = subparsers.add_parser(
+        "discover-contrastive-residual-directions",
+        help="Build a task-aligned residual basis from mean delta and logit readout directions.",
+    )
+    discover_contrastive_residual_parser.add_argument(
+        "--manifest", type=Path, default=DEFAULT_ARTIFACT_DIR / "analysis_manifest.csv"
+    )
+    discover_contrastive_residual_parser.add_argument("--model-name", default=DEFAULT_MODEL_NAME)
+    discover_contrastive_residual_parser.add_argument(
+        "--template-name", default="meta-llama/Llama-3.1-8B-Instruct"
+    )
+    discover_contrastive_residual_parser.add_argument("--device", default=None)
+    discover_contrastive_residual_parser.add_argument(
+        "--torch-dtype", choices=["float16", "bfloat16", "float32"], default="float16"
+    )
+    discover_contrastive_residual_parser.add_argument("--num-pairs", type=int, default=3)
+    discover_contrastive_residual_parser.add_argument("--first-n-layers", type=int, default=None)
+    discover_contrastive_residual_parser.add_argument("--layer", type=int, required=True)
+    discover_contrastive_residual_parser.add_argument("--resid-kind", choices=["pre", "mid", "post"], default="pre")
+    discover_contrastive_residual_parser.add_argument("--allow-zero-indicator-malicious", action="store_true")
+    discover_contrastive_residual_parser.add_argument(
+        "--output-prefix",
+        type=Path,
+        default=DEFAULT_ARTIFACT_DIR / "contrastive_residual_directions",
+    )
+    discover_contrastive_residual_parser.set_defaults(func=cmd_discover_contrastive_residual_directions)
+
+    batch_contrastive_residual_patching_parser = subparsers.add_parser(
+        "batch-contrastive-residual-patching",
+        help="Patch task-aligned residual directions from benign into malicious prompts across pairs.",
+    )
+    batch_contrastive_residual_patching_parser.add_argument(
+        "--manifest", type=Path, default=DEFAULT_ARTIFACT_DIR / "analysis_manifest.csv"
+    )
+    batch_contrastive_residual_patching_parser.add_argument("--basis-path", type=Path, required=True)
+    batch_contrastive_residual_patching_parser.add_argument("--model-name", default=DEFAULT_MODEL_NAME)
+    batch_contrastive_residual_patching_parser.add_argument(
+        "--template-name", default="meta-llama/Llama-3.1-8B-Instruct"
+    )
+    batch_contrastive_residual_patching_parser.add_argument("--device", default=None)
+    batch_contrastive_residual_patching_parser.add_argument(
+        "--torch-dtype", choices=["float16", "bfloat16", "float32"], default="float16"
+    )
+    batch_contrastive_residual_patching_parser.add_argument("--num-pairs", type=int, default=3)
+    batch_contrastive_residual_patching_parser.add_argument("--first-n-layers", type=int, default=None)
+    batch_contrastive_residual_patching_parser.add_argument("--allow-zero-indicator-malicious", action="store_true")
+    batch_contrastive_residual_patching_parser.add_argument(
+        "--output-prefix",
+        type=Path,
+        default=DEFAULT_ARTIFACT_DIR / "contrastive_residual_patching",
+    )
+    batch_contrastive_residual_patching_parser.set_defaults(func=cmd_batch_contrastive_residual_patching)
+
+    batch_trace_residual_direction_heads_parser = subparsers.add_parser(
+        "batch-trace-residual-direction-heads",
+        help="Rank late attention heads by projection onto a discovered residual direction.",
+    )
+    batch_trace_residual_direction_heads_parser.add_argument(
+        "--manifest", type=Path, default=DEFAULT_ARTIFACT_DIR / "analysis_manifest.csv"
+    )
+    batch_trace_residual_direction_heads_parser.add_argument("--basis-path", type=Path, required=True)
+    batch_trace_residual_direction_heads_parser.add_argument("--basis-label", required=True)
+    batch_trace_residual_direction_heads_parser.add_argument("--model-name", default=DEFAULT_MODEL_NAME)
+    batch_trace_residual_direction_heads_parser.add_argument(
+        "--template-name", default="meta-llama/Llama-3.1-8B-Instruct"
+    )
+    batch_trace_residual_direction_heads_parser.add_argument("--device", default=None)
+    batch_trace_residual_direction_heads_parser.add_argument(
+        "--torch-dtype", choices=["float16", "bfloat16", "float32"], default="float16"
+    )
+    batch_trace_residual_direction_heads_parser.add_argument("--num-pairs", type=int, default=3)
+    batch_trace_residual_direction_heads_parser.add_argument("--first-n-layers", type=int, default=None)
+    batch_trace_residual_direction_heads_parser.add_argument("--layers", required=True)
+    batch_trace_residual_direction_heads_parser.add_argument("--topk", type=int, default=12)
+    batch_trace_residual_direction_heads_parser.add_argument("--allow-zero-indicator-malicious", action="store_true")
+    batch_trace_residual_direction_heads_parser.add_argument(
+        "--output-prefix",
+        type=Path,
+        default=DEFAULT_ARTIFACT_DIR / "directional_head_trace",
+    )
+    batch_trace_residual_direction_heads_parser.set_defaults(func=cmd_batch_trace_residual_direction_heads)
+
+    batch_head_group_ablation_parser = subparsers.add_parser(
+        "batch-head-group-ablation",
+        help="Ablate a selected attention-head group together across multiple pairs.",
+    )
+    batch_head_group_ablation_parser.add_argument(
+        "--manifest", type=Path, default=DEFAULT_ARTIFACT_DIR / "analysis_manifest.csv"
+    )
+    batch_head_group_ablation_parser.add_argument("--heads", required=True)
+    batch_head_group_ablation_parser.add_argument("--model-name", default=DEFAULT_MODEL_NAME)
+    batch_head_group_ablation_parser.add_argument(
+        "--template-name", default="meta-llama/Llama-3.1-8B-Instruct"
+    )
+    batch_head_group_ablation_parser.add_argument("--device", default=None)
+    batch_head_group_ablation_parser.add_argument(
+        "--torch-dtype", choices=["float16", "bfloat16", "float32"], default="float16"
+    )
+    batch_head_group_ablation_parser.add_argument("--num-pairs", type=int, default=3)
+    batch_head_group_ablation_parser.add_argument("--first-n-layers", type=int, default=None)
+    batch_head_group_ablation_parser.add_argument("--allow-zero-indicator-malicious", action="store_true")
+    batch_head_group_ablation_parser.add_argument(
+        "--output-prefix",
+        type=Path,
+        default=DEFAULT_ARTIFACT_DIR / "batch_head_group_ablation",
+    )
+    batch_head_group_ablation_parser.set_defaults(func=cmd_batch_head_group_ablation)
+
+    batch_residual_direction_intervention_parser = subparsers.add_parser(
+        "batch-residual-direction-intervention",
+        help="Measure how a head intervention changes a discovered residual direction and the final logit.",
+    )
+    batch_residual_direction_intervention_parser.add_argument(
+        "--manifest", type=Path, default=DEFAULT_ARTIFACT_DIR / "analysis_manifest.csv"
+    )
+    batch_residual_direction_intervention_parser.add_argument("--basis-path", type=Path, required=True)
+    batch_residual_direction_intervention_parser.add_argument("--basis-label", required=True)
+    batch_residual_direction_intervention_parser.add_argument("--heads", required=True)
+    batch_residual_direction_intervention_parser.add_argument("--mode", choices=["patch", "ablate"], required=True)
+    batch_residual_direction_intervention_parser.add_argument("--model-name", default=DEFAULT_MODEL_NAME)
+    batch_residual_direction_intervention_parser.add_argument(
+        "--template-name", default="meta-llama/Llama-3.1-8B-Instruct"
+    )
+    batch_residual_direction_intervention_parser.add_argument("--device", default=None)
+    batch_residual_direction_intervention_parser.add_argument(
+        "--torch-dtype", choices=["float16", "bfloat16", "float32"], default="float16"
+    )
+    batch_residual_direction_intervention_parser.add_argument("--num-pairs", type=int, default=3)
+    batch_residual_direction_intervention_parser.add_argument("--first-n-layers", type=int, default=None)
+    batch_residual_direction_intervention_parser.add_argument("--allow-zero-indicator-malicious", action="store_true")
+    batch_residual_direction_intervention_parser.add_argument(
+        "--output-prefix",
+        type=Path,
+        default=DEFAULT_ARTIFACT_DIR / "residual_direction_intervention",
+    )
+    batch_residual_direction_intervention_parser.set_defaults(func=cmd_batch_residual_direction_intervention)
+
+    batch_trace_direction_under_intervention_parser = subparsers.add_parser(
+        "batch-trace-direction-under-intervention",
+        help="Trace how a source-head intervention changes late head writes into a discovered residual direction.",
+    )
+    batch_trace_direction_under_intervention_parser.add_argument(
+        "--manifest", type=Path, default=DEFAULT_ARTIFACT_DIR / "analysis_manifest.csv"
+    )
+    batch_trace_direction_under_intervention_parser.add_argument("--basis-path", type=Path, required=True)
+    batch_trace_direction_under_intervention_parser.add_argument("--basis-label", required=True)
+    batch_trace_direction_under_intervention_parser.add_argument("--source-heads", required=True)
+    batch_trace_direction_under_intervention_parser.add_argument("--mode", choices=["patch", "ablate"], required=True)
+    batch_trace_direction_under_intervention_parser.add_argument("--model-name", default=DEFAULT_MODEL_NAME)
+    batch_trace_direction_under_intervention_parser.add_argument(
+        "--template-name", default="meta-llama/Llama-3.1-8B-Instruct"
+    )
+    batch_trace_direction_under_intervention_parser.add_argument("--device", default=None)
+    batch_trace_direction_under_intervention_parser.add_argument(
+        "--torch-dtype", choices=["float16", "bfloat16", "float32"], default="float16"
+    )
+    batch_trace_direction_under_intervention_parser.add_argument("--num-pairs", type=int, default=3)
+    batch_trace_direction_under_intervention_parser.add_argument("--first-n-layers", type=int, default=None)
+    batch_trace_direction_under_intervention_parser.add_argument("--layers", required=True)
+    batch_trace_direction_under_intervention_parser.add_argument("--topk", type=int, default=12)
+    batch_trace_direction_under_intervention_parser.add_argument("--allow-zero-indicator-malicious", action="store_true")
+    batch_trace_direction_under_intervention_parser.add_argument(
+        "--output-prefix",
+        type=Path,
+        default=DEFAULT_ARTIFACT_DIR / "direction_trace_under_intervention",
+    )
+    batch_trace_direction_under_intervention_parser.set_defaults(func=cmd_batch_trace_direction_under_intervention)
 
     return parser
 
