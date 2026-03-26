@@ -974,6 +974,125 @@ def generate_obfuscations(script: str) -> List[Dict[str, str]]:
     return outputs
 
 
+def build_augmented_pair_manifest(
+    manifest: pd.DataFrame,
+    *,
+    include_original: bool = True,
+    techniques: Optional[Sequence[str]] = None,
+    max_augmented_variants_per_pair: Optional[int] = None,
+) -> Tuple[pd.DataFrame, Dict[str, object]]:
+    if not {"pair_idx", "pair_role", "content"}.issubset(manifest.columns):
+        raise ValueError("Manifest must contain pair_idx, pair_role, and content columns.")
+
+    allowed_techniques = set(techniques) if techniques else None
+    rows: List[Dict[str, object]] = []
+    technique_counts: Dict[str, int] = {}
+    seen_pair_payloads: set[Tuple[str, str]] = set()
+    next_pair_idx = 1
+    source_pairs = select_explicit_pairs(manifest)
+
+    def make_variant_filename(filename: str, technique: str) -> str:
+        stem = Path(str(filename or "sample")).stem
+        suffix = Path(str(filename or "sample")).suffix or ".ps1"
+        safe_technique = re.sub(r"[^A-Za-z0-9]+", "_", technique).strip("_") or "variant"
+        return f"{stem}__{safe_technique}{suffix}"
+
+    def add_pair(
+        benign_row: pd.Series,
+        malicious_row: pd.Series,
+        *,
+        benign_content: str,
+        malicious_content: str,
+        technique: str,
+        variant_rank: int,
+    ) -> None:
+        nonlocal next_pair_idx
+        payload_key = (benign_content, malicious_content)
+        if payload_key in seen_pair_payloads:
+            return
+        seen_pair_payloads.add(payload_key)
+
+        benign_entry = dict(benign_row)
+        malicious_entry = dict(malicious_row)
+        benign_entry["content"] = benign_content
+        malicious_entry["content"] = malicious_content
+        benign_entry["raw_char_len"] = len(benign_content)
+        benign_entry["used_char_len"] = len(benign_content)
+        malicious_entry["raw_char_len"] = len(malicious_content)
+        malicious_entry["used_char_len"] = len(malicious_content)
+        benign_entry["was_truncated"] = False
+        malicious_entry["was_truncated"] = False
+        benign_entry["pair_idx"] = next_pair_idx
+        malicious_entry["pair_idx"] = next_pair_idx
+        benign_entry["pair_role"] = "benign"
+        malicious_entry["pair_role"] = "malicious"
+        benign_entry["parent_pair_idx"] = int(benign_row["pair_idx"])
+        malicious_entry["parent_pair_idx"] = int(malicious_row["pair_idx"])
+        benign_entry["augmentation_technique"] = technique
+        malicious_entry["augmentation_technique"] = technique
+        benign_entry["augmentation_rank"] = variant_rank
+        malicious_entry["augmentation_rank"] = variant_rank
+        benign_entry["parent_filename"] = str(benign_row.get("filename", ""))
+        malicious_entry["parent_filename"] = str(malicious_row.get("filename", ""))
+        benign_entry["filename"] = make_variant_filename(benign_row.get("filename", ""), technique)
+        malicious_entry["filename"] = make_variant_filename(malicious_row.get("filename", ""), technique)
+        benign_entry["source"] = "generated_obfuscation" if technique != "identity" else benign_entry.get("source", "natural_overlap")
+        malicious_entry["source"] = "generated_obfuscation" if technique != "identity" else malicious_entry.get("source", "natural_overlap")
+        rows.extend([benign_entry, malicious_entry])
+        technique_counts[technique] = technique_counts.get(technique, 0) + 1
+        next_pair_idx += 1
+
+    for benign_row, malicious_row in source_pairs:
+        benign_variants = {item["technique"]: item["content"] for item in generate_obfuscations(str(benign_row["content"]))}
+        malicious_variants = {
+            item["technique"]: item["content"] for item in generate_obfuscations(str(malicious_row["content"]))
+        }
+        common_techniques = [technique for technique in benign_variants if technique in malicious_variants]
+        if allowed_techniques is not None:
+            common_techniques = [technique for technique in common_techniques if technique in allowed_techniques]
+
+        if include_original and "identity" in benign_variants and "identity" in malicious_variants:
+            add_pair(
+                benign_row,
+                malicious_row,
+                benign_content=benign_variants["identity"],
+                malicious_content=malicious_variants["identity"],
+                technique="identity",
+                variant_rank=0,
+            )
+
+        variant_count = 0
+        for technique in common_techniques:
+            if technique == "identity":
+                continue
+            if technique != "identity" and max_augmented_variants_per_pair is not None:
+                if variant_count >= max_augmented_variants_per_pair:
+                    break
+                variant_count += 1
+            add_pair(
+                benign_row,
+                malicious_row,
+                benign_content=benign_variants[technique],
+                malicious_content=malicious_variants[technique],
+                technique=technique,
+                variant_rank=0 if technique == "identity" else variant_count,
+            )
+
+    augmented_df = pd.DataFrame(rows)
+    if augmented_df.empty:
+        raise RuntimeError("No augmented pairs were generated from the input manifest.")
+
+    metadata = {
+        "source_pairs": int(len(source_pairs)),
+        "rows_total": int(len(augmented_df)),
+        "num_pairs": int(augmented_df["pair_idx"].nunique()),
+        "include_original": bool(include_original),
+        "technique_counts": technique_counts,
+        "generated_pairs": int(sum(count for tech, count in technique_counts.items() if tech != "identity")),
+    }
+    return augmented_df, metadata
+
+
 def summarize_indicator_matches(df: pd.DataFrame, patterns: Optional[Sequence[str]] = None) -> Dict[str, int]:
     patterns = list(patterns or SUSPICIOUS_PATTERNS)
     compiled = [re.compile(pattern, flags=re.IGNORECASE) for pattern in patterns]
@@ -1205,9 +1324,12 @@ def build_indicator_pair_manifest(
     indicator_column: str = "primary_indicator",
     max_pairs: Optional[int] = None,
     per_indicator_cap: Optional[int] = None,
+    pairing_mode: str = "zip",
 ) -> pd.DataFrame:
     if indicator_column not in df.columns:
         raise ValueError(f"Missing indicator column {indicator_column!r} in input dataframe.")
+    if pairing_mode not in {"zip", "all-combinations"}:
+        raise ValueError(f"Unsupported pairing_mode: {pairing_mode!r}")
 
     pair_rows: List[Dict[str, object]] = []
     pair_idx = 1
@@ -1222,17 +1344,38 @@ def build_indicator_pair_manifest(
             .sort_values(["used_char_len", "filename"])
             .reset_index(drop=True)
         )
-        pair_count = min(len(benign_rows), len(malicious_rows))
-        if per_indicator_cap is not None:
-            pair_count = min(pair_count, per_indicator_cap)
 
-        for idx in range(pair_count):
-            benign_entry = dict(benign_rows.iloc[idx])
+        candidate_pairs: List[Tuple[pd.Series, pd.Series]] = []
+        if pairing_mode == "zip":
+            pair_count = min(len(benign_rows), len(malicious_rows))
+            if per_indicator_cap is not None:
+                pair_count = min(pair_count, per_indicator_cap)
+            candidate_pairs = [
+                (benign_rows.iloc[idx], malicious_rows.iloc[idx])
+                for idx in range(pair_count)
+            ]
+        else:
+            for benign_idx in range(len(benign_rows)):
+                for malicious_idx in range(len(malicious_rows)):
+                    candidate_pairs.append((benign_rows.iloc[benign_idx], malicious_rows.iloc[malicious_idx]))
+            candidate_pairs.sort(
+                key=lambda pair: (
+                    abs(int(pair[0]["used_char_len"]) - int(pair[1]["used_char_len"])),
+                    int(pair[0]["used_char_len"]) + int(pair[1]["used_char_len"]),
+                    str(pair[0]["filename"]),
+                    str(pair[1]["filename"]),
+                )
+            )
+            if per_indicator_cap is not None:
+                candidate_pairs = candidate_pairs[:per_indicator_cap]
+
+        for benign_source, malicious_source in candidate_pairs:
+            benign_entry = dict(benign_source)
             benign_entry["pair_idx"] = pair_idx
             benign_entry["pair_role"] = "benign"
             benign_entry["pair_indicator"] = indicator_value
 
-            malicious_entry = dict(malicious_rows.iloc[idx])
+            malicious_entry = dict(malicious_source)
             malicious_entry["pair_idx"] = pair_idx
             malicious_entry["pair_role"] = "malicious"
             malicious_entry["pair_indicator"] = indicator_value
@@ -1649,6 +1792,7 @@ def cmd_build_indicator_pair_manifest(args: argparse.Namespace) -> int:
         indicator_column=args.indicator_column,
         max_pairs=args.max_pairs,
         per_indicator_cap=args.per_indicator_cap,
+        pairing_mode=args.pairing_mode,
     )
     if pair_df.empty:
         raise RuntimeError("No benign/malicious pairs could be built from the input CSV.")
@@ -1668,7 +1812,46 @@ def cmd_build_indicator_pair_manifest(args: argparse.Namespace) -> int:
                 "output": str(output_path),
                 "rows": int(len(pair_df)),
                 "num_pairs": int(pair_df["pair_idx"].nunique()),
+                "pairing_mode": args.pairing_mode,
                 "pair_indicator_counts": summary,
+            },
+            indent=2,
+            sort_keys=True,
+        )
+    )
+    return 0
+
+
+def cmd_augment_pair_manifest(args: argparse.Namespace) -> int:
+    manifest = pd.read_csv(args.manifest)
+    techniques = [item.strip() for item in args.techniques.split(",") if item.strip()] if args.techniques else None
+    augmented_df, metadata = build_augmented_pair_manifest(
+        manifest,
+        include_original=args.include_original,
+        techniques=techniques,
+        max_augmented_variants_per_pair=args.max_augmented_variants_per_pair,
+    )
+
+    output_path = Path(args.output)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    augmented_df.to_csv(output_path, index=False)
+
+    metadata_path = Path(args.metadata_output)
+    write_json(
+        metadata_path,
+        {
+            "output_csv": str(output_path),
+            "source_manifest": str(args.manifest),
+            "techniques": techniques,
+            **metadata,
+        },
+    )
+    print(
+        json.dumps(
+            {
+                "output": str(output_path),
+                "metadata": str(metadata_path),
+                **metadata,
             },
             indent=2,
             sort_keys=True,
@@ -1891,12 +2074,13 @@ def cmd_filter_valid_pairs(args: argparse.Namespace) -> int:
     # Some manifests are already enriched with prior baseline outputs.
     # Drop stale evaluation columns so the fresh merge keeps canonical names.
     manifest = manifest.drop(columns=[column for column in eval_columns if column in manifest.columns])
+    baseline = baseline.drop_duplicates(subset=["filename", "label"], keep="first")
 
     merged = manifest.merge(
         baseline[["filename", "label", *eval_columns]],
         on=["filename", "label"],
         how="left",
-        validate="one_to_one",
+        validate="many_to_one",
     )
     if merged["correct"].isna().any():
         missing = merged[merged["correct"].isna()][["filename", "label"]]
@@ -4786,6 +4970,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     indicator_pair_parser.add_argument("--input-csv", type=Path, required=True)
     indicator_pair_parser.add_argument("--indicator-column", default="primary_indicator")
+    indicator_pair_parser.add_argument("--pairing-mode", choices=["zip", "all-combinations"], default="zip")
     indicator_pair_parser.add_argument("--max-pairs", type=int, default=None)
     indicator_pair_parser.add_argument("--per-indicator-cap", type=int, default=None)
     indicator_pair_parser.add_argument(
@@ -4794,6 +4979,30 @@ def build_parser() -> argparse.ArgumentParser:
         default=DEFAULT_ARTIFACT_DIR / "indicator_pair_manifest.csv",
     )
     indicator_pair_parser.set_defaults(func=cmd_build_indicator_pair_manifest)
+
+    augment_pair_parser = subparsers.add_parser(
+        "augment-pair-manifest",
+        help="Create conservative paired formatting variants from an explicit benign/malicious pair manifest.",
+    )
+    augment_pair_parser.add_argument("--manifest", type=Path, required=True)
+    augment_pair_parser.add_argument(
+        "--techniques",
+        default="collapse_blank_lines,normalize_inline_whitespace,single_line_layout",
+        help="Comma-separated augmentation techniques drawn from generate_obfuscations().",
+    )
+    augment_pair_parser.add_argument("--include-original", action="store_true")
+    augment_pair_parser.add_argument("--max-augmented-variants-per-pair", type=int, default=None)
+    augment_pair_parser.add_argument(
+        "--output",
+        type=Path,
+        default=DEFAULT_ARTIFACT_DIR / "augmented_pair_manifest.csv",
+    )
+    augment_pair_parser.add_argument(
+        "--metadata-output",
+        type=Path,
+        default=DEFAULT_ARTIFACT_DIR / "augmented_pair_manifest_metadata.json",
+    )
+    augment_pair_parser.set_defaults(func=cmd_augment_pair_manifest)
 
     family_summary_parser = subparsers.add_parser(
         "summarize-family-overlap",

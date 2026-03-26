@@ -9,7 +9,7 @@
 - [ ] Draft ready for submission
 
 **Current state:**
-The early detection portion of the circuit is now locally replicated on the H100 host. On the overlap-controlled 18-pair validation cohort, the full model reached 100% accuracy, attention recurrence remained concentrated in Layer 0, and reduced-layer causal ablation consistently identified `L0H11` and `L0H9` as the most portable causal contributors. Full-model layer ablation, late-layer patching, and residual/path patching now also support a later decision stage centered on attention layers `12-13` plus a broader MLP band. The complete circuit is still **not yet fully validated** because the late-stage path remains only partially decomposed, low-rank residual-subspace patching did not isolate a compact transport subspace, and the planned evasion analysis has not yet run.
+The early detection portion of the circuit is now locally replicated on the H100 host. On the overlap-controlled 18-pair validation cohort, the full model reached 100% accuracy, attention recurrence remained concentrated in Layer 0, and reduced-layer causal ablation consistently identified `L0H11` and `L0H9` as the most portable causal contributors. Full-model layer ablation, late-layer patching, and residual/path patching now also support a later decision stage centered on attention layers `12-13` plus a broader MLP band. A new larger interim cohort built from within-family length-matched natural-overlap pairings expands this from `18` to `96` valid pairs (`192` rows), but those pairs are not fully independent because many source scripts are reused across multiple pairings. The complete circuit is still **not yet fully validated** because the late-stage path remains only partially decomposed, the larger cohort is only a partial generalization upgrade, low-rank residual-subspace patching did not isolate a compact transport subspace, and the planned evasion analysis has not yet run.
 
 ---
 
@@ -29,6 +29,12 @@ Large language models are increasingly used for cybersecurity tasks such as mali
 - Long-input pressure: 234 samples exceed 8k chars; 116 exceed 16k
 - Truncation pressure at 12k-char preprocessing cap: 157 rows
 - Initial balanced analysis manifest: 128 rows total, 64 benign / 64 malicious
+- Natural-overlap circuit-validation set: 216 rows total, 108 benign / 108 malicious
+- Length-filtered natural-overlap pool at `<=3000` chars: 159 rows total, 55 benign / 104 malicious
+- Original mechanistic validation cohort: 18 fully correct benign/malicious pairs, 36 total rows
+- Expanded interim pair cohort from within-family matching: 100 candidate pairs, 200 total rows
+- Expanded interim valid pair cohort after H100 baseline filtering: 96 valid pairs, 192 total rows, 78 unique scripts
+- Important caveat: the 96-pair expanded cohort reuses scripts across multiple pairings, so it materially improves coverage but does not behave like 96 independent holdout pairs
 
 **Interpretation:**
 The scale-up dataset is approximately balanced, but it contains a long-tail of very large scripts. Larger-scale circuit validation should therefore use explicit length controls and report how truncation or filtering affects the evaluation set.
@@ -65,9 +71,13 @@ A set of early attention heads detects suspicious PowerShell indicators (e.g., `
 **Results:**
 - We built an overlap-controlled validation set where benign and malicious scripts share suspicious indicator strings, then restricted to a tractable `<=3000`-char paired subset.
 - On that tractable subset, the original imported baseline left 18 fully correct benign/malicious pairs for mechanistic analysis. The new local H100 baseline reproduced those 18 valid pairs with 36/36 correct predictions.
+- A larger interim cohort is now available from the same natural-overlap source pool by generating many within-family length-matched pairings rather than keeping only one zip-style pair per family member. With a per-family cap of 20 combinations, this produced 100 candidate pairs at `<=3000` chars.
+- A local H100 baseline on that expanded candidate cohort reached `98%` row accuracy (`200/200` rows scored, four pairs dropped by pairwise filtering), leaving 96 valid pairs and 192 valid rows.
+- That expanded cohort improves script coverage from 36 unique files in the original mechanistic set to 78 unique files, including 47 unique files not present in the original 18-pair cohort.
 - A local H100 recurrence run over those 18 pairs again concentrated attention in Layer 0. The top recurring heads were `L0H9` (`pair_count = 13`, `mean_delta = 0.00793`), `L0H11` (`10`, `0.00587`), `L0H23` (`7`, `0.00452`), and `L0H8` (`7`, `0.00259`).
 - This reproduces the earlier non-local summary closely and supports a stable early-detector claim: indicator-focused attention is concentrated in Layer 0 rather than emerging only in deeper blocks.
 - The overlap-controlled family breakdown remains heterogeneous. `Invoke-Expression` and `FromBase64String` preserve strong positive recurrence for the root head set, while `DownloadString` remains weaker and less consistent.
+- The expanded cohort is useful as a stronger interim validation set, but it should be interpreted as a paired-coverage expansion rather than a clean new holdout. Several families still rely on a small benign source pool, especially `DownloadFile`, `DownloadString`, and `Invoke-WebRequest`.
 - Practical interpretation: the broad detector generalizes across several indicator families, but it is better described as an early Layer 0 detector family than as a single universally dominant head.
 
 **Current best-supported early heads:**
@@ -172,8 +182,13 @@ A set of early attention heads detects suspicious PowerShell indicators (e.g., `
 
 - The overlap-controlled tractable cohort contains 18 fully correct benign/malicious pairs spanning seven indicator families: `Invoke-Expression`, `FromBase64String`, `Invoke-WebRequest`, `DownloadFile`, `DownloadString`, `IEX`, and `-EncodedCommand`.
 - The local H100 baseline reproduced 36/36 correct predictions on this cohort, improving on the older imported baseline artifact that had one error before filtering.
+- A larger interim generalization cohort is now available at the same `<=3000`-char cap: 96 valid benign/malicious pairs after baseline filtering, spanning the same seven indicator families.
+- That larger cohort is built from within-family natural-overlap pair expansions capped at 20 pairs per family. It materially increases coverage, but it is not a clean independent holdout because source scripts are reused across multiple pairings.
+- Family composition in the expanded valid cohort is still uneven. The valid pair counts are `DownloadFile=20`, `FromBase64String=20`, `Invoke-Expression=20`, `Invoke-WebRequest=18`, `DownloadString=10`, `IEX=6`, and `-EncodedCommand=2`.
+- Unique-script coverage in the expanded valid cohort is 78 scripts total: 29 benign and 49 malicious. Some families still have very few benign source scripts, so the larger pair count should be interpreted as stronger matched-control coverage rather than full-distribution generalization.
 - Family-level baseline summaries show all seven families remain separable under the full model, with malicious mean logit differences positive and benign mean logit differences negative.
 - The early Layer 0 detector therefore generalizes beyond a single keyword family or a tiny hand-picked short-pair set.
+- The expanded interim cohort strengthens that claim, but it does not fully close the generalization gap. A stronger final validation set still needs more genuinely distinct benign scripts, held-out families or templates, and a separate evasion/obfuscation split.
 - The new full-model layer ablation sweep adds a plausible later decision-stage candidate that also generalizes across the 18-pair cohort, so the repo is no longer limited to an early-detector-only story.
 - What remains incomplete is finer-grained validation inside those later layers. We now have full-model layer-component localization and an initial late-head scan, but not yet a convincing head-level or path-level causal decomposition of the decision-stage band.
 - The new full-model patching sweep strengthens that same later-stage story in the opposite direction: replacing malicious late-layer states with benign ones in attention layers `12-13` sharply suppresses the `BLOCK` preference across the cohort.
@@ -202,9 +217,9 @@ A set of early attention heads detects suspicious PowerShell indicators (e.g., `
 |----------|---------------|----------------|
 |          |               |                |
 
-**Status:** not yet run in this repo.
+**Status:** not yet run as a completed artifact-backed evaluation in this repo.
 
-The codebase contains a conservative `generate_obfuscations` helper that only emits formatting-preserving variants, but there is no completed artifact-backed evasion evaluation yet. This remains a direct gap against the plan and against any claim that the complete circuit is validated.
+The codebase now contains a conservative `generate_obfuscations` helper plus a new `augment-pair-manifest` command for pair-preserving formatting variants, but these only produce layout and whitespace rewrites. On the current data, those conservative rewrites yielded only a handful of nontrivial extra pairs, so they are useful for bookkeeping but not yet a meaningful evasion benchmark. There is still no completed artifact-backed evasion evaluation, which remains a direct gap against the plan and against any claim that the complete circuit is validated.
 
 ---
 
@@ -295,6 +310,12 @@ The codebase contains a conservative `generate_obfuscations` helper that only em
 | artifacts/circuit_val_family_root_heads_n18short_metadata.json | Metadata for the full 18-pair family-level overlap summaries |
 | artifacts/circuit_val_pair_baseline_eval_t3000_h100.csv | Local H100 full-model baseline on the 18-pair overlap-controlled cohort |
 | artifacts/circuit_val_pair_manifest_t3000_valid_causal18_short_h100.csv | Local H100-refreshed valid-pair manifest for the 18-pair causal cohort |
+| artifacts/circuit_val_set_t3000.csv | Length-filtered `<=3000` natural-overlap source pool used for expanded pair generation |
+| artifacts/circuit_val_pair_manifest_t3000_combo_cap20.csv | Expanded within-family length-matched pair manifest capped at 20 pairs per family |
+| artifacts/circuit_val_pair_manifest_t3000_combo_cap20_baseline_h100.csv | Local H100 baseline on the expanded 100-pair candidate cohort |
+| artifacts/circuit_val_pair_manifest_t3000_combo_cap20_valid_h100.csv | Expanded 96-pair valid cohort after baseline pair filtering |
+| artifacts/circuit_val_pair_manifest_t3000_valid_causal18_short_h100_augmented.csv | Conservative formatting-variant augmentation attempt for the original 18-pair cohort |
+| artifacts/circuit_val_pair_manifest_t3000_valid_causal18_short_h100_augmented_metadata.json | Metadata for the conservative pair-preserving formatting augmentation run |
 | artifacts/circuit_val_batch_attention_l4_n18_h100_summary.csv | Local H100 4-layer recurrence summary on the 18-pair overlap-controlled cohort |
 | artifacts/circuit_val_batch_attention_l4_n18_h100_metadata.json | Metadata for the local H100 18-pair attention recurrence run |
 | artifacts/circuit_val_batch_causal_root_l4_n18short_h100_patch_summary.csv | Local H100 root-head patch summary on the full 18-pair overlap-controlled cohort |
