@@ -1046,6 +1046,27 @@ def replace_method_call_with_psobject_invoke(script: str, method_name: str, spli
     return updated if count > 0 and updated != script else None
 
 
+def replace_command_token_with_alias(script: str, command: str, alias: str) -> Optional[str]:
+    pattern = re.compile(rf"(?im)(^|(?<=[\s;()])){re.escape(command)}(?=(?:\s|$))")
+    updated, count = pattern.subn(lambda match: match.group(1) + alias, script)
+    return updated if count > 0 and updated != script else None
+
+
+def replace_invoke_expression_with_scriptblock_create(script: str, command: str) -> Optional[str]:
+    pattern = re.compile(
+        rf"(?i)(?P<prefix>^|(?<=[\s;{{(])){re.escape(command)}\s+(?P<expr>[^\r\n;}}]+)",
+        flags=re.MULTILINE,
+    )
+
+    def repl(match: re.Match[str]) -> str:
+        prefix = match.group("prefix")
+        expr = match.group("expr").rstrip()
+        return f"{prefix}&([scriptblock]::Create({expr}))"
+
+    updated, count = pattern.subn(repl, script, count=1)
+    return updated if count > 0 and updated != script else None
+
+
 def split_quoted_literal_lenient(script: str, literal: str, left: str, right: str) -> Optional[str]:
     pattern = re.compile(rf"(?P<q>['\"]){re.escape(literal)}(?P<tail>\s*)(?P=q)")
 
@@ -1063,10 +1084,16 @@ def split_quoted_literal_lenient(script: str, literal: str, left: str, right: st
 def apply_evasion_technique(script: str, technique_id: str) -> Optional[str]:
     if technique_id == "iex_call_operator_string":
         return replace_command_token(script, "IEX", "&('I'+'EX')")
+    if technique_id == "iex_scriptblock_create":
+        return replace_invoke_expression_with_scriptblock_create(script, "IEX")
     if technique_id == "invoke_expression_call_operator_string":
         return replace_command_token(script, "Invoke-Expression", "&('Invoke-'+'Expression')")
+    if technique_id == "invoke_expression_scriptblock_create":
+        return replace_invoke_expression_with_scriptblock_create(script, "Invoke-Expression")
     if technique_id == "invoke_webrequest_call_operator_string":
         return replace_command_token(script, "Invoke-WebRequest", "&('Invoke-'+'WebRequest')")
+    if technique_id == "invoke_webrequest_alias":
+        return replace_command_token_with_alias(script, "Invoke-WebRequest", "iwr")
     if technique_id == "start_process_call_operator_string":
         return replace_command_token(script, "Start-Process", "&('Start-'+'Process')")
     if technique_id == "new_object_webclient_type_string":
@@ -1112,6 +1139,19 @@ EVASION_TECHNIQUES: Dict[str, EvasionTechnique] = {
         static_checks=("parse_ok", "command_token_replaced", "no_operand_change"),
         notes="Conservative token rewrite; variant still needs parse validation before acceptance.",
     ),
+    "iex_scriptblock_create": EvasionTechnique(
+        technique_id="iex_scriptblock_create",
+        family="execution_indirection",
+        description="Rewrite direct IEX command execution into scriptblock creation plus call-operator invocation.",
+        runtime_target="cross_runtime",
+        target_indicators=("IEX",),
+        preconditions=("script contains a direct IEX command with a single expression operand",),
+        forbidden_if=("IEX argument spans multiple statements or relies on IEX-specific scope behavior",),
+        expected_indicator_delta="remove_literal",
+        semantic_invariants=("executed expression remains identical", "execution stays in-process via a created scriptblock"),
+        static_checks=("parse_ok", "command_token_replaced", "no_operand_change"),
+        notes="Intended for simple direct IEX forms like `iex $matches[1]`.",
+    ),
     "invoke_expression_call_operator_string": EvasionTechnique(
         technique_id="invoke_expression_call_operator_string",
         family="execution_indirection",
@@ -1125,6 +1165,19 @@ EVASION_TECHNIQUES: Dict[str, EvasionTechnique] = {
         static_checks=("parse_ok", "command_token_replaced", "no_operand_change"),
         notes="Suitable for direct command-token occurrences rather than quoted literals.",
     ),
+    "invoke_expression_scriptblock_create": EvasionTechnique(
+        technique_id="invoke_expression_scriptblock_create",
+        family="execution_indirection",
+        description="Rewrite direct Invoke-Expression execution into scriptblock creation plus call-operator invocation.",
+        runtime_target="cross_runtime",
+        target_indicators=("Invoke-Expression",),
+        preconditions=("script contains a direct Invoke-Expression command with a single expression operand",),
+        forbidden_if=("Invoke-Expression argument spans multiple statements or relies on Invoke-Expression-specific scope behavior",),
+        expected_indicator_delta="remove_literal",
+        semantic_invariants=("executed expression remains identical", "execution stays in-process via a created scriptblock"),
+        static_checks=("parse_ok", "command_token_replaced", "no_operand_change"),
+        notes="Intended for direct command forms rather than string-literal construction.",
+    ),
     "invoke_webrequest_call_operator_string": EvasionTechnique(
         technique_id="invoke_webrequest_call_operator_string",
         family="keyword_hiding",
@@ -1137,6 +1190,19 @@ EVASION_TECHNIQUES: Dict[str, EvasionTechnique] = {
         semantic_invariants=("request arguments remain identical", "network target remains identical"),
         static_checks=("parse_ok", "command_token_replaced", "request_args_preserved"),
         notes="Conservative command-name hiding only; does not alter URLs or flags.",
+    ),
+    "invoke_webrequest_alias": EvasionTechnique(
+        technique_id="invoke_webrequest_alias",
+        family="keyword_hiding",
+        description="Rewrite Invoke-WebRequest command tokens to the built-in alias iwr.",
+        runtime_target="cross_runtime",
+        target_indicators=("Invoke-WebRequest",),
+        preconditions=("script contains a standalone Invoke-WebRequest command token",),
+        forbidden_if=("script depends on a shadowed or redefined iwr alias",),
+        expected_indicator_delta="remove_literal",
+        semantic_invariants=("request arguments remain identical", "network target remains identical"),
+        static_checks=("parse_ok", "command_token_replaced", "request_args_preserved"),
+        notes="Simple but realistic command-name hiding that remains runnable in standard PowerShell environments.",
     ),
     "start_process_call_operator_string": EvasionTechnique(
         technique_id="start_process_call_operator_string",
@@ -1312,8 +1378,8 @@ def evaluate_variant_invariants(variant_row: pd.Series, seed_row: Optional[pd.Se
     if seed_execs != variant_execs:
         failures.append("executable_literal_set_changed")
 
-    seed_encoded = len(re.findall(r"-EncodedCommand", seed_content, flags=re.IGNORECASE))
-    variant_encoded = len(re.findall(r"-EncodedCommand", variant_content, flags=re.IGNORECASE))
+    seed_encoded = count_resolved_literal_equivalents(seed_content, "-EncodedCommand")
+    variant_encoded = count_resolved_literal_equivalents(variant_content, "-EncodedCommand")
     if seed_encoded != variant_encoded:
         failures.append("encodedcommand_presence_changed")
 
@@ -1341,6 +1407,24 @@ def evaluate_variant_invariants(variant_row: pd.Series, seed_row: Optional[pd.Se
             failures.append("resolved_string_not_obscured")
 
     return len(failures) == 0, failures
+
+
+def count_resolved_literal_equivalents(text: str, literal: str) -> int:
+    total = len(re.findall(re.escape(literal), text, flags=re.IGNORECASE))
+    for left, right in split_literal_once(literal):
+        pattern = re.compile(
+            rf"(?P<q>['\"]){re.escape(left)}(?P=q)\s*\+\s*(?P<q2>['\"]){re.escape(right)}(?P=q2)",
+            flags=re.IGNORECASE,
+        )
+        total += len(pattern.findall(text))
+    return total
+
+
+def split_literal_once(literal: str) -> List[Tuple[str, str]]:
+    parts: List[Tuple[str, str]] = []
+    for idx in range(1, len(literal)):
+        parts.append((literal[:idx], literal[idx:]))
+    return parts
 
 
 def build_evasion_seed_manifest(
