@@ -8,17 +8,17 @@ This repository contains two related bodies of work on mechanistic interpretabil
 
 The root directory contains the original small-scale circuit analysis and its supporting notebooks, guides, and validation notes. These files are useful context for the current work because they define the original claim we are now trying to stress-test:
 
-- early layer-0 heads `H11`, `H8`, `H23`, and `H9` act as the main malicious-indicator detector circuit
+- early layer-0 heads `H11`, `H8`, `H23`, and `H9` act as the originally proposed malicious-indicator detector circuit
 - later layers refine and harden the final `ALLOW` vs `BLOCK` decision
 
 Important root-level files:
 
-- [`00_START_HERE.md`](/Users/rfetterman/DEV/mech-interp/00_START_HERE.md)
-- [`README_CIRCUIT_ANALYSIS.md`](/Users/rfetterman/DEV/mech-interp/README_CIRCUIT_ANALYSIS.md)
-- [`CIRCUIT_FINDINGS.md`](/Users/rfetterman/DEV/mech-interp/CIRCUIT_FINDINGS.md)
-- [`foundation_sec_mi_powershell_circuit_analysis.py`](/Users/rfetterman/DEV/mech-interp/foundation_sec_mi_powershell_circuit_analysis.py)
-- [`circuit_validation_experiments.ipynb`](/Users/rfetterman/DEV/mech-interp/circuit_validation_experiments.ipynb)
-- [`circuit_validation_results/`](/Users/rfetterman/DEV/mech-interp/circuit_validation_results)
+- [`00_START_HERE.md`](./00_START_HERE.md)
+- [`README_CIRCUIT_ANALYSIS.md`](./README_CIRCUIT_ANALYSIS.md)
+- [`CIRCUIT_FINDINGS.md`](./CIRCUIT_FINDINGS.md)
+- [`foundation_sec_mi_powershell_circuit_analysis.py`](./foundation_sec_mi_powershell_circuit_analysis.py)
+- [`circuit_validation_experiments.ipynb`](./circuit_validation_experiments.ipynb)
+- [`circuit_validation_results/`](./circuit_validation_results)
 
 These root files should be treated as prior context and initial claims, not as the final large-scale validated result.
 
@@ -28,10 +28,12 @@ This subdirectory contains the new scaled validation pipeline and all new paper-
 
 Key files:
 
-- [`mech-interp-circuit/PLAN.md`](/Users/rfetterman/DEV/mech-interp/mech-interp-circuit/PLAN.md)
-- [`mech-interp-circuit/FINDINGS.md`](/Users/rfetterman/DEV/mech-interp/mech-interp-circuit/FINDINGS.md)
-- [`mech-interp-circuit/scaled_validation.py`](/Users/rfetterman/DEV/mech-interp/mech-interp-circuit/scaled_validation.py)
-- [`mech-interp-circuit/circuit_val_set.csv`](/Users/rfetterman/DEV/mech-interp/mech-interp-circuit/circuit_val_set.csv)
+- [`mech-interp-circuit/PLAN.md`](./mech-interp-circuit/PLAN.md)
+- [`mech-interp-circuit/FINDINGS.md`](./mech-interp-circuit/FINDINGS.md)
+- [`mech-interp-circuit/EVASION_BENCHMARK_SCHEMA.md`](./mech-interp-circuit/EVASION_BENCHMARK_SCHEMA.md)
+- [`mech-interp-circuit/RESUME_2026-03-27.md`](./mech-interp-circuit/RESUME_2026-03-27.md)
+- [`mech-interp-circuit/scaled_validation.py`](./mech-interp-circuit/scaled_validation.py)
+- [`mech-interp-circuit/circuit_val_set.csv`](./mech-interp-circuit/circuit_val_set.csv)
 
 ## Plan
 
@@ -41,8 +43,9 @@ The current plan is:
 2. Build a broader validation dataset where suspicious indicator strings appear in both benign and malicious samples.
 3. Filter to examples that the full model actually classifies correctly.
 4. Run reduced-layer mechanistic experiments that are tractable locally.
-5. Check whether the originally claimed heads still recur and still have causal effect.
-6. Record only measured, reproducible findings in [`mech-interp-circuit/FINDINGS.md`](/Users/rfetterman/DEV/mech-interp/mech-interp-circuit/FINDINGS.md).
+5. Re-run the decisive circuit validation work on CUDA hardware for deeper late-stage tests.
+6. Build a runnable evasion benchmark with semantics-preserving obfuscations.
+7. Record only measured, reproducible findings in [`mech-interp-circuit/FINDINGS.md`](./mech-interp-circuit/FINDINGS.md).
 
 ## Progress So Far
 
@@ -58,21 +61,28 @@ Current status:
   - activation patching
   - head ablation
   - family-level overlap summaries
+- Added an evasion benchmark pipeline for:
+  - generating conservative runnable obfuscations
+  - manifesting seeds and variants
+  - syntax and invariant review
+  - paired seed/variant evaluation
 - Fixed the local MPSGraph failure by moving causal interventions from `hook_result` to `hook_z`.
 - Scaled the overlap-controlled 4-layer causal run to the full 18-pair validated cohort.
+- Extended the late-stage validation on an H100 host, including a 96-pair within-family matched cohort and evasion follow-up probes.
 
 Best current result:
 
-- The original root claim is only partially validated.
-- Early layer-0 recurrence generalizes well.
-- The strongest portable causal signal is concentrated in `L0H11` and `L0H9`.
-- `H8` and `H23` recur, but do not behave like equally stable cross-family causal heads on the broader overlap-controlled dataset.
+- The original root claim is only partially validated and needed refinement.
+- Early layer-0 recurrence generalizes well, but the strongest portable causal signal is concentrated in `L0H11` and `L0H9`, not the full original four-head set.
+- The cleanest currently supported direct branch is `L0H11 -> L12H15/L12H5/L12H4`.
+- The cleaner late sufficiency-oriented carrier is `L12H15/L12H5/L12H4/L12H28`, while `L12H2` behaves more like a family-sensitive auxiliary head.
+- The first runnable evasion benchmark has now produced a real miss: `downloadstring_psobject_invoke` can evade on a small `DownloadString` slice, and current probes suggest a necessity-versus-sufficiency split in the late-stage circuit rather than simple route deletion.
 
-## Current Limitation
+## Current Limitations
 
-The main remaining limitation is hardware depth, not workflow completeness:
+- The 96-pair cohort is useful but not a fully independent holdout because source scripts are reused across multiple pairings.
+- The late-stage decision process is only partially decomposed: the route is validated at the head-group level, but the redistributed computation under evasion is not yet isolated.
+- The evasion benchmark is now real, but still narrow. The first concrete failure mode is `DownloadString`-focused and should not yet be overgeneralized.
+- Linux-side syntax review uses `tree-sitter` as a fallback when real PowerShell runtimes are unavailable, so runnable validity is still strongest when later rechecked on Windows PowerShell or `pwsh`.
 
-- the full 18-pair overlap-controlled causal run succeeds at 4 layers on the local Apple Silicon machine
-- the same experiment at 8 layers still runs out of MPS memory locally
-
-That means the current repo contains a complete reduced-layer validation pipeline, but deeper/fuller causal confirmation should be rerun on a larger CUDA machine.
+The repo now contains a complete reduced-layer validation pipeline, CUDA-backed late-stage follow-up, and a first artifact-backed evasion benchmark. The remaining work is mostly about generalization and deeper decomposition rather than basic tooling.

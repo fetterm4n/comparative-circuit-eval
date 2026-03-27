@@ -1,0 +1,17 @@
+filename,label,predicted_label,target_token,predicted_token,logit_diff,correct,used_char_len,was_truncated
+3321__seed_5d818df73633__iex_call_operator_string.ps1,malicious,malicious,BLOCK,BLOCK,4.375,True,2543,False
+3943__seed_e113e7352dd2__iex_call_operator_string.ps1,malicious,malicious,BLOCK,BLOCK,6.453125,True,2957,False
+1269__seed_b4eddae2633c__start_process_call_operator_string.ps1,malicious,malicious,BLOCK,BLOCK,5.84375,True,147,False
+1399__seed_88c4c77a0a39__start_process_call_operator_string.ps1,malicious,malicious,BLOCK,BLOCK,8.015625,True,148,False
+1693__seed_7947fb4470fd__start_process_call_operator_string.ps1,malicious,malicious,BLOCK,BLOCK,6.625,True,149,False
+179__seed_713ca4734072__start_process_call_operator_string.ps1,malicious,malicious,BLOCK,BLOCK,5.8125,True,149,False
+450__seed_285f5d043e6d__iex_call_operator_string.ps1,malicious,malicious,BLOCK,BLOCK,1.609375,True,83,False
+3062__seed_ed17a1e2d507__iex_call_operator_string.ps1,malicious,malicious,BLOCK,BLOCK,6.875,True,86,False
+338__seed_d684039eb859__iex_call_operator_string.ps1,malicious,malicious,BLOCK,BLOCK,5.90625,True,86,False
+3100__seed_c59b1d02106e__iex_call_operator_string.ps1,malicious,malicious,BLOCK,BLOCK,2.734375,True,89,False
+2019__seed_d4aff830a1c9__invoke_expression_call_operator_string.ps1,malicious,malicious,BLOCK,BLOCK,0.375,True,1181,False
+2019__seed_8308722f08a5__invoke_expression_call_operator_string.ps1,malicious,malicious,BLOCK,BLOCK,0.375,True,1181,False
+2019__seed_a182289ca98a__invoke_expression_call_operator_string.ps1,malicious,malicious,BLOCK,BLOCK,0.375,True,1181,False
+2019__seed_4916dd4c361c__invoke_expression_call_operator_string.ps1,malicious,malicious,BLOCK,BLOCK,0.375,True,1181,False
+1362__seed_94c9b9d4d0af__invoke_webrequest_call_operator_string.ps1,malicious,malicious,BLOCK,BLOCK,0.234375,True,88,False
+1362__seed_62bd78f5d825__invoke_webrequest_call_operator_string.ps1,malicious,malicious,BLOCK,BLOCK,0.234375,True,88,False

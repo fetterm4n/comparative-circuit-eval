@@ -19,10 +19,14 @@ from __future__ import annotations
 import argparse
 import csv
 import gc
+import hashlib
 import json
 import random
 import re
+import shutil
+import subprocess
 import sys
+import tempfile
 from collections import deque
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -32,6 +36,17 @@ import numpy as np
 import pandas as pd
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
+
+try:
+    from tree_sitter import Language as TreeSitterLanguage, Parser as TreeSitterParser
+    import tree_sitter_powershell
+
+    HAS_TREE_SITTER_POWERSHELL = True
+except ImportError:
+    TreeSitterLanguage = None
+    TreeSitterParser = None
+    tree_sitter_powershell = None
+    HAS_TREE_SITTER_POWERSHELL = False
 
 try:
     from transformer_lens import HookedTransformer
@@ -80,6 +95,7 @@ PATTERN_DISPLAY_NAMES: Dict[str, str] = {
     r"CreateThread": "CreateThread",
     r"VirtualAlloc": "VirtualAlloc",
 }
+RUNTIME_TARGETS = {"windows_powershell_5_1", "pwsh_7", "cross_runtime"}
 
 
 @dataclass
@@ -101,11 +117,31 @@ class DatasetSummary:
     gt_16k_chars: int
 
 
+@dataclass(frozen=True)
+class EvasionTechnique:
+    technique_id: str
+    family: str
+    description: str
+    runtime_target: str
+    target_indicators: Tuple[str, ...]
+    preconditions: Tuple[str, ...]
+    forbidden_if: Tuple[str, ...]
+    expected_indicator_delta: str
+    semantic_invariants: Tuple[str, ...]
+    static_checks: Tuple[str, ...]
+    notes: str
+
+
 def percentile(values: Sequence[int], q: float) -> int:
     if not values:
         return 0
     idx = min(len(values) - 1, int((len(values) - 1) * q))
     return int(values[idx])
+
+
+def stable_short_hash(*parts: object, length: int = 12) -> str:
+    payload = "||".join(str(part) for part in parts)
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()[:length]
 
 
 def normalize_label(raw_label: str) -> str:
@@ -117,6 +153,12 @@ def normalize_label(raw_label: str) -> str:
 
 def clean_script_text(text: str) -> str:
     return (text or "").replace("\r\n", "\n").strip("\n")
+
+
+def csv_safe_bool(value: Optional[bool]) -> object:
+    if value is None:
+        return pd.NA
+    return bool(value)
 
 
 def truncate_script(text: str, max_chars: Optional[int]) -> Tuple[str, bool]:
@@ -974,6 +1016,515 @@ def generate_obfuscations(script: str) -> List[Dict[str, str]]:
     return outputs
 
 
+def replace_command_token(script: str, command: str, replacement: str) -> Optional[str]:
+    pattern = re.compile(rf"(?im)(^|(?<=[\s;()])){re.escape(command)}(?=(?:\s|$))")
+    updated, count = pattern.subn(lambda match: match.group(1) + replacement, script)
+    return updated if count > 0 and updated != script else None
+
+
+def split_quoted_literal(script: str, literal: str, left: str, right: str) -> Optional[str]:
+    pattern = re.compile(rf"(?P<q>['\"]){re.escape(literal)}(?P=q)")
+
+    def repl(match: re.Match[str]) -> str:
+        q = match.group("q")
+        return f"{q}{left}{q}+{q}{right}{q}"
+
+    updated, count = pattern.subn(repl, script)
+    return updated if count > 0 and updated != script else None
+
+
+def replace_new_object_type(script: str, type_name: str, replacement_expr: str) -> Optional[str]:
+    pattern = re.compile(rf"(?i)New-Object\s+{re.escape(type_name)}(?=(?:\s|$))")
+    updated, count = pattern.subn(f"New-Object {replacement_expr}", script)
+    return updated if count > 0 and updated != script else None
+
+
+def replace_method_call_with_psobject_invoke(script: str, method_name: str, split_left: str, split_right: str) -> Optional[str]:
+    pattern = re.compile(rf"(?i)\.{re.escape(method_name)}\s*\(")
+    replacement = f".PSObject.Methods['{split_left}'+'{split_right}'].Invoke("
+    updated, count = pattern.subn(replacement, script)
+    return updated if count > 0 and updated != script else None
+
+
+def split_quoted_literal_lenient(script: str, literal: str, left: str, right: str) -> Optional[str]:
+    pattern = re.compile(rf"(?P<q>['\"]){re.escape(literal)}(?P<tail>\s*)(?P=q)")
+
+    def repl(match: re.Match[str]) -> str:
+        q = match.group("q")
+        tail = match.group("tail")
+        if tail:
+            return f"{q}{left}{q}+{q}{right}{tail}{q}"
+        return f"{q}{left}{q}+{q}{right}{q}"
+
+    updated, count = pattern.subn(repl, script)
+    return updated if count > 0 and updated != script else None
+
+
+def apply_evasion_technique(script: str, technique_id: str) -> Optional[str]:
+    if technique_id == "iex_call_operator_string":
+        return replace_command_token(script, "IEX", "&('I'+'EX')")
+    if technique_id == "invoke_expression_call_operator_string":
+        return replace_command_token(script, "Invoke-Expression", "&('Invoke-'+'Expression')")
+    if technique_id == "invoke_webrequest_call_operator_string":
+        return replace_command_token(script, "Invoke-WebRequest", "&('Invoke-'+'WebRequest')")
+    if technique_id == "start_process_call_operator_string":
+        return replace_command_token(script, "Start-Process", "&('Start-'+'Process')")
+    if technique_id == "new_object_webclient_type_string":
+        updated = replace_new_object_type(
+            script,
+            "System.Net.WebClient",
+            "('System.Net.'+'WebClient')",
+        )
+        if updated is not None:
+            return updated
+        return replace_new_object_type(script, "Net.WebClient", "('Net.'+'WebClient')")
+    if technique_id == "split_quoted_invoke_expression_literal":
+        return split_quoted_literal(script, "Invoke-Expression", "Invoke-", "Expression")
+    if technique_id == "split_quoted_invoke_webrequest_literal":
+        return split_quoted_literal(script, "Invoke-WebRequest", "Invoke-", "WebRequest")
+    if technique_id == "split_quoted_downloadstring_literal":
+        return split_quoted_literal(script, "DownloadString", "Download", "String")
+    if technique_id == "split_quoted_downloadfile_literal":
+        return split_quoted_literal(script, "DownloadFile", "Download", "File")
+    if technique_id == "split_quoted_encodedcommand_literal":
+        updated = split_quoted_literal(script, "-EncodedCommand", "-Encoded", "Command")
+        if updated is not None:
+            return updated
+        return split_quoted_literal_lenient(script, "-EncodedCommand", "-Encoded", "Command")
+    if technique_id == "downloadstring_psobject_invoke":
+        return replace_method_call_with_psobject_invoke(script, "DownloadString", "Download", "String")
+    if technique_id == "downloadfile_psobject_invoke":
+        return replace_method_call_with_psobject_invoke(script, "DownloadFile", "Download", "File")
+    raise ValueError(f"Unsupported evasion technique: {technique_id!r}")
+
+
+EVASION_TECHNIQUES: Dict[str, EvasionTechnique] = {
+    "iex_call_operator_string": EvasionTechnique(
+        technique_id="iex_call_operator_string",
+        family="execution_indirection",
+        description="Rewrite bare IEX command tokens into a call-operator invocation over a constructed string.",
+        runtime_target="cross_runtime",
+        target_indicators=("IEX",),
+        preconditions=("script contains a standalone IEX command token",),
+        forbidden_if=("IEX occurs only inside strings or comments",),
+        expected_indicator_delta="remove_literal",
+        semantic_invariants=("scriptblock or string operand to IEX stays unchanged", "execution remains in-process"),
+        static_checks=("parse_ok", "command_token_replaced", "no_operand_change"),
+        notes="Conservative token rewrite; variant still needs parse validation before acceptance.",
+    ),
+    "invoke_expression_call_operator_string": EvasionTechnique(
+        technique_id="invoke_expression_call_operator_string",
+        family="execution_indirection",
+        description="Rewrite Invoke-Expression command tokens into a call-operator invocation over a constructed string.",
+        runtime_target="cross_runtime",
+        target_indicators=("Invoke-Expression",),
+        preconditions=("script contains a standalone Invoke-Expression command token",),
+        forbidden_if=("indicator appears only as data",),
+        expected_indicator_delta="remove_literal",
+        semantic_invariants=("command operands remain identical", "execution order remains identical"),
+        static_checks=("parse_ok", "command_token_replaced", "no_operand_change"),
+        notes="Suitable for direct command-token occurrences rather than quoted literals.",
+    ),
+    "invoke_webrequest_call_operator_string": EvasionTechnique(
+        technique_id="invoke_webrequest_call_operator_string",
+        family="keyword_hiding",
+        description="Rewrite Invoke-WebRequest command tokens into a call-operator invocation over a constructed string.",
+        runtime_target="cross_runtime",
+        target_indicators=("Invoke-WebRequest",),
+        preconditions=("script contains a standalone Invoke-WebRequest command token",),
+        forbidden_if=("script relies on shell-specific alias behavior instead of command invocation",),
+        expected_indicator_delta="remove_literal",
+        semantic_invariants=("request arguments remain identical", "network target remains identical"),
+        static_checks=("parse_ok", "command_token_replaced", "request_args_preserved"),
+        notes="Conservative command-name hiding only; does not alter URLs or flags.",
+    ),
+    "start_process_call_operator_string": EvasionTechnique(
+        technique_id="start_process_call_operator_string",
+        family="keyword_hiding",
+        description="Rewrite Start-Process command tokens into a call-operator invocation over a constructed string.",
+        runtime_target="cross_runtime",
+        target_indicators=("Start-Process",),
+        preconditions=("script contains a standalone Start-Process command token",),
+        forbidden_if=("script depends on alias-only resolution",),
+        expected_indicator_delta="remove_literal",
+        semantic_invariants=("child process arguments remain identical", "target executable/path remains identical"),
+        static_checks=("parse_ok", "command_token_replaced", "process_args_preserved"),
+        notes="Useful for child-process staging patterns already present in the corpus.",
+    ),
+    "new_object_webclient_type_string": EvasionTechnique(
+        technique_id="new_object_webclient_type_string",
+        family="network_object_indirection",
+        description="Rewrite New-Object WebClient type arguments into a constructed string expression.",
+        runtime_target="cross_runtime",
+        target_indicators=("Net.WebClient",),
+        preconditions=("script contains New-Object System.Net.WebClient or New-Object Net.WebClient",),
+        forbidden_if=("script already uses a nonliteral type expression",),
+        expected_indicator_delta="reduce_literal",
+        semantic_invariants=("constructed .NET type name resolves to the same WebClient type", "downstream object use remains unchanged"),
+        static_checks=("parse_ok", "type_expression_replaced", "object_constructor_preserved"),
+        notes="Conservative because it only rewrites the type-name argument to New-Object.",
+    ),
+    "split_quoted_invoke_expression_literal": EvasionTechnique(
+        technique_id="split_quoted_invoke_expression_literal",
+        family="string_construction",
+        description="Split quoted Invoke-Expression string literals into concatenated literals.",
+        runtime_target="cross_runtime",
+        target_indicators=("Invoke-Expression",),
+        preconditions=("script contains a quoted Invoke-Expression string literal",),
+        forbidden_if=("indicator is not represented as a quoted literal",),
+        expected_indicator_delta="remove_literal",
+        semantic_invariants=("resolved string value remains identical", "surrounding quoting semantics remain identical"),
+        static_checks=("parse_ok", "string_literal_rewritten", "resolved_string_equivalent"),
+        notes="Intended for scripts that construct command names as data before execution.",
+    ),
+    "split_quoted_invoke_webrequest_literal": EvasionTechnique(
+        technique_id="split_quoted_invoke_webrequest_literal",
+        family="string_construction",
+        description="Split quoted Invoke-WebRequest string literals into concatenated literals.",
+        runtime_target="cross_runtime",
+        target_indicators=("Invoke-WebRequest",),
+        preconditions=("script contains a quoted Invoke-WebRequest string literal",),
+        forbidden_if=("indicator is not represented as a quoted literal",),
+        expected_indicator_delta="remove_literal",
+        semantic_invariants=("resolved string value remains identical", "surrounding quoting semantics remain identical"),
+        static_checks=("parse_ok", "string_literal_rewritten", "resolved_string_equivalent"),
+        notes="Does not rewrite direct command-token usage.",
+    ),
+    "split_quoted_downloadstring_literal": EvasionTechnique(
+        technique_id="split_quoted_downloadstring_literal",
+        family="string_construction",
+        description="Split quoted DownloadString literals into concatenated literals.",
+        runtime_target="cross_runtime",
+        target_indicators=("DownloadString",),
+        preconditions=("script contains a quoted DownloadString string literal",),
+        forbidden_if=("indicator is not represented as a quoted literal",),
+        expected_indicator_delta="remove_literal",
+        semantic_invariants=("resolved string value remains identical", "surrounding quoting semantics remain identical"),
+        static_checks=("parse_ok", "string_literal_rewritten", "resolved_string_equivalent"),
+        notes="Useful for scripts that dispatch methods or APIs through string variables.",
+    ),
+    "split_quoted_downloadfile_literal": EvasionTechnique(
+        technique_id="split_quoted_downloadfile_literal",
+        family="string_construction",
+        description="Split quoted DownloadFile literals into concatenated literals.",
+        runtime_target="cross_runtime",
+        target_indicators=("DownloadFile",),
+        preconditions=("script contains a quoted DownloadFile string literal",),
+        forbidden_if=("indicator is not represented as a quoted literal",),
+        expected_indicator_delta="remove_literal",
+        semantic_invariants=("resolved string value remains identical", "surrounding quoting semantics remain identical"),
+        static_checks=("parse_ok", "string_literal_rewritten", "resolved_string_equivalent"),
+        notes="Targets data-string representations rather than direct member-call syntax.",
+    ),
+    "split_quoted_encodedcommand_literal": EvasionTechnique(
+        technique_id="split_quoted_encodedcommand_literal",
+        family="string_construction",
+        description="Split quoted -EncodedCommand literals into concatenated literals.",
+        runtime_target="cross_runtime",
+        target_indicators=("-EncodedCommand",),
+        preconditions=("script contains a quoted -EncodedCommand string literal",),
+        forbidden_if=("flag is not represented as a quoted literal",),
+        expected_indicator_delta="remove_literal",
+        semantic_invariants=("resolved flag value remains identical", "argument order remains identical"),
+        static_checks=("parse_ok", "string_literal_rewritten", "resolved_string_equivalent"),
+        notes="Conservative because it preserves the exact final parameter token.",
+    ),
+    "downloadstring_psobject_invoke": EvasionTechnique(
+        technique_id="downloadstring_psobject_invoke",
+        family="string_construction",
+        description="Rewrite direct DownloadString method calls into PSObject method lookup plus Invoke over a split method-name string.",
+        runtime_target="cross_runtime",
+        target_indicators=("DownloadString",),
+        preconditions=("script contains a direct .DownloadString(...) method call",),
+        forbidden_if=("script already uses PSObject method dispatch",),
+        expected_indicator_delta="remove_literal",
+        semantic_invariants=("download URL arguments remain identical", "resolved invoked method remains DownloadString"),
+        static_checks=("parse_ok", "string_literal_rewritten", "request_args_preserved", "resolved_string_equivalent"),
+        notes="Aims to preserve behavior while obscuring the direct member-name literal.",
+    ),
+    "downloadfile_psobject_invoke": EvasionTechnique(
+        technique_id="downloadfile_psobject_invoke",
+        family="string_construction",
+        description="Rewrite direct DownloadFile method calls into PSObject method lookup plus Invoke over a split method-name string.",
+        runtime_target="cross_runtime",
+        target_indicators=("DownloadFile",),
+        preconditions=("script contains a direct .DownloadFile(...) method call",),
+        forbidden_if=("script already uses PSObject method dispatch",),
+        expected_indicator_delta="remove_literal",
+        semantic_invariants=("download URL and output path arguments remain identical", "resolved invoked method remains DownloadFile"),
+        static_checks=("parse_ok", "string_literal_rewritten", "request_args_preserved", "resolved_string_equivalent", "process_args_preserved"),
+        notes="Preserves argument order while replacing the direct method-name literal.",
+    ),
+}
+
+
+def list_evasion_techniques(techniques: Optional[Sequence[str]] = None) -> List[Dict[str, object]]:
+    selected = techniques or EVASION_TECHNIQUES.keys()
+    rows: List[Dict[str, object]] = []
+    for technique_id in selected:
+        spec = EVASION_TECHNIQUES[technique_id]
+        rows.append(
+            {
+                "technique_id": spec.technique_id,
+                "family": spec.family,
+                "description": spec.description,
+                "runtime_target": spec.runtime_target,
+                "target_indicators": list(spec.target_indicators),
+                "preconditions": list(spec.preconditions),
+                "forbidden_if": list(spec.forbidden_if),
+                "expected_indicator_delta": spec.expected_indicator_delta,
+                "semantic_invariants": list(spec.semantic_invariants),
+                "static_checks": list(spec.static_checks),
+                "notes": spec.notes,
+            }
+        )
+    return rows
+
+
+def parse_technique_list(raw: Optional[str]) -> List[str]:
+    if not raw:
+        return list(EVASION_TECHNIQUES.keys())
+    items = [item.strip() for item in raw.split(",") if item.strip()]
+    unknown = [item for item in items if item not in EVASION_TECHNIQUES]
+    if unknown:
+        raise ValueError(f"Unknown evasion techniques: {unknown!r}")
+    return items
+
+
+def evaluate_variant_invariants(variant_row: pd.Series, seed_row: Optional[pd.Series]) -> Tuple[bool, List[str]]:
+    if seed_row is None:
+        return False, ["missing_seed_manifest"]
+
+    technique_id = str(variant_row["technique_id"])
+    spec = EVASION_TECHNIQUES[technique_id]
+    seed_content = str(seed_row["content"])
+    variant_content = str(variant_row["content"])
+
+    failures: List[str] = []
+
+    seed_urls = extract_urls(seed_content)
+    variant_urls = extract_urls(variant_content)
+    if seed_urls != variant_urls:
+        failures.append("url_set_changed")
+
+    seed_execs = extract_exe_like_literals(seed_content)
+    variant_execs = extract_exe_like_literals(variant_content)
+    if seed_execs != variant_execs:
+        failures.append("executable_literal_set_changed")
+
+    seed_encoded = len(re.findall(r"-EncodedCommand", seed_content, flags=re.IGNORECASE))
+    variant_encoded = len(re.findall(r"-EncodedCommand", variant_content, flags=re.IGNORECASE))
+    if seed_encoded != variant_encoded:
+        failures.append("encodedcommand_presence_changed")
+
+    seed_counts = extract_literal_counts_by_display_name(seed_content)
+    variant_counts = extract_literal_counts_by_display_name(variant_content)
+    target_before = sum(seed_counts.get(name, 0) for name in spec.target_indicators)
+    target_after = sum(variant_counts.get(name, 0) for name in spec.target_indicators)
+
+    if "command_token_replaced" in spec.static_checks or "string_literal_rewritten" in spec.static_checks:
+        if not target_after < target_before:
+            failures.append("target_literal_not_reduced")
+
+    if "type_expression_replaced" in spec.static_checks:
+        if target_after > target_before:
+            failures.append("type_literal_expanded")
+
+    if "process_args_preserved" in spec.static_checks and seed_execs != variant_execs:
+        failures.append("process_args_not_preserved")
+
+    if "request_args_preserved" in spec.static_checks and seed_urls != variant_urls:
+        failures.append("request_args_not_preserved")
+
+    if "resolved_string_equivalent" in spec.static_checks:
+        if not target_after < target_before:
+            failures.append("resolved_string_not_obscured")
+
+    return len(failures) == 0, failures
+
+
+def build_evasion_seed_manifest(
+    manifest: pd.DataFrame,
+    *,
+    source_manifest: Union[str, Path],
+    runtime_target: str = "cross_runtime",
+    baseline_eval: Optional[pd.DataFrame] = None,
+    per_indicator_cap: Optional[int] = None,
+    limit: Optional[int] = None,
+) -> pd.DataFrame:
+    if runtime_target not in RUNTIME_TARGETS:
+        raise ValueError(f"Unsupported runtime_target: {runtime_target!r}")
+    required = {"filename", "label", "content"}
+    missing = required - set(manifest.columns)
+    if missing:
+        raise ValueError(f"Manifest missing required columns: {sorted(missing)!r}")
+
+    seeds = manifest.copy()
+    seeds = seeds[seeds["label"].astype(str).str.lower() == "malicious"].copy()
+    if seeds.empty:
+        raise RuntimeError("No malicious rows found in the input manifest.")
+
+    if baseline_eval is not None:
+        eval_df = baseline_eval.copy()
+        if not {"filename", "label", "predicted_label", "correct", "logit_diff"}.issubset(eval_df.columns):
+            raise ValueError("Baseline eval CSV must contain filename, label, predicted_label, correct, and logit_diff.")
+        keep_cols = ["filename", "label", "predicted_label", "correct", "logit_diff"]
+        seeds = seeds.merge(eval_df[keep_cols], on=["filename", "label"], how="left", suffixes=("", "_eval"))
+        seeds = seeds[seeds["correct"] == True].copy()
+        seeds = seeds[seeds["predicted_label"].astype(str).str.lower() == "malicious"].copy()
+    else:
+        if "predicted_label" not in seeds.columns:
+            seeds["predicted_label"] = "malicious"
+        if "correct" not in seeds.columns:
+            seeds["correct"] = True
+        if "logit_diff" not in seeds.columns:
+            seeds["logit_diff"] = pd.NA
+
+    if seeds.empty:
+        raise RuntimeError("No baseline-correct malicious seeds remain after filtering.")
+
+    if "primary_indicator" not in seeds.columns:
+        seeds["primary_indicator"] = seeds["content"].map(
+            lambda text: choose_primary_indicator(get_matching_patterns(str(text)), {})
+        )
+    if "matched_indicators" not in seeds.columns:
+        seeds["matched_indicators"] = seeds["content"].map(
+            lambda text: "|".join(display_indicator_names(get_matching_patterns(str(text))))
+        )
+    if "used_char_len" not in seeds.columns:
+        seeds["used_char_len"] = seeds["content"].map(lambda text: len(str(text)))
+
+    seeds["source_manifest"] = str(source_manifest)
+    seeds["source_pair_idx"] = seeds.apply(lambda row: optional_int_field(row, "pair_idx"), axis=1)
+    seeds["runtime_target"] = runtime_target
+    seeds["baseline_predicted_label"] = seeds["predicted_label"]
+    seeds["baseline_logit_diff"] = seeds["logit_diff"]
+    seeds["seed_id"] = seeds.apply(
+        lambda row: "seed_" + stable_short_hash(
+            row.get("filename", ""),
+            row.get("source_pair_idx", ""),
+            row.get("primary_indicator", ""),
+            row.get("content", ""),
+        ),
+        axis=1,
+    )
+
+    seeds = seeds.drop_duplicates(subset=["seed_id"]).copy()
+    seeds = seeds.sort_values(["primary_indicator", "used_char_len", "filename"]).reset_index(drop=True)
+    if per_indicator_cap is not None and per_indicator_cap > 0:
+        seeds = seeds.groupby("primary_indicator", group_keys=False).head(per_indicator_cap).reset_index(drop=True)
+    if limit is not None and limit > 0:
+        seeds = seeds.head(limit).copy()
+
+    output_columns = [
+        "seed_id",
+        "filename",
+        "source_manifest",
+        "source_pair_idx",
+        "label",
+        "primary_indicator",
+        "matched_indicators",
+        "runtime_target",
+        "baseline_predicted_label",
+        "baseline_logit_diff",
+        "used_char_len",
+        "content",
+    ]
+    return seeds[output_columns].copy()
+
+
+def build_evasion_variant_manifest(
+    seed_manifest: pd.DataFrame,
+    *,
+    techniques: Sequence[str],
+) -> Tuple[pd.DataFrame, Dict[str, object]]:
+    required = {
+        "seed_id",
+        "filename",
+        "label",
+        "primary_indicator",
+        "matched_indicators",
+        "runtime_target",
+        "content",
+    }
+    missing = required - set(seed_manifest.columns)
+    if missing:
+        raise ValueError(f"Seed manifest missing required columns: {sorted(missing)!r}")
+
+    rows: List[Dict[str, object]] = []
+    generated_counts = {technique_id: 0 for technique_id in techniques}
+    skipped_counts = {technique_id: 0 for technique_id in techniques}
+
+    for _, seed in seed_manifest.iterrows():
+        seed_content = str(seed["content"])
+        seed_filename = str(seed["filename"])
+        seed_indicator = str(seed.get("primary_indicator", ""))
+        seed_count = count_indicator_occurrences(seed_content)
+        variant_rank = 1
+
+        for technique_id in techniques:
+            spec = EVASION_TECHNIQUES[technique_id]
+            if spec.runtime_target != "cross_runtime" and spec.runtime_target != str(seed["runtime_target"]):
+                skipped_counts[technique_id] += 1
+                continue
+
+            transformed = apply_evasion_technique(seed_content, technique_id)
+            if transformed is None or transformed == seed_content:
+                skipped_counts[technique_id] += 1
+                continue
+
+            target_patterns = [
+                pattern for pattern, display in PATTERN_DISPLAY_NAMES.items() if display in spec.target_indicators
+            ]
+            before_target_count = count_indicator_occurrences(seed_content, target_patterns)
+            after_target_count = count_indicator_occurrences(transformed, target_patterns)
+            variant_hash = stable_short_hash(seed["seed_id"], technique_id, transformed)
+            suffix = Path(seed_filename).suffix or ".ps1"
+            stem = Path(seed_filename).stem
+
+            rows.append(
+                {
+                    "variant_id": f"variant_{variant_hash}",
+                    "seed_id": seed["seed_id"],
+                    "filename": f"{stem}__{seed['seed_id']}__{technique_id}{suffix}",
+                    "label": seed["label"],
+                    "target_token": LABELS[str(seed["label"]).strip().lower()],
+                    "technique_id": technique_id,
+                    "family": spec.family,
+                    "runtime_target": seed["runtime_target"],
+                    "variant_rank": variant_rank,
+                    "indicator_family_targeted": seed_indicator if seed_indicator in spec.target_indicators else "|".join(spec.target_indicators),
+                    "indicator_count_before": seed_count,
+                    "indicator_count_after": count_indicator_occurrences(transformed),
+                    "literal_indicator_removed": after_target_count < before_target_count,
+                    "raw_char_len": len(transformed),
+                    "used_char_len": len(transformed),
+                    "was_truncated": False,
+                    "viability_status": "needs_review",
+                    "viability_reason": "transform_applied_requires_parse_and_invariant_checks",
+                    "static_parse_ok": csv_safe_bool(None),
+                    "static_invariants_ok": True,
+                    "manual_review_required": True,
+                    "parent_content_hash": stable_short_hash(seed_content),
+                    "variant_content_hash": stable_short_hash(transformed),
+                    "content": transformed,
+                }
+            )
+            generated_counts[technique_id] += 1
+            variant_rank += 1
+
+    variant_df = pd.DataFrame(rows)
+    metadata = {
+        "seed_count": int(len(seed_manifest)),
+        "variant_count": int(len(variant_df)),
+        "techniques_requested": list(techniques),
+        "generated_counts": generated_counts,
+        "skipped_counts": skipped_counts,
+        "registry": list_evasion_techniques(techniques),
+    }
+    return variant_df, metadata
+
+
 def build_augmented_pair_manifest(
     manifest: pd.DataFrame,
     *,
@@ -1108,6 +1659,22 @@ def summarize_indicator_matches(df: pd.DataFrame, patterns: Optional[Sequence[st
 def count_indicator_occurrences(text: str, patterns: Optional[Sequence[str]] = None) -> int:
     patterns = list(patterns or SUSPICIOUS_PATTERNS)
     return sum(len(re.findall(pattern, text, flags=re.IGNORECASE)) for pattern in patterns)
+
+
+def extract_urls(text: str) -> List[str]:
+    return re.findall(r"https?://[^\s'\"\)]+", text or "", flags=re.IGNORECASE)
+
+
+def extract_exe_like_literals(text: str) -> List[str]:
+    pattern = re.compile(r"['\"]([^'\"]+\.(?:exe|dll|ps1|bat))['\"]", flags=re.IGNORECASE)
+    return [match.group(1) for match in pattern.finditer(text or "")]
+
+
+def extract_literal_counts_by_display_name(text: str) -> Dict[str, int]:
+    counts: Dict[str, int] = {}
+    for pattern, display_name in PATTERN_DISPLAY_NAMES.items():
+        counts[display_name] = len(re.findall(pattern, text or "", flags=re.IGNORECASE))
+    return counts
 
 
 def add_analysis_features(df: pd.DataFrame) -> pd.DataFrame:
@@ -1703,6 +2270,251 @@ def write_json(path: Union[str, Path], payload: Dict[str, object]) -> None:
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
+POWERSHELL_PARSE_COMMAND = r"""
+$ErrorActionPreference = 'Stop'
+$path = $args[0]
+$tokens = $null
+$errors = $null
+$text = [System.IO.File]::ReadAllText($path)
+[System.Management.Automation.Language.Parser]::ParseInput($text, [ref]$tokens, [ref]$errors) | Out-Null
+$payload = [ordered]@{
+  parse_ok = ($errors.Count -eq 0)
+  error_count = $errors.Count
+  error_messages = @($errors | ForEach-Object { $_.Message })
+  token_count = @($tokens).Count
+}
+$payload | ConvertTo-Json -Depth 4 -Compress
+""".strip()
+
+
+def resolve_powershell_executables(
+    *,
+    pwsh_executable: Optional[str] = None,
+    powershell_executable: Optional[str] = None,
+) -> Dict[str, Optional[str]]:
+    resolved_pwsh = pwsh_executable or shutil.which("pwsh")
+    resolved_powershell = powershell_executable or shutil.which("powershell")
+    return {
+        "pwsh_7": resolved_pwsh,
+        "windows_powershell_5_1": resolved_powershell,
+    }
+
+
+def runtimes_required_for_target(runtime_target: str) -> List[str]:
+    if runtime_target == "cross_runtime":
+        return ["pwsh_7", "windows_powershell_5_1"]
+    if runtime_target not in RUNTIME_TARGETS:
+        raise ValueError(f"Unsupported runtime target: {runtime_target!r}")
+    return [runtime_target]
+
+
+def parse_powershell_script(script_text: str, executable: str) -> Dict[str, object]:
+    with tempfile.NamedTemporaryFile("w", suffix=".ps1", encoding="utf-8", delete=False) as handle:
+        temp_path = Path(handle.name)
+        handle.write(script_text)
+
+    try:
+        result = subprocess.run(
+            [
+                executable,
+                "-NoLogo",
+                "-NoProfile",
+                "-NonInteractive",
+                "-Command",
+                POWERSHELL_PARSE_COMMAND,
+                "--",
+                str(temp_path),
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if result.returncode != 0:
+            return {
+                "parse_ok": False,
+                "error_count": 1,
+                "error_messages": [result.stderr.strip() or result.stdout.strip() or "powershell_parser_failed"],
+                "token_count": 0,
+                "runner_returncode": result.returncode,
+            }
+
+        payload_text = (result.stdout or "").strip()
+        if not payload_text:
+            return {
+                "parse_ok": False,
+                "error_count": 1,
+                "error_messages": ["empty_parser_output"],
+                "token_count": 0,
+                "runner_returncode": result.returncode,
+            }
+        parsed = json.loads(payload_text)
+        parsed["runner_returncode"] = result.returncode
+        return parsed
+    finally:
+        temp_path.unlink(missing_ok=True)
+
+
+def parse_powershell_script_tree_sitter(script_text: str) -> Dict[str, object]:
+    if not HAS_TREE_SITTER_POWERSHELL:
+        return {
+            "parse_ok": False,
+            "error_count": 1,
+            "error_messages": ["tree_sitter_powershell_unavailable"],
+            "token_count": 0,
+            "runner_returncode": None,
+        }
+
+    language = TreeSitterLanguage(tree_sitter_powershell.language())
+    parser = TreeSitterParser()
+    parser.language = language
+    source = script_text.encode("utf-8")
+    tree = parser.parse(source)
+    root = tree.root_node
+    parse_ok = not root.has_error
+    return {
+        "parse_ok": parse_ok,
+        "error_count": 0 if parse_ok else 1,
+        "error_messages": [] if parse_ok else ["tree_sitter_parse_error"],
+        "token_count": int(root.child_count),
+        "runner_returncode": 0 if parse_ok else 1,
+    }
+
+
+def review_evasion_variants(
+    variant_manifest: pd.DataFrame,
+    *,
+    seed_manifest: Optional[pd.DataFrame] = None,
+    pwsh_executable: Optional[str] = None,
+    powershell_executable: Optional[str] = None,
+) -> Tuple[pd.DataFrame, pd.DataFrame, Dict[str, object]]:
+    required = {"variant_id", "runtime_target", "content", "technique_id"}
+    missing = required - set(variant_manifest.columns)
+    if missing:
+        raise ValueError(f"Variant manifest missing required columns: {sorted(missing)!r}")
+
+    runtime_map = resolve_powershell_executables(
+        pwsh_executable=pwsh_executable,
+        powershell_executable=powershell_executable,
+    )
+    review_rows: List[Dict[str, object]] = []
+    updated_rows: List[Dict[str, object]] = []
+    seed_by_id: Dict[str, pd.Series] = {}
+    if seed_manifest is not None:
+        if not {"seed_id", "content"}.issubset(seed_manifest.columns):
+            raise ValueError("Seed manifest must contain seed_id and content columns.")
+        seed_by_id = {str(row["seed_id"]): row for _, row in seed_manifest.iterrows()}
+
+    for _, row in variant_manifest.iterrows():
+        runtime_target = str(row["runtime_target"])
+        required_runtimes = runtimes_required_for_target(runtime_target)
+        available = {name: runtime_map.get(name) for name in required_runtimes}
+        missing_runtimes = [name for name, exe in available.items() if not exe]
+
+        row_dict = dict(row)
+        if missing_runtimes:
+            if HAS_TREE_SITTER_POWERSHELL:
+                parse_result = parse_powershell_script_tree_sitter(str(row["content"]))
+                syntax_ok = bool(parse_result.get("parse_ok"))
+                runtime_target_ok = False
+                parse_attempted = True
+                parse_error_count = int(parse_result.get("error_count", 0))
+                parse_error_messages = list(parse_result.get("error_messages", []) or [])
+                validated_runtimes = ["tree_sitter_powershell"]
+                review_status = "needs_review"
+                review_reason = f"tree_sitter_only_missing_required_runtime:{','.join(missing_runtimes)}"
+                review_type = "tree_sitter_fallback"
+            else:
+                review_status = "needs_review"
+                review_reason = f"missing_required_runtime:{','.join(missing_runtimes)}"
+                syntax_ok = False
+                runtime_target_ok = False
+                parse_attempted = False
+                parse_error_count = 0
+                parse_error_messages = []
+                validated_runtimes = []
+                review_type = "static_only"
+        else:
+            parse_attempted = True
+            parse_results = []
+            for runtime_name in required_runtimes:
+                parse_result = parse_powershell_script(str(row["content"]), str(runtime_map[runtime_name]))
+                parse_results.append((runtime_name, parse_result))
+
+            validated_runtimes = [runtime_name for runtime_name, _ in parse_results]
+            syntax_ok = all(bool(result.get("parse_ok")) for _, result in parse_results)
+            runtime_target_ok = syntax_ok
+            parse_error_count = int(sum(int(result.get("error_count", 0)) for _, result in parse_results))
+            parse_error_messages = []
+            for runtime_name, result in parse_results:
+                for message in result.get("error_messages", []) or []:
+                    parse_error_messages.append(f"{runtime_name}:{message}")
+
+            if syntax_ok:
+                review_status = "accepted"
+                review_reason = "parse_ok_for_declared_runtime_target"
+            else:
+                review_status = "rejected"
+                review_reason = "parse_failed"
+            review_type = "static_only"
+
+        seed_row = seed_by_id.get(str(row["seed_id"])) if seed_by_id else None
+        invariants_ok, invariant_failures = evaluate_variant_invariants(row, seed_row)
+        if review_status == "accepted" and not invariants_ok:
+            review_status = "rejected"
+            review_reason = "invariant_checks_failed"
+        elif review_status == "needs_review" and not invariants_ok:
+            review_reason = review_reason + ";invariant_checks_failed"
+
+        review_rows.append(
+            {
+                "variant_id": row["variant_id"],
+                "review_status": review_status,
+                "review_type": review_type,
+                "review_reason": review_reason,
+                "syntax_ok": syntax_ok,
+                "runtime_target_ok": runtime_target_ok,
+                "behavior_equivalent_confidence": "low" if syntax_ok else "low",
+                "review_notes": "",
+                "parse_attempted": parse_attempted,
+                "parse_error_count": parse_error_count,
+                "parse_error_messages": "|".join(parse_error_messages),
+                "validated_runtimes": "|".join(validated_runtimes),
+                "invariant_checks_ok": invariants_ok,
+                "invariant_failures": "|".join(invariant_failures),
+            }
+        )
+
+        if review_status == "accepted":
+            row_dict["viability_status"] = "accepted"
+            row_dict["viability_reason"] = review_reason
+            row_dict["static_parse_ok"] = True
+            row_dict["static_invariants_ok"] = True
+            row_dict["manual_review_required"] = True
+        elif review_status == "rejected":
+            row_dict["viability_status"] = "rejected"
+            row_dict["viability_reason"] = review_reason
+            row_dict["static_parse_ok"] = bool(syntax_ok)
+            row_dict["static_invariants_ok"] = invariants_ok
+            row_dict["manual_review_required"] = True
+        else:
+            row_dict["viability_status"] = "needs_review"
+            row_dict["viability_reason"] = review_reason
+            row_dict["static_parse_ok"] = bool(syntax_ok) if parse_attempted else pd.NA
+            row_dict["static_invariants_ok"] = invariants_ok
+            row_dict["manual_review_required"] = True
+        updated_rows.append(row_dict)
+
+    review_df = pd.DataFrame(review_rows)
+    updated_manifest = pd.DataFrame(updated_rows)
+    metadata = {
+        "variant_count": int(len(variant_manifest)),
+        "review_counts": review_df["review_status"].value_counts().sort_index().to_dict(),
+        "runtime_availability": runtime_map,
+        "tree_sitter_powershell_available": HAS_TREE_SITTER_POWERSHELL,
+    }
+    return review_df, updated_manifest, metadata
+
+
 def optional_int_field(row: pd.Series, field_name: str) -> Optional[int]:
     if field_name not in row.index:
         return None
@@ -1851,6 +2663,116 @@ def cmd_augment_pair_manifest(args: argparse.Namespace) -> int:
             {
                 "output": str(output_path),
                 "metadata": str(metadata_path),
+                **metadata,
+            },
+            indent=2,
+            sort_keys=True,
+        )
+    )
+    return 0
+
+
+def cmd_list_evasion_techniques(args: argparse.Namespace) -> int:
+    techniques = parse_technique_list(args.techniques)
+    rows = list_evasion_techniques(techniques)
+    output_path = Path(args.output)
+    write_json(
+        output_path,
+        {
+            "technique_count": len(rows),
+            "techniques": rows,
+        },
+    )
+    print(json.dumps({"output": str(output_path), "technique_count": len(rows)}, indent=2, sort_keys=True))
+    return 0
+
+
+def cmd_build_evasion_variant_manifest(args: argparse.Namespace) -> int:
+    manifest = pd.read_csv(args.manifest)
+    baseline_eval = pd.read_csv(args.baseline_eval) if args.baseline_eval else None
+    techniques = parse_technique_list(args.techniques)
+
+    seed_manifest = build_evasion_seed_manifest(
+        manifest,
+        source_manifest=args.manifest,
+        runtime_target=args.runtime_target,
+        baseline_eval=baseline_eval,
+        per_indicator_cap=args.per_indicator_cap,
+        limit=args.limit,
+    )
+    variant_manifest, metadata = build_evasion_variant_manifest(seed_manifest, techniques=techniques)
+
+    seed_output_path = Path(args.seed_output)
+    seed_output_path.parent.mkdir(parents=True, exist_ok=True)
+    seed_manifest.to_csv(seed_output_path, index=False)
+
+    output_path = Path(args.output)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    variant_manifest.to_csv(output_path, index=False)
+
+    metadata_path = Path(args.metadata_output)
+    write_json(
+        metadata_path,
+        {
+            "seed_manifest_csv": str(seed_output_path),
+            "variant_manifest_csv": str(output_path),
+            "source_manifest": str(args.manifest),
+            "baseline_eval": str(args.baseline_eval) if args.baseline_eval else None,
+            "runtime_target": args.runtime_target,
+            **metadata,
+        },
+    )
+    print(
+        json.dumps(
+            {
+                "seed_manifest": str(seed_output_path),
+                "variant_manifest": str(output_path),
+                "metadata": str(metadata_path),
+                "seed_count": int(len(seed_manifest)),
+                "variant_count": int(len(variant_manifest)),
+            },
+            indent=2,
+            sort_keys=True,
+        )
+    )
+    return 0
+
+
+def cmd_review_evasion_variants(args: argparse.Namespace) -> int:
+    variant_manifest = pd.read_csv(args.variant_manifest)
+    seed_manifest = pd.read_csv(args.seed_manifest) if args.seed_manifest else None
+    review_df, updated_manifest, metadata = review_evasion_variants(
+        variant_manifest,
+        seed_manifest=seed_manifest,
+        pwsh_executable=args.pwsh_executable,
+        powershell_executable=args.powershell_executable,
+    )
+
+    review_output = Path(args.review_output)
+    review_output.parent.mkdir(parents=True, exist_ok=True)
+    review_df.to_csv(review_output, index=False)
+
+    updated_manifest_output = Path(args.updated_manifest_output)
+    updated_manifest_output.parent.mkdir(parents=True, exist_ok=True)
+    updated_manifest.to_csv(updated_manifest_output, index=False)
+
+    metadata_output = Path(args.metadata_output)
+    write_json(
+        metadata_output,
+        {
+            "variant_manifest_csv": str(args.variant_manifest),
+            "seed_manifest_csv": str(args.seed_manifest) if args.seed_manifest else None,
+            "review_csv": str(review_output),
+            "updated_manifest_csv": str(updated_manifest_output),
+            **metadata,
+        },
+    )
+    print(
+        json.dumps(
+            {
+                "review_csv": str(review_output),
+                "updated_manifest_csv": str(updated_manifest_output),
+                "metadata": str(metadata_output),
                 **metadata,
             },
             indent=2,
@@ -5003,6 +5925,70 @@ def build_parser() -> argparse.ArgumentParser:
         default=DEFAULT_ARTIFACT_DIR / "augmented_pair_manifest_metadata.json",
     )
     augment_pair_parser.set_defaults(func=cmd_augment_pair_manifest)
+
+    list_evasion_parser = subparsers.add_parser(
+        "list-evasion-techniques",
+        help="Export the current evasion-technique registry and metadata.",
+    )
+    list_evasion_parser.add_argument("--techniques", default=None)
+    list_evasion_parser.add_argument(
+        "--output",
+        type=Path,
+        default=DEFAULT_ARTIFACT_DIR / "evasion_technique_registry.json",
+    )
+    list_evasion_parser.set_defaults(func=cmd_list_evasion_techniques)
+
+    build_evasion_parser = subparsers.add_parser(
+        "build-evasion-variant-manifest",
+        help="Build a malicious seed manifest and provisional evasion-variant manifest from an input manifest.",
+    )
+    build_evasion_parser.add_argument("--manifest", type=Path, required=True)
+    build_evasion_parser.add_argument("--baseline-eval", type=Path, default=None)
+    build_evasion_parser.add_argument("--techniques", default=None)
+    build_evasion_parser.add_argument("--runtime-target", choices=sorted(RUNTIME_TARGETS), default="cross_runtime")
+    build_evasion_parser.add_argument("--per-indicator-cap", type=int, default=None)
+    build_evasion_parser.add_argument("--limit", type=int, default=None)
+    build_evasion_parser.add_argument(
+        "--seed-output",
+        type=Path,
+        default=DEFAULT_ARTIFACT_DIR / "evasion_seed_manifest.csv",
+    )
+    build_evasion_parser.add_argument(
+        "--output",
+        type=Path,
+        default=DEFAULT_ARTIFACT_DIR / "evasion_variant_manifest.csv",
+    )
+    build_evasion_parser.add_argument(
+        "--metadata-output",
+        type=Path,
+        default=DEFAULT_ARTIFACT_DIR / "evasion_variant_manifest_metadata.json",
+    )
+    build_evasion_parser.set_defaults(func=cmd_build_evasion_variant_manifest)
+
+    review_evasion_parser = subparsers.add_parser(
+        "review-evasion-variants",
+        help="Run static PowerShell parse checks for evasion variants and write a review CSV plus updated manifest.",
+    )
+    review_evasion_parser.add_argument("--variant-manifest", type=Path, required=True)
+    review_evasion_parser.add_argument("--seed-manifest", type=Path, default=None)
+    review_evasion_parser.add_argument("--pwsh-executable", default=None)
+    review_evasion_parser.add_argument("--powershell-executable", default=None)
+    review_evasion_parser.add_argument(
+        "--review-output",
+        type=Path,
+        default=DEFAULT_ARTIFACT_DIR / "evasion_variant_review.csv",
+    )
+    review_evasion_parser.add_argument(
+        "--updated-manifest-output",
+        type=Path,
+        default=DEFAULT_ARTIFACT_DIR / "evasion_variant_manifest_reviewed.csv",
+    )
+    review_evasion_parser.add_argument(
+        "--metadata-output",
+        type=Path,
+        default=DEFAULT_ARTIFACT_DIR / "evasion_variant_review_metadata.json",
+    )
+    review_evasion_parser.set_defaults(func=cmd_review_evasion_variants)
 
     family_summary_parser = subparsers.add_parser(
         "summarize-family-overlap",

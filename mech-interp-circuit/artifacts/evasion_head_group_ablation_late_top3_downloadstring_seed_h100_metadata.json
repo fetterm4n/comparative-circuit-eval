@@ -1,0 +1,22 @@
+{
+  "device": "cuda",
+  "first_n_layers": null,
+  "heads": [
+    {
+      "head": 15,
+      "layer": 12
+    },
+    {
+      "head": 5,
+      "layer": 12
+    },
+    {
+      "head": 4,
+      "layer": 12
+    }
+  ],
+  "num_pairs": 6,
+  "per_pair_csv": "mech-interp-circuit/artifacts/evasion_head_group_ablation_late_top3_downloadstring_seed_h100_per_pair.csv",
+  "summary_csv": "mech-interp-circuit/artifacts/evasion_head_group_ablation_late_top3_downloadstring_seed_h100_summary.csv",
+  "template_name": "meta-llama/Llama-3.1-8B-Instruct"
+}
