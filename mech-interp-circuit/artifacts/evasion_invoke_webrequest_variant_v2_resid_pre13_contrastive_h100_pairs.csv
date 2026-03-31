@@ -1,0 +1,5 @@
+pair_idx,pair_indicator,benign_filename,malicious_filename,delta_norm
+86,Invoke-WebRequest,3784.ps1,1362__seed_94c9b9d4d0af__invoke_webrequest_alias.ps1,2.61328125
+87,Invoke-WebRequest,4058.ps1,1362__seed_62bd78f5d825__invoke_webrequest_alias.ps1,2.626953125
+88,Invoke-WebRequest,3104.ps1,1362__seed_e20ff31d1bd4__invoke_webrequest_alias.ps1,2.52734375
+89,Invoke-WebRequest,896.ps1,1362__seed_c4fb6569b404__invoke_webrequest_alias.ps1,2.572265625

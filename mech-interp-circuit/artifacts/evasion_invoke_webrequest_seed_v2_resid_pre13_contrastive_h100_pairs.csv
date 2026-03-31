@@ -1,0 +1,5 @@
+pair_idx,pair_indicator,benign_filename,malicious_filename,delta_norm
+86,Invoke-WebRequest,3784.ps1,1362.ps1,2.59765625
+87,Invoke-WebRequest,4058.ps1,1362.ps1,2.607421875
+88,Invoke-WebRequest,3104.ps1,1362.ps1,2.509765625
+89,Invoke-WebRequest,896.ps1,1362.ps1,2.548828125

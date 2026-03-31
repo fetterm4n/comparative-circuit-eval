@@ -1,0 +1,5 @@
+intervention_label,mode,basis_label,target_layer,target_resid_kind,pair_idx,pair_indicator,benign_filename,malicious_filename,base_logit_diff,intervened_logit_diff,logit_delta,flip_to_benign,base_projection,intervened_projection,projection_delta
+ablate_h12.15+h12.5+h12.4+h12.28,ablate,mean_delta,13,pre,86,Invoke-WebRequest,3784.ps1,1362__seed_94c9b9d4d0af__invoke_webrequest_alias.ps1,-0.296875,0.046875,0.34375,False,1.8994140625,1.7080078125,-0.19140625
+ablate_h12.15+h12.5+h12.4+h12.28,ablate,mean_delta,13,pre,87,Invoke-WebRequest,4058.ps1,1362__seed_62bd78f5d825__invoke_webrequest_alias.ps1,-0.296875,0.046875,0.34375,False,1.8994140625,1.7080078125,-0.19140625
+ablate_h12.15+h12.5+h12.4+h12.28,ablate,mean_delta,13,pre,88,Invoke-WebRequest,3104.ps1,1362__seed_e20ff31d1bd4__invoke_webrequest_alias.ps1,-0.296875,0.046875,0.34375,False,1.8994140625,1.7080078125,-0.19140625
+ablate_h12.15+h12.5+h12.4+h12.28,ablate,mean_delta,13,pre,89,Invoke-WebRequest,896.ps1,1362__seed_c4fb6569b404__invoke_webrequest_alias.ps1,-0.296875,0.046875,0.34375,False,1.8994140625,1.7080078125,-0.19140625

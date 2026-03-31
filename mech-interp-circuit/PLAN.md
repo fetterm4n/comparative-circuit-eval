@@ -6,15 +6,20 @@ Identify and causally validate circuits responsible for malicious PowerShell det
 
 ## Current Repo State
 
-- Early detector is partially localized and causally supported: strongest portable heads are `L0H11` and `L0H9`
+- Early detector is localized and causally supported: strongest portable heads are `L0H11` and `L0H9`
 - Best current minimal direct branch is `L0H11 -> L12H15/L12H5/L12H4`
 - Best current cleaner sufficiency-oriented late carrier is `L12H15/L12H5/L12H4/L12H28`
 - `L12H2` now looks like a family-sensitive auxiliary late head: it weakens the 96-pair path-patching result when included, but improves grouped ablation on several families
 - Main mechanistic cohort remains the 18-pair overlap-controlled set
 - A larger interim cohort now exists with 96 valid within-family matched pairs, but it reuses source scripts and should not be treated as a fully independent holdout
-- A first runnable evasion benchmark now exists and has produced real misses under conservative, syntax-preserving obfuscation
-- The clearest evasion finding so far is a necessity/sufficiency split: `downloadstring_psobject_invoke` weakens or reroutes the usual late bundle under ablation while leaving a still-usable sufficient route under path patching
-- Remaining gaps are stronger independent generalization, broader evasion coverage beyond the first `DownloadString` slice, and a clearer decomposition of the redistributed late-stage computation
+- A runnable evasion benchmark now exists with two artifact-backed failure modes under conservative, syntax-preserving obfuscation:
+  - `downloadstring_psobject_invoke`
+  - `invoke_webrequest_alias`
+- The evasion story is now mechanistically specific:
+  - on evaded variants, the validated late writer family remains present and still writes the familiar malicious-evidence direction at `resid_pre13`
+  - the dependence on that evidence is redistributed downstream between `resid_pre13` and `resid_pre31`
+  - by `resid_pre31`, the anti-causal split is already present in the late residual stream
+- Remaining gaps are stronger independent generalization, broader evasion coverage across more families, and final writeup consolidation rather than another major mechanistic search
 
 ---
 
@@ -79,11 +84,11 @@ Identify and causally validate circuits responsible for malicious PowerShell det
 
 ## Success Criteria
 
-- Circuit identified
-- Causal validation proven
-- Generalization shown
-- Evasion benchmark established
-- At least one real evasion mechanism characterized mechanistically
+- Circuit identified: substantially complete
+- Causal validation proven on the main overlap-controlled cohort: substantially complete
+- Generalization shown on the interim expanded 96-pair cohort: partial, with known dependence caveat
+- Evasion benchmark established: complete
+- At least one real evasion mechanism characterized mechanistically: complete
 
 ## Practical Next Steps
 
@@ -91,21 +96,25 @@ Identify and causally validate circuits responsible for malicious PowerShell det
   - minimal direct branch: `L0H11 -> L12H15/L12H5/L12H4`
   - cleaner late sufficiency carrier: `L12H15/L12H5/L12H4/L12H28`
   - auxiliary ablation-sensitive helper: `L12H2`
+  - final evasion read: the late carrier survives, but downstream late blocks redistribute how the final decision depends on it under obfuscation
+- Merge the March 31 evasion follow-ups into the main writeup and artifact narrative
 - Build a more independent holdout with more distinct scripts rather than only recombined within-family pairings
-- Expand the evasion benchmark beyond the current `DownloadString`-focused candidate slice
-- Add more runnable obfuscation families for `DownloadFile`, `Invoke-WebRequest`, `IEX`, and `-EncodedCommand`
-- Push the new necessity-vs-sufficiency evasion read into the final writeup so the robustness claim is mechanistically precise
-- Probe the redistributed late-stage computation on missed variants rather than assuming the original late writer bundle is simply absent
+- Expand the evasion benchmark beyond the current `DownloadString` and `Invoke-WebRequest` slices
+- Add more runnable obfuscation families for `DownloadFile`, `IEX`, and `-EncodedCommand`
+- Prepare the final figure and artifact shortlist around:
+  - 18-pair mechanistic core
+  - 96-pair late-carrier refinement
+  - `downloadstring_psobject_invoke` necessity/sufficiency split
+  - `invoke_webrequest_alias` downstream redistribution result
+- Keep all H100 jobs strictly serial on this host; parallel TransformerLens model loads still OOM the GPU
 
 ---
 
 ## Codex Instructions
 
-Implement functions:
-- get_indicator_tokens
-- compute_attention_scores
-- run_activation_patching
-- run_head_ablation
-- generate_obfuscations
+Current code path is `mech-interp-circuit/scaled_validation.py`.
 
-Save outputs to /artifacts
+Operational notes:
+- Save outputs to `/artifacts`
+- Prefer reusing existing manifests and artifact naming conventions
+- Run H100 jobs serially, not in parallel
