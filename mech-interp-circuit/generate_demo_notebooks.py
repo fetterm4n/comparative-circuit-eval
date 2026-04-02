@@ -14,10 +14,11 @@ from pathlib import Path
 
 
 def md_cell(text: str) -> dict:
+    normalized = textwrap.dedent(text).strip()
     return {
         "cell_type": "markdown",
         "metadata": {},
-        "source": [line + "\n" for line in text.strip().splitlines()],
+        "source": [line + "\n" for line in normalized.splitlines()],
     }
 
 
@@ -54,8 +55,25 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 
-plt.style.use("ggplot")
-sns.set_context("talk")
+sns.set_theme(
+    context="talk",
+    style="whitegrid",
+    palette="deep",
+    rc={
+        "figure.dpi": 120,
+        "axes.spines.top": False,
+        "axes.spines.right": False,
+        "axes.facecolor": "#FCFCFC",
+        "figure.facecolor": "white",
+        "grid.color": "#D9DDE3",
+        "grid.linewidth": 0.8,
+        "axes.edgecolor": "#4A5568",
+        "axes.labelcolor": "#1A202C",
+        "xtick.color": "#2D3748",
+        "ytick.color": "#2D3748",
+        "axes.titleweight": "semibold",
+    },
+)
 pd.set_option("display.max_colwidth", 120)
 pd.set_option("display.width", 140)
 
@@ -83,14 +101,24 @@ def read_csv(name: str) -> pd.DataFrame:
     return pd.read_csv(path)
 
 
+def clip_text(text: str, *, width: int = 180) -> str:
+    text = str(text).strip().replace("\\r\\n", "\\n")
+    text = " ".join(text.split())
+    if len(text) <= width:
+        return text
+    return text[: width - 3] + "..."
+
+
 def show_barh(df, label_col, value_col, *, title, xlabel, color="#2B6CB0", sort=True):
     plot_df = df.copy()
     if sort:
         plot_df = plot_df.sort_values(value_col, ascending=True)
     fig, ax = plt.subplots(figsize=(8, max(3, 0.45 * len(plot_df))))
-    ax.barh(plot_df[label_col], plot_df[value_col], color=color)
+    sns.barplot(data=plot_df, x=value_col, y=label_col, ax=ax, color=color, orient="h")
     ax.set_title(title)
     ax.set_xlabel(xlabel)
+    ax.set_ylabel("")
+    sns.despine(ax=ax, left=False, bottom=False)
     plt.tight_layout()
     return fig, ax
 """
@@ -352,6 +380,60 @@ VALIDATION_NOTEBOOK = [
     ),
     md_cell(
         """
+        ## Step 2b: Visualize a validated upstream attention head
+
+        The grouped route result tells us which path matters, but it does not show what one of the important heads is actually attending to.
+
+        The optional cell below loads a real malicious prompt from the 96-pair cohort, runs a cached forward pass, and opens a `circuitsvis` attention-pattern viewer for `L0H11`, the cleanest validated upstream head in the writeup.
+
+        This is intentionally separate from the CSV-only workflow because it is heavier:
+        - it loads the model
+        - it computes a real attention cache
+        - it visualizes the full head-pattern tensor so the reader can inspect it interactively
+        """
+    ),
+    code_cell(
+        """
+        # Optional heavier cell: inspect a real attention pattern for the validated upstream head.
+        #
+        # import circuitsvis as cv
+        # import sys
+        #
+        # sys.path.append(str(PROJECT_ROOT))
+        # from scaled_validation import build_hooked_transformer, load_hf_model_and_tokenizer, make_prompt
+        #
+        # manifest = read_csv("circuit_val_pair_manifest_t3000_combo_cap20_valid_h100.csv")
+        # mal_row = (
+        #     manifest[(manifest["label"] == "malicious") & (manifest["pair_indicator"] == "Invoke-WebRequest")]
+        #     .sort_values("logit_diff", ascending=False)
+        #     .iloc[0]
+        # )
+        #
+        # BEST_LAYER, BEST_HEAD = 0, 11
+        # hf_model, tokenizer, device = load_hf_model_and_tokenizer(device="cpu", torch_dtype="float32")
+        # model = build_hooked_transformer(
+        #     hf_model,
+        #     tokenizer,
+        #     device=device,
+        #     torch_dtype="float32",
+        #     template_name="meta-llama/Llama-3.1-8B-Instruct",
+        #     first_n_layers=4,
+        #     use_attn_result=False,
+        # )
+        #
+        # prompt = make_prompt(mal_row["content"])
+        # mal_toks = model.to_tokens(prompt)
+        # _, mal_cache = model.run_with_cache(mal_toks, return_type="logits")
+        #
+        # pattern_key = f"blocks.{BEST_LAYER}.attn.hook_pattern"
+        # attn_pattern = mal_cache[pattern_key][0].detach().cpu().numpy()
+        # tok_strs = [model.to_string(t.unsqueeze(0)) for t in mal_toks[0]]
+        #
+        # cv.attention.attention_patterns(attention=attn_pattern, tokens=tok_strs)
+        """
+    ),
+    md_cell(
+        """
         ## Step 3: Compare the same routes by grouped ablation
 
         Grouped ablation tests necessity: if we zero a candidate late route, how much of the
@@ -486,6 +568,82 @@ EVASION_NOTEBOOK = [
         - pure `IEX` variants now appear in a separate provisional tier, so the strict benchmark stays unchanged while the extra slice is still measured
         """
     ),
+    md_cell(
+        """
+        ## Step 2a: What the technique names mean
+
+        The benchmark technique ids are compact implementation labels. For a new reader, it is much easier to reason about the results if each method is translated into plain language first.
+
+        The main methods shown in this notebook are:
+        - `invoke_webrequest_alias`: replace the full command name `Invoke-WebRequest` with the shorter built-in alias `iwr`
+        - `downloadstring_psobject_invoke`: hide a direct `.DownloadString(...)` call behind `PSObject.Methods[...]`
+        - `downloadfile_psobject_invoke`: do the same for `.DownloadFile(...)`
+        - `split_quoted_encodedcommand_literal`: replace a quoted `-EncodedCommand` string with concatenated pieces such as `"-Encoded" + "Command "`
+        - `iex_scriptblock_create`: replace direct `iex ...` execution with `&([scriptblock]::Create(...))`
+
+        All of these are meant to preserve behavior while reducing an obvious literal surface that the model may rely on.
+        """
+    ),
+    code_cell(
+        """
+        technique_defs = pd.DataFrame(
+            [
+                ("invoke_webrequest_alias", "Use the alias iwr instead of the full Invoke-WebRequest command name.", "strict"),
+                ("downloadstring_psobject_invoke", "Rewrite .DownloadString(...) as a PSObject method lookup plus Invoke.", "strict"),
+                ("downloadfile_psobject_invoke", "Rewrite .DownloadFile(...) as a PSObject method lookup plus Invoke.", "strict"),
+                ("split_quoted_encodedcommand_literal", "Split a quoted -EncodedCommand literal into concatenated string pieces.", "strict"),
+                ("iex_scriptblock_create", "Replace direct iex execution with &([scriptblock]::Create(...)).", "provisional"),
+            ],
+            columns=["technique_id", "plain_language_definition", "benchmark_tier"],
+        )
+
+        technique_defs
+        """
+    ),
+    md_cell(
+        """
+        ## Step 2b: Seed and variant examples
+
+        The next table makes the benchmark concrete by showing one original malicious seed snippet and one semantically equivalent evasion variant snippet for each major method.
+
+        This matters because the benchmark is not just "random obfuscation." The reader should be able to inspect the before-and-after strings and see exactly what changed.
+        """
+    ),
+    code_cell(
+        """
+        seed_manifest = read_csv("evasion_seed_manifest_v2.csv")
+        variant_strict = read_csv("evasion_variant_manifest_candidate_v3.csv")
+        variant_provisional = read_csv("evasion_variant_manifest_candidate_provisional_v1.csv")
+        variant_all = pd.concat([variant_strict, variant_provisional], ignore_index=True).drop_duplicates(subset=["variant_id"])
+
+        example_techniques = [
+            "invoke_webrequest_alias",
+            "downloadstring_psobject_invoke",
+            "downloadfile_psobject_invoke",
+            "split_quoted_encodedcommand_literal",
+            "iex_scriptblock_create",
+        ]
+
+        example_rows = []
+        for technique_id in example_techniques:
+            subset = variant_all[variant_all["technique_id"] == technique_id].copy()
+            if subset.empty:
+                continue
+            row = subset.sort_values(["used_char_len", "filename"]).iloc[0]
+            seed_row = seed_manifest[seed_manifest["seed_id"] == row["seed_id"]].iloc[0]
+            example_rows.append(
+                {
+                    "technique_id": technique_id,
+                    "tier": row.get("candidate_tier", "strict"),
+                    "indicator_family": seed_row["primary_indicator"],
+                    "seed_example": clip_text(seed_row["content"], width=220),
+                    "variant_example": clip_text(row["content"], width=220),
+                }
+            )
+
+        pd.DataFrame(example_rows)
+        """
+    ),
     code_cell(
         """
         plot_df = benchmark.sort_values("evasion_success_rate", ascending=True)
@@ -501,7 +659,7 @@ EVASION_NOTEBOOK = [
     ),
     md_cell(
         """
-        ## Step 2b: Family-level coverage in the current benchmark
+        ## Step 2c: Family-level coverage in the current benchmark
 
         The technique summary is useful, but it hides which indicator families are actually represented.
         This table makes the current benchmark boundary explicit:
@@ -517,7 +675,7 @@ EVASION_NOTEBOOK = [
     ),
     md_cell(
         """
-        ## Step 2c: Provisional `IEX` coverage
+        ## Step 2d: Provisional `IEX` coverage
 
         We do not fold these rows into the strict benchmark because they still lack runtime-side parse validation in the current environment.
         But we *do* measure them separately so the benchmark can report what happens on the pure `IEX` slice without silently weakening its main admission rule.
