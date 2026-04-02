@@ -3,21 +3,49 @@
 ## Status
 - [x] Dataset prepared for large-scale validation
 - [x] Circuit discovery complete
-- [x] Causal validation confirmed on the main overlap-controlled cohort
-- [ ] Independent generalization fully validated
+- [x] Causal validation confirmed on the 96-pair within-family cohort
+- [x] Current study complete at the 96-pair within-family validation bar
 - [x] Evasion experiments complete
-- [ ] Draft ready for submission
+- [x] Draft-ready claim set established
 
 **Current state:**
-The core circuit claim is now stable enough for writeup. On the overlap-controlled 18-pair validation cohort, the full model reached 100% accuracy, attention recurrence remained concentrated in Layer 0, and causal ablation consistently identified `L0H11` and `L0H9` as the most portable early detector heads. Full-model ablation, late-layer patching, contrastive residual tracing, and grouped late-head interventions support a later decision stage centered on `Layer 12-13` attention plus a broader MLP band. The cleanest current end-to-end claim is a minimal direct branch `L0H11 -> L12H15/L12H5/L12H4`, together with a stronger sufficiency-oriented late carrier `L12H15/L12H5/L12H4/L12H28`.
+The active repo claim is now stable enough for writeup and is grounded in the 96-pair within-family matched cohort rather than the older 18-pair pilot. On that 96-pair cohort, grouped path patching supports a clean minimal direct branch `L0H11 -> L12H15/L12H5/L12H4` (`mean Δ = -3.156`, `flip_rate = 0.5625`) and an even stronger sufficiency-oriented late carrier `L12H15/L12H5/L12H4/L12H28` (`mean Δ = -3.293`, `flip_rate = 0.625`). Grouped ablation on the same cohort keeps the late-carrier story intact while showing that `L12H2` is better treated as an auxiliary contributor than as part of the stable core writer set.
 
-The expanded 96-pair interim cohort materially improves matched-control coverage but does not constitute a fully independent holdout because scripts are reused across pairings. The evasion benchmark is now also strong enough to support a mechanistic robustness claim. Two conservative obfuscation techniques produce real misses, and the clearest one, `invoke_webrequest_alias`, shows that the validated late carrier survives the evasion at `resid_pre13` but later blocks redistribute how the final decision depends on that evidence by `resid_pre31`. The remaining gaps are therefore no longer basic circuit discovery; they are stronger independent generalization and final presentation.
+The 96-pair cohort materially improves matched-control coverage but does not constitute a fully independent holdout because scripts are reused across pairings. We treat that as a scope boundary for the present study rather than as an unresolved blocker. The evasion benchmark is now also strong enough to support a mechanistic robustness claim. Under the strict candidate screen, the benchmark now covers `DownloadString`, `DownloadFile`, `Invoke-WebRequest`, `Invoke-Expression`, and `-EncodedCommand`, and a separate provisional tier adds the pure `IEX` scriptblock-creation slice without weakening that strict bar. Two conservative obfuscation techniques produce real misses, and the clearest one, `invoke_webrequest_alias`, shows that the validated late carrier survives the evasion at `resid_pre13` but later blocks redistribute how the final decision depends on that evidence by `resid_pre31`. Future expansion should focus on stronger independent holdouts and stronger runtime-side validation for the pure `IEX` slice rather than additional core-circuit search.
 
 ---
 
 ## Abstract (Draft)
 
-Large language models are increasingly used for cybersecurity tasks such as malicious code detection, yet their internal decision-making processes remain poorly understood. In this work, we identify and causally validate a circuit for malicious PowerShell classification in a domain-specific LLM. On an overlap-controlled 18-pair cohort where benign and malicious scripts share suspicious indicators, we localize a portable early detector core in `Layer 0`, with `L0H11` and `L0H9` as the strongest causal heads. We then localize a later decision stage centered on `Layer 12-13` attention and a broader MLP band, with the strongest sufficiency-oriented late carrier given by `L12H15/L12H5/L12H4/L12H28`. An expanded 96-pair interim cohort preserves the same late-stage picture while showing that `L12H2` behaves more like a family-sensitive auxiliary contributor than a stable core writer. Finally, we evaluate the circuit under conservative syntax-preserving obfuscation and find real evasion failures. The strongest failure mode, `invoke_webrequest_alias`, does not remove the validated late carrier. Instead, it preserves the usual late malicious-evidence write at `resid_pre13` while redistributing, in later blocks, how the final decision depends on that evidence by `resid_pre31`. These results support a concrete mechanistic robustness claim: the model’s malicious-code evidence can remain present under obfuscation even as downstream computation repurposes or discounts it before the final readout.
+Large language models are increasingly used for cybersecurity tasks such as malicious code detection, yet their internal decision-making processes remain poorly understood. In this work, we identify and causally validate a late-stage circuit for malicious PowerShell classification in a domain-specific LLM using a 96-pair within-family matched cohort where benign and malicious scripts share suspicious indicators. On that cohort, grouped path patching supports a clean minimal direct branch `L0H11 -> L12H15/L12H5/L12H4` and a stronger sufficiency-oriented late carrier `L12H15/L12H5/L12H4/L12H28`, while grouped ablation shows that `L12H2` behaves more like a family-sensitive auxiliary contributor than a stable core writer. Historical 18-pair experiments remain useful for discovery, but they are not the evidentiary basis for the final repo claim. Finally, we evaluate the circuit under conservative syntax-preserving obfuscation and find real evasion failures. The strongest failure mode, `invoke_webrequest_alias`, does not remove the validated late carrier. Instead, it preserves the usual late malicious-evidence write at `resid_pre13` while redistributing, in later blocks, how the final decision depends on that evidence by `resid_pre31`. These results support a concrete mechanistic robustness claim: the model’s malicious-code evidence can remain present under obfuscation even as downstream computation repurposes or discounts it before the final readout.
+
+---
+
+## How To Read This Document
+
+This file mixes three kinds of evidence:
+
+- **Discovery evidence**: older or broader probes that suggest where to look next, but are not the final claim by themselves.
+- **Validation evidence**: the decisive grouped interventions on the 96-pair cohort that the repo treats as the main claim.
+- **Evasion evidence**: follow-up experiments asking whether the validated late carrier still matters under conservative obfuscation.
+
+For junior readers, keep the claim hierarchy in mind:
+
+1. The **main validated claim** is the 96-pair grouped-route result.
+2. The **minimal direct branch** is `L0H11 -> L12H15/L12H5/L12H4`.
+3. The **stronger sufficiency-oriented late carrier** is `L12H15/L12H5/L12H4/L12H28`.
+4. `L12H2` is **not** part of the stable sufficiency core; it matters more on some ablation slices than on the main patching result.
+5. The strongest current evasion result is **not** route deletion. It is downstream redistribution under `invoke_webrequest_alias`.
+
+Metric guide:
+
+- `mean Δ` / `mean_delta`: average change in the malicious-vs-benign decision score after an intervention. More negative usually means the intervention weakens the model's malicious judgment.
+- `flip_rate`: fraction of examples whose final predicted label flips after the intervention.
+- `patching`: replace part of a malicious run with the corresponding state from a benign run. In this writeup, patching is mainly used as a **sufficiency** test.
+- `ablation`: zero or remove part of the model state. In this writeup, ablation is mainly used as a **necessity** test.
+- `resid_pre13` / `resid_pre31`: the residual stream just before layers 13 and 31. These are used to ask where malicious evidence exists and where later computation changes how that evidence is used.
+
+When this document says a result is "historical" or "discovery-stage," that means it is useful context but not the main evidentiary basis for the final repo claim.
 
 ---
 
@@ -49,13 +77,13 @@ The scale-up dataset is approximately balanced, but it contains a long-tail of v
 A set of early attention heads detects suspicious PowerShell indicators (e.g., `IEX`, `FromBase64String`, `DownloadString`, `Invoke-WebRequest`, `-EncodedCommand`) and writes those signals into the residual stream, after which later layers convert that evidence into the final malicious/benign decision.
 
 **Candidate Components:**
-- Early detection layer: Layer 0
-- Strongest recurrent heads on the overlap-controlled cohort: `L0H9`, `L0H11`, `L0H23`, `L0H8`
-- Strongest portable causal core under reduced-layer ablation: `L0H11`, `L0H9`
+- Historical discovery candidate layer: Layer 0
+- Historical recurrent heads on the 18-pair pilot: `L0H9`, `L0H11`, `L0H23`, `L0H8`
+- Current 96-pair-supported direct-branch entry point: `L0H11`
 - Current full-model decision-stage candidate components:
   - Attention-dominant band: layers `11-13`, with additional support at `9`, `17`, and `24`
   - MLP-dominant band: layers `6`, `10`, and `13`, with secondary support at `15`, `24`, and `31`
-  - Strongest targeted late heads so far: `L12H5` and `L13H0`
+  - Best-supported validated late heads on the 96-pair cohort: `L12H15`, `L12H5`, `L12H4`, `L12H28`
   - Late-stage neuron probes: distributed, with no single neuron yet matching the layer-level effects
 - Key Tokens:
   - IEX
@@ -72,17 +100,16 @@ A set of early attention heads detects suspicious PowerShell indicators (e.g., `
 
 **Results:**
 - We built an overlap-controlled validation set where benign and malicious scripts share suspicious indicator strings, then restricted to a tractable `<=3000`-char paired subset.
-- On that tractable subset, the original imported baseline left 18 fully correct benign/malicious pairs for mechanistic analysis. The new local H100 baseline reproduced those 18 valid pairs with 36/36 correct predictions.
 - A larger interim cohort is now available from the same natural-overlap source pool by generating many within-family length-matched pairings rather than keeping only one zip-style pair per family member. With a per-family cap of 20 combinations, this produced 100 candidate pairs at `<=3000` chars.
 - A local H100 baseline on that expanded candidate cohort reached `98%` row accuracy (`200/200` rows scored, four pairs dropped by pairwise filtering), leaving 96 valid pairs and 192 valid rows.
-- That expanded cohort improves script coverage from 36 unique files in the original mechanistic set to 78 unique files, including 47 unique files not present in the original 18-pair cohort.
-- A local H100 recurrence run over those 18 pairs again concentrated attention in Layer 0. The top recurring heads were `L0H9` (`pair_count = 13`, `mean_delta = 0.00793`), `L0H11` (`10`, `0.00587`), `L0H23` (`7`, `0.00452`), and `L0H8` (`7`, `0.00259`).
-- This reproduces the earlier non-local summary closely and supports a stable early-detector claim: indicator-focused attention is concentrated in Layer 0 rather than emerging only in deeper blocks.
+- That expanded cohort improves script coverage from 36 unique files in the original pilot set to 78 unique files, including 47 unique files not present in the old 18-pair sample.
+- A local H100 recurrence run over the older 18-pair pilot again concentrated attention in Layer 0. The top recurring heads were `L0H9` (`pair_count = 13`, `mean_delta = 0.00793`), `L0H11` (`10`, `0.00587`), `L0H23` (`7`, `0.00452`), and `L0H8` (`7`, `0.00259`).
+- We keep that recurrence result as discovery-stage context only. The final repo claim is instead tied to the 96-pair route interventions below, which validate `L0H11` as part of the minimal direct branch and validate the `Layer 12` late carrier directly on the larger cohort.
 - The overlap-controlled family breakdown remains heterogeneous. `Invoke-Expression` and `FromBase64String` preserve strong positive recurrence for the root head set, while `DownloadString` remains weaker and less consistent.
 - The expanded cohort is useful as a stronger interim validation set, but it should be interpreted as a paired-coverage expansion rather than a clean new holdout. Several families still rely on a small benign source pool, especially `DownloadFile`, `DownloadString`, and `Invoke-WebRequest`.
-- Practical interpretation: the broad detector generalizes across several indicator families, but it is better described as an early Layer 0 detector family than as a single universally dominant head.
+- Practical interpretation: the discovery evidence still points to an early Layer 0 detector family, but the active validated claim in this repo is the 96-pair late-route story rather than a stand-alone early-head claim.
 
-**Current best-supported early heads:**
+**Historical discovery heads:**
 - `L0H9`: most recurrent overlap-controlled head
 - `L0H11`: second-most recurrent and later a strong causal ablation head
 - `L0H23`: recurrent, but mixed under causal interventions
@@ -97,7 +124,7 @@ A set of early attention heads detects suspicious PowerShell indicators (e.g., `
 ### 2.2 Residual Stream Contributions
 
 **Current full-model layer-component localization:**
-- A new full-model layer ablation sweep on the 18-pair H100 cohort finally exposes a plausible later decision stage that the truncated 4-layer probes could not measure.
+- A full-model layer ablation sweep on the 18-pair H100 pilot exposed a plausible later decision stage that the truncated 4-layer probes could not measure.
 - Attention ablation is most destructive in layers `13`, `11`, `12`, `9`, `17`, and `24`. The strongest cohort-level effect is `Layer 13 attention` (`mean Δ = -3.45`, `flip_rate = 0.50`).
 - MLP ablation is most destructive in layers `6`, `13`, and `10`, followed by `24`, `15`, and `31`. The strongest cohort-level effects are `Layer 6 MLP` (`mean Δ = -3.59`, `flip_rate = 0.39`) and `Layer 13 MLP` (`mean Δ = -3.52`, `flip_rate = 0.61`).
 - Full-model benign-to-malicious patching provides the strongest bidirectional support for the late attention band. Patching benign attention outputs into malicious prompts flips `72%` of pairs at `Layer 13` and `78%` at `Layer 12`, with very large negative mean shifts (`-4.57` and `-4.40`).
@@ -110,24 +137,16 @@ A set of early attention heads detects suspicious PowerShell indicators (e.g., `
 - The same contrastive test strengthened one layer later at `resid_pre13`. Patching the single mean-delta direction produced `mean Δ = -1.323` with `flip_rate = 0.222`, again far stronger than any PCA-ranked subspace patch at the same site. The direct logit-readout direction still did essentially nothing (`mean Δ = -0.002`).
 - Tracing attention-head writes into that discovered `resid_pre13` mean-delta direction points primarily to `Layer 12`, which is also the only late attention layer that can write into `resid_pre13` in the strict causal sense. The strongest direct writers are `L12H15` (`mean Δproj = +0.0671`), `L12H5` (`+0.0441`), `L12H4` (`+0.0364`), `L12H2` (`+0.0254`), and `L12H28` (`+0.0207`), all positive on nearly every or every pair.
 - Several `Layer 13` heads also align with the same residual-space direction when their outputs are projected onto it, especially `L13H22` (`mean Δproj = +0.0289`), `L13H21` (`+0.0233`), and `L13H30` (`+0.0215`). These should be interpreted as downstream continuations of the same late decision geometry, not direct writers into `resid_pre13`.
-- Grouped causal follow-up confirms that the traced `Layer 12` writer set is not just geometrically aligned but causally meaningful. On the original 18-pair cohort, patching the top-five writer bundle `L12H15/L12H5/L12H4/L12H2/L12H28` from benign into malicious prompts gives `mean Δ = -3.702` with `flip_rate = 0.50`, while ablating the same bundle gives `mean Δ = -1.567`.
-- A compactness check with only the top two traced writers, `L12H15` and `L12H5`, remains directionally negative but much weaker: grouped patching gives `mean Δ = -0.932` and grouped ablation gives `mean Δ = -0.756`, both with only `1/18` flips. That suggests the late writer stage is partially localized but still distributed across several Layer 12 heads rather than collapsing to a 2-head core.
-- A direct early-to-late probe now shows that the early detector pair does affect the late transport direction. Benign patching of `L0H11/L0H9` moves the discovered `resid_pre13` mean-delta projection by `+0.0286` on average (toward the benign side) while shifting the final logit by `-0.533`. Ablating `L0H11/L0H9` moves that same projection by `-0.0349` (toward the malicious side) with `mean logit Δ = -0.632`.
-- A combined grouped-causal follow-up shows only limited additivity. Patching `L0H11/L0H9` together with the top-five `Layer 12` writer bundle improves the grouped patch effect only slightly (`mean Δ = -3.913`, `flip_rate = 0.611`) relative to the late writer bundle alone (`-3.702`, `0.500`). Likewise, combined ablation is only modestly stronger than late-bundle ablation alone (`-1.807` vs `-1.567`) and does not increase flips.
-- An intervention-conditioned read-path trace adds an important refinement: the early detector pair does not appear to modulate the late bundle uniformly. Under `L0H11/L0H9` patching, the strongest `Layer 12` changes along the `resid_pre13` mean-delta direction land on `H12`, `H20`, `H10`, `H6`, `H4`, and then `H5`, while `H15` moves only weakly. Under `L0H11/L0H9` ablation, the clearest changes land on `H9`, `H8`, and `H6`, with `H5` again near zero and `H28` slightly negative.
-- Practical interpretation: the early detector family does influence the late decision stage, but the strongest read path from `L0H11/L0H9` into `Layer 12` is not identical to the strongest late writer bundle found by direct residual-direction tracing. The late stage therefore appears to contain at least two overlapping structures: a top-five writer bundle that most strongly drives the final late transport direction, and a partially different subset that is most sensitive to upstream early-head interventions.
-- A direct grouped-causal comparison confirms that those two late subsets play very different roles. The early-sensitive `Layer 12` subset (`H9/H8/H6/H12/H20/H10`) is strongly **anti-causal** for the malicious decision: benign patching makes malicious prompts *more* malicious (`mean Δ = +1.775`) and grouped ablation also makes them more malicious (`+1.439`). So this subset looks like a competing or corrective path rather than the core late malicious-evidence carrier.
-- Leave-one-out tests inside the top-five writer bundle show that `L12H15` is the single most important member. Dropping `H15` reduces grouped patching from `-3.702` to `-3.536` and grouped ablation from `-1.567` to `-0.932`. Dropping `H5` also weakens the bundle, but less strongly (`patch = -3.328`, `ablation = -1.245`).
-- A compact top-three writer core `L12H15/L12H5/L12H4` remains clearly causal (`patch = -3.275`, `ablation = -1.117`), but it still underperforms the fuller late-writer bundles.
-- Additional leave-one-out tests on the 18-pair cohort suggested `H2` and `H28` were supportive but not primary. A larger 96-pair H100 follow-up refines that claim materially. On that expanded cohort, the fuller top-five writer bundle still beats the clean direct route under path patching (`mean Δ = -3.265`, `flip_rate = 0.583` vs `-3.156`, `0.562` for `L0H11 + L12H15/H5/H4`), but removing `H2` does **not** weaken sufficiency: `L12H15/L12H5/L12H4/L12H28` gives `mean Δ = -3.293` with `flip_rate = 0.625`. By contrast, removing `H28` weakens the carrier clearly (`mean Δ = -2.886`, `flip_rate = 0.490`).
-- The ablation-side story is different. On the same 96-pair cohort, the full top-five bundle remains more necessary than `L12H15/L12H5/L12H4/L12H28` (`mean Δ = -1.206`, `flip_rate = 0.094` vs `-1.044`, `0.000`). Family-level breakdowns show that `H2` helps most under ablation for `DownloadFile`, `DownloadString`, `Invoke-WebRequest`, and `-EncodedCommand`, while it is near-neutral or slightly anti-causal for `FromBase64String`, `Invoke-Expression`, and `IEX`.
-- The current best late-stage writeup should therefore separate two claims. The cleanest sufficiency-oriented late carrier is `L12H15/L12H5/L12H4/L12H28`, while `H2` is better described as a family-sensitive auxiliary late head that improves grouped ablation more than path patching.
-- The evasion benchmark now supports that late-stage claim across more than one family. In the first candidate sweep, `downloadstring_psobject_invoke` produced `2/6` misses, both inside the `FromBase64String` family. In the expanded second sweep, `invoke_webrequest_alias` produced `4/4` misses on the reviewed `Invoke-WebRequest` slice and is currently the clearest failure mode in the repo. The important mechanistic read is the same in both cases: the route does not disappear. On the obfuscated variants, the clean direct route `L0H11 -> L12H15/H5/H4` and the fuller late carrier `L12H15/L12H5/L12H4/L12H28` remain strongly sufficient under path patching, but the usual late bundle loses necessity under grouped ablation and can become anti-causal. For readers with standard mechanistic-interpretability background: the simplest interpretation is a **necessity/sufficiency split**. The obfuscation appears to reroute computation around the usual late writer bundle enough that ablating it no longer harms the malicious decision much, while patching that bundle can still reintroduce malicious evidence and recover the behavior.
+- Historical 18-pair grouped interventions first identified the traced `Layer 12` writer set as promising, but the final evidentiary basis comes from the 96-pair follow-up.
+- On the 96-pair cohort, the traced writer family is clearly causal under grouped interventions. Path patching gives `mean Δ = -3.265` with `flip_rate = 0.583` for the top-five bundle `L12H15/L12H5/L12H4/L12H2/L12H28`, and grouped ablation gives `mean Δ = -1.206`.
+- The 96-pair comparison also resolves the compactness question. The clean minimal direct branch `L0H11 -> L12H15/L12H5/L12H4` stays strongly causal under both path patching (`mean Δ = -3.156`, `flip_rate = 0.5625`) and grouped ablation (`mean Δ = -0.840`), but the stronger sufficiency-oriented late carrier is `L12H15/L12H5/L12H4/L12H28`, which improves path patching to `mean Δ = -3.293` with `flip_rate = 0.625`.
+- The role of `H2` is where the 96-pair cohort changes the writeup materially. Removing `H2` improves path patching, while removing `H28` weakens it (`mean Δ = -2.886`, `flip_rate = 0.490`). Under grouped ablation, however, the full top-five bundle remains slightly stronger than the `H2`-free carrier (`mean Δ = -1.206` vs `-1.044`), so `H2` is best described as an auxiliary ablation-sensitive helper rather than part of the stable sufficiency core.
+- Historical single-head routing analyses suggested that `L0H11` is the cleaner early entry point into this late writer family. The active validated claim keeps only that supported branch rather than a broader early-head story.
+- The current best late-stage writeup should therefore separate two claims. Use `L0H11 -> L12H15/L12H5/L12H4` for the cleanest minimal direct path, and use `L12H15/L12H5/L12H4/L12H28` for the stronger sufficiency-oriented late carrier on the 96-pair cohort.
+- The evasion benchmark now supports that late-stage claim across more than one family and more than one outcome type. In the first candidate sweep, `downloadstring_psobject_invoke` produced `2/6` misses, both inside the `FromBase64String` family. In the updated strict candidate sweep, `invoke_webrequest_alias` still produces `4/4` misses on the reviewed `Invoke-WebRequest` slice and remains the clearest failure mode in the repo. By contrast, the newly benchmarked strict candidate slices for `DownloadFile` and `-EncodedCommand` produce `0/4` and `0/2` misses respectively, and the separate provisional `IEX` extension also produces `0/4` misses. The important mechanistic read is the same in the miss cases: the route does not disappear. On the obfuscated variants, the clean direct route `L0H11 -> L12H15/H5/H4` and the fuller late carrier `L12H15/L12H5/L12H4/L12H28` remain strongly sufficient under path patching, but the usual late bundle loses necessity under grouped ablation and can become anti-causal. For readers with standard mechanistic-interpretability background: the simplest interpretation is a **necessity/sufficiency split**. The obfuscation appears to reroute computation around the usual late writer bundle enough that ablating it no longer harms the malicious decision much, while patching that bundle can still reintroduce malicious evidence and recover the behavior.
 - The final `Invoke-WebRequest` alias follow-up sharpens that claim materially. On that family, the early `L0H11/L0H9` pair is already anti-causal even on the unobfuscated seeds, so the alias-based miss is not well described as a broken early detector. More importantly, slice-specific residual-direction probes show that the usual late writer family is still present on the evaded variants. At `resid_pre13`, `L12H15` remains the dominant writer into the slice-specific malicious-vs-benign transport direction, with `H5`, `H2`, and `H28` still in the main positive writer set. Ablating `L12H15/L12H5/L12H4/L12H28` reduces that `resid_pre13` transport direction on both seeds and variants, even though the variants already show an anti-causal logit effect.
 - The cleanest localization comes from one final downstream probe. At `resid_pre31`, the same ablation still pushes the seed cohort in the usual direction (`mean logit Δ = -0.125`, `mean projection Δ = -0.203`), but it pushes the alias variants in the opposite direction on both the logit and the slice-specific late residual (`mean logit Δ = +0.344`, `mean projection Δ = +0.344`). The best current interpretation is therefore more precise than a generic rerouting story: the validated `Layer 12 -> resid_pre13` malicious-evidence carrier survives the evasion, but later blocks between `resid_pre13` and `resid_pre31` redistribute how the final decision depends on that evidence. So the evasion is not deletion of the late carrier and not merely a final-unembed quirk; it is a downstream reuse or compensation mechanism inside the later residual stream.
-- Single-head routing splits the early detector pair more clearly. Under `L0H11` patching alone, the strongest `Layer 12` changes include `H12`, `H5`, `H4`, `H20`, `H10`, and a small but visible effect on `H15`. Under `L0H9` patching alone, the strongest changes land on `H9`, `H4`, `H10`, `H6`, and only weakly on the core writer heads. Practical interpretation: `L0H11` appears more directly coupled to the late malicious-evidence carrier, while `L0H9` may contribute more through the broader early-sensitive/corrective late geometry.
-- Direct grouped route tests now support that split. The `L0H11`-aligned late route `L12H15/L12H5/L12H4` is clearly causal (`patch = -3.275`, `ablation = -1.117`). By contrast, the `L0H9`-aligned late route `L12H9/L12H6/L12H10` is weak and mixed: grouped patching is slightly positive (`+0.270`) and grouped ablation is nearly neutral (`-0.019`). The cleanest currently supported end-to-end branch is therefore `L0H11 -> L12H15/H5/H4`, not a symmetric two-head early story.
-- A final comparison between the clean `L0H11` branch and the fuller late carrier shows the remaining tradeoff clearly. On the 18-pair cohort, combining `L0H11` with the top-three late route gives `patch = -3.490` and `ablation = -1.402`, while combining `L0H11` with the top-five late bundle gives `patch = -3.879` and `ablation = -1.802`. On the expanded 96-pair cohort, the same distinction still holds qualitatively, but the cleaner late sufficiency bundle is now `L12H15/L12H5/L12H4/L12H28`, not the full top-five set.
+- Historical single-head routing splits suggested that `L0H11` couples more directly to the late malicious-evidence carrier than `L0H9`. The active repo claim does not require the broader early-head split, only the validated `L0H11` branch on the 96-pair cohort.
 - Practical interpretation: the patchable late residual signal is real at the whole-state level, but it is **not** well captured by a simple low-rank variance-ranked subspace. The later decision carrier therefore appears more distributed, more nonlinear, or misaligned with PCA-style directions than the early head detector.
 - The contrastive-direction result refines that claim. Some of the late residual signal *is* concentrated along a task-aligned transport direction, especially at `resid_pre13`, but the useful direction is closer to the cohort mean malicious-vs-benign displacement than to the direct output readout axis.
 - Family-level summaries preserve the same broad picture. Across `Invoke-Expression`, `FromBase64String`, `Invoke-WebRequest`, `DownloadFile`, `DownloadString`, `IEX`, and `-EncodedCommand`, the strongest negative late-stage effects repeatedly land in the `11-13` attention band and the `6/10/13` MLP band.
@@ -163,7 +182,7 @@ A set of early attention heads detects suspicious PowerShell indicators (e.g., `
 - Patching remains directionally unstable in this matched-indicator setting. `L0H23` is the strongest negative patch head, but `L0H11` and `L0H9` move positive on average.
 - This does **not** look like a clean “remove malicious evidence” intervention, because the benign source prompts often still contain the same suspicious strings.
 - A new 8-layer H100 follow-up also ran successfully, but it did not fix the interpretability problem: all 18 malicious examples were already benign-leaning in the truncated 8-layer model (`positive_base_frac = 0.0`), so those deeper truncated patch effects are not valid evidence for the full circuit.
-- Conclusion: patching is useful as a consistency check, but it is **not** the main evidence for the portable causal core on the overlap-controlled dataset.
+- Conclusion: this pilot patching table is useful as discovery-stage context, but it is **not** part of the final evidentiary basis for the repo claim. The final claim relies on the 96-pair grouped route interventions below.
 
 ---
 
@@ -177,26 +196,39 @@ A set of early attention heads detects suspicious PowerShell indicators (e.g., `
 | `L0H8`  | `+0.1104` | `flip_rate = 0.6111` |
 
 **Current interpretation:**
-- This is the strongest current causal result in the repo.
+- This was the strongest causal result in the original 18-pair pilot, but it is no longer the main evidentiary basis for the repo claim.
 - On the local H100 reproduction of the full 18-pair overlap-controlled cohort, `L0H11` and `L0H9` remain the only heads with strong, stable negative ablation effects.
 - Family-level summaries preserve the same pattern across all seven represented indicator families: `H11` and `H9` are the most negative heads, while `H23` is positive in every family and `H8` is positive in six of seven.
-- The refined causal claim is therefore stronger than the original four-head story: the portable early detection core is concentrated in `L0H11` and `L0H9`, while `L0H23` and `L0H8` appear recurrent but not uniformly causal in the same direction.
+- The refined discovery-stage read is therefore stronger than the original four-head story: the pilot early detection core is concentrated in `L0H11` and `L0H9`, while `L0H23` and `L0H8` appear recurrent but not uniformly causal in the same direction.
 - The new 8-layer H100 ablation follow-up likewise does not support a deeper truncated validation story. Although `H11` remains the most negative head there, every malicious example already has a negative base logit before intervention, so the 8-layer truncated model is still misaligned with the full-model task.
+- The final repo-facing claim should therefore be taken from the 96-pair late-route results, not from this earlier 18-pair early-head ablation table.
 
 ---
 
 ## 4. Generalization
 
-- The overlap-controlled tractable cohort contains 18 fully correct benign/malicious pairs spanning seven indicator families: `Invoke-Expression`, `FromBase64String`, `Invoke-WebRequest`, `DownloadFile`, `DownloadString`, `IEX`, and `-EncodedCommand`.
-- The local H100 baseline reproduced 36/36 correct predictions on this cohort, improving on the older imported baseline artifact that had one error before filtering.
 - A larger interim generalization cohort is now available at the same `<=3000`-char cap: 96 valid benign/malicious pairs after baseline filtering, spanning the same seven indicator families.
 - That larger cohort is built from within-family natural-overlap pair expansions capped at 20 pairs per family. It materially increases coverage, but it is not a clean independent holdout because source scripts are reused across multiple pairings.
 - Family composition in the expanded valid cohort is still uneven. The valid pair counts are `DownloadFile=20`, `FromBase64String=20`, `Invoke-Expression=20`, `Invoke-WebRequest=18`, `DownloadString=10`, `IEX=6`, and `-EncodedCommand=2`.
 - Unique-script coverage in the expanded valid cohort is 78 scripts total: 29 benign and 49 malicious. Some families still have very few benign source scripts, so the larger pair count should be interpreted as stronger matched-control coverage rather than full-distribution generalization.
 - Family-level baseline summaries show all seven families remain separable under the full model, with malicious mean logit differences positive and benign mean logit differences negative.
-- The early Layer 0 detector therefore generalizes beyond a single keyword family or a tiny hand-picked short-pair set.
+- The active repo claim therefore generalizes across all seven represented indicator families within the 96-pair matched-control cohort.
+- Family-level route behavior is now summarized directly from the 96-pair per-pair artifacts:
+
+| Family | Pairs | Best patch route | Best patch `mean Δ` | Best patch flip rate | `H2` under ablation |
+|---|---:|---|---:|---:|---|
+| `-EncodedCommand` | `2` | `H2`-free carrier | `-3.383` | `0.00` | Helps |
+| `DownloadFile` | `20` | Minimal branch | `-4.812` | `0.45` | Helps |
+| `DownloadString` | `10` | `H2`-free carrier | `-3.119` | `0.80` | Helps |
+| `FromBase64String` | `20` | Top-5 bundle | `-4.230` | `0.60` | Near-neutral |
+| `IEX` | `6` | `H2`-free carrier | `-1.193` | `1.00` | Near-neutral but sign-mixed |
+| `Invoke-Expression` | `20` | Top-5 bundle | `-1.427` | `0.90` | Near-neutral |
+| `Invoke-WebRequest` | `18` | `H2`-free carrier | `-3.734` | `0.50` | Helps |
+
+- This table sharpens the earlier `H2` interpretation. `H2` helps grouped ablation most clearly for `-EncodedCommand`, `DownloadFile`, `DownloadString`, and `Invoke-WebRequest`, while `FromBase64String` and `Invoke-Expression` are close to neutral.
+- `IEX` remains the messiest family-level slice in the current cohort: patching is strong, but grouped ablation is sign-mixed rather than cleanly negative. That makes it good evidence for route sufficiency but weaker evidence for a simple necessity story.
 - The expanded interim cohort strengthens that claim, but it does not fully close the generalization gap. A stronger final validation set still needs more genuinely distinct benign scripts, held-out families or templates, and a separate evasion/obfuscation split.
-- The new full-model layer ablation sweep adds a plausible later decision-stage candidate that also generalizes across the 18-pair cohort, so the repo is no longer limited to an early-detector-only story.
+- The older 18-pair pilot remains useful as a discovery-stage precursor, but it is not needed to state the current validated late-route claim.
 - What remains incomplete is finer-grained validation inside those later layers. We now have full-model layer-component localization and an initial late-head scan, but not yet a convincing head-level or path-level causal decomposition of the decision-stage band.
 - The new full-model patching sweep strengthens that same later-stage story in the opposite direction: replacing malicious late-layer states with benign ones in attention layers `12-13` sharply suppresses the `BLOCK` preference across the cohort.
 - The new 8-layer H100 batch causal run makes that limit explicit rather than speculative: despite running cleanly on GPU, all 18 malicious prompts remained benign-leaning in the truncated 8-layer model (`mean_base_logit_diff = -1.468`), so the deeper reduced model still cannot be treated as a faithful proxy for full-model malicious classification.
@@ -223,19 +255,25 @@ A set of early attention heads detects suspicious PowerShell indicators (e.g., `
 
 | Technique | Cohort | Main Outcome | Mechanistic Read |
 |----------|--------|--------------|------------------|
-| `downloadstring_psobject_invoke` | `6` reviewed seed/variant pairs | `2/6` misses | Late bundle stays sufficient under patching but loses necessity under ablation on the misses |
-| `invoke_webrequest_alias` | `4` reviewed seed/variant pairs | `4/4` misses | Strongest current failure mode; usual late carrier survives early in the late stage but downstream dependence is redistributed |
+| `downloadstring_psobject_invoke` | `6` strict candidate seed/variant pairs | `2/6` misses | Late bundle stays sufficient under patching but loses necessity under ablation on the misses |
+| `invoke_webrequest_alias` | `4` strict candidate seed/variant pairs | `4/4` misses | Strongest current failure mode; usual late carrier survives early in the late stage but downstream dependence is redistributed |
+| `downloadfile_psobject_invoke` | `4` strict candidate seed/variant pairs | `0/4` misses | Benchmark-expanded negative result; direct method-name hiding alone does not currently evade the model |
+| `split_quoted_encodedcommand_literal` | `2` strict candidate seed/variant pairs | `0/2` misses | Benchmark-expanded negative result; split flag construction remains detectable in the current slice |
+| `iex_scriptblock_create` | `4` provisional `IEX` seed/variant pairs | `0/4` misses | Provisional-only coverage; benchmarked without weakening the strict parse-validated tier |
 
 **Status:** now replaced by a completed artifact-backed runnable evasion benchmark.
 
-The codebase still contains the older conservative `generate_obfuscations` helper and `augment-pair-manifest` command for formatting-preserving rewrites, but that is no longer the main robustness result. The meaningful benchmark is now the runnable variant-manifest pipeline in `scaled_validation.py`, which generates conservative syntax-preserving obfuscations, reviews them with syntax and invariant checks, evaluates them on the full model, and then follows the strongest misses with paired circuit probes. Current benchmark evidence shows two concrete failure modes:
+The codebase still contains the older conservative `generate_obfuscations` helper and `augment-pair-manifest` command for formatting-preserving rewrites, but that is no longer the main robustness result. The meaningful benchmark is now the runnable variant-manifest pipeline in `scaled_validation.py`, which generates conservative syntax-preserving obfuscations, reviews them with syntax and invariant checks, evaluates them on the full model, and then follows the strongest misses with paired circuit probes. Current benchmark evidence shows two concrete failure modes, two additional strict candidate slices without misses, and one provisional `IEX` slice without misses:
 
 - `downloadstring_psobject_invoke`, which produces a narrow `FromBase64String`-linked miss pattern
 - `invoke_webrequest_alias`, which produces a cleaner `4/4` miss pattern on the reviewed `Invoke-WebRequest` slice
+- `downloadfile_psobject_invoke`, which now has a strict candidate `DownloadFile` slice with `0/4` misses
+- `split_quoted_encodedcommand_literal`, which now has a strict candidate `-EncodedCommand` slice with `0/2` misses
+- `iex_scriptblock_create`, which now has a provisional pure `IEX` slice with `0/4` misses
 
 The mechanistic conclusion is now sharper than it was in earlier resume notes. Both failure modes show a necessity/sufficiency split: the validated route can still be reintroduced by patching, but the model no longer relies on that route in the same way under obfuscation. The strongest read comes from `invoke_webrequest_alias`. On that slice, the late `Layer 12` writer family is still present on the evaded variants, and ablating `L12H15/L12H5/L12H4/L12H28` still reduces the slice-specific `resid_pre13` malicious-evidence direction. But by `resid_pre31`, the sign split is already present in the late residual stream itself: the same ablation is supportive on seeds and anti-causal on the evaded variants. So the best current characterization is that obfuscation preserves the usual early late-stage malicious-evidence write while redistributing, in later blocks, how the final decision depends on it.
 
-So the repo now does contain a completed artifact-backed evasion evaluation with a mechanistically specific claim. The remaining gap is breadth and generalization, not the absence of any evasion benchmark.
+So the repo now does contain a completed artifact-backed evasion evaluation with a mechanistically specific claim. The remaining gap is breadth and generalization, plus moving the pure `IEX` slice from provisional to strict runtime-side validation, not the absence of any evasion benchmark.
 
 ---
 
@@ -247,7 +285,7 @@ So the repo now does contain a completed artifact-backed evasion evaluation with
 - The later decision stage is now partially localized too: full-model ablation points to an attention band around layers `11-13` and an MLP band around `6/10/13`, with layer `13` especially prominent. That is enough to guide follow-up inspection, but not enough yet to claim a fully decomposed decision circuit.
 - The newest evidence favors a particularly important late attention sub-band at `12-13`: those are the only late layers where benign patching flips a majority of malicious examples.
 - Within that late-stage band, the cleanest currently supported late sufficiency carrier is the `Layer 12` bundle `L12H15/L12H5/L12H4/L12H28`, while `L12H2` appears to play a narrower family-sensitive auxiliary role that shows up more clearly under grouped ablation than under path patching.
-- Within that late-stage band, the strongest currently validated heads are `L12H5` and `L13H0`, but their effects are still much smaller than the broad layer ablations. On the MLP side, no single neuron yet explains the layer-level signal, which suggests redundancy or distributed computation.
+- Within that late-stage band, the strongest **single-head** late-head scan results are `L12H5` and `L13H0`, but those effects are still much smaller than the grouped-route and broad layer-ablation results. They should therefore not be confused with the main validated grouped late carrier `L12H15/L12H5/L12H4/L12H28`. On the MLP side, no single neuron yet explains the layer-level signal, which suggests redundancy or distributed computation.
 - The new residual-subspace sweeps sharpen that same interpretation: even when we capture roughly `87-89%` of benign/malicious residual variance at `resid_pre12` and `resid_pre13`, low-rank subspace patching barely moves the decision. The late carrier is therefore not a compact PCA-like residual channel.
 - The new contrastive residual sweeps sharpen the picture further: there is a meaningful single transport direction at `resid_pre13`, but it aligns with the cohort mean malicious-vs-benign displacement rather than with the direct output readout vector. The late carrier is therefore structured, but not trivially equivalent to the final logit axis.
 - The evasion benchmark now gives two concrete robustness failure modes. `downloadstring_psobject_invoke` produces a narrower miss pattern, while `invoke_webrequest_alias` gives a stronger reviewed failure on the current slice. Across both, the circuit probes point to the same high-level explanation: obfuscation changes how the late decision stage is used rather than simply turning off a compact early detector.
@@ -408,6 +446,7 @@ So the repo now does contain a completed artifact-backed evasion evaluation with
 | artifacts/circuit_val_path_patching_l12_writer_minus_h2_combo96_h100_summary.csv | 96-pair grouped patching summary for the late writer bundle without `L12H2` |
 | artifacts/circuit_val_path_patching_l12_writer_minus_h28_combo96_h100_summary.csv | 96-pair grouped patching summary for the late writer bundle without `L12H28` |
 | artifacts/circuit_val_head_group_ablation_l12_writer_h28_combo96_h100_summary.csv | 96-pair grouped ablation summary for the cleaner sufficiency-oriented late carrier `L12H15/L12H5/L12H4/L12H28` |
+| artifacts/circuit_val_combo96_family_route_summary.csv | Family-level 96-pair summary for the main late-route patching and ablation variants |
 | artifacts/circuit_val_batch_attention_l11_l13_n18_h100_summary.csv | Targeted full-model head discovery summary restricted to layers 11-13 |
 | artifacts/circuit_val_batch_attention_l11_l13_n18_h100_metadata.json | Metadata for the targeted 11-13 full-model head discovery run |
 | artifacts/circuit_val_batch_causal_l11_l13_heads_n18_h100_patch_summary.csv | Full-model patch summary for the targeted late heads in layers 11-13 |
@@ -450,6 +489,18 @@ So the repo now does contain a completed artifact-backed evasion evaluation with
 | artifacts/evasion_eval_candidate_baseline_v2.csv | Baseline model evaluation on the expanded candidate evasion set |
 | artifacts/evasion_eval_candidate_merged_v2.csv | Expanded candidate evasion results merged with seed metadata and baseline deltas |
 | artifacts/evasion_candidate_benchmark_summary_v2.csv | Technique-level summary for the expanded candidate evasion benchmark run |
+| artifacts/evasion_variant_review_v3.csv | Updated syntax and invariant review results after the `-EncodedCommand` equivalence fix |
+| artifacts/evasion_variant_manifest_reviewed_v3.csv | Reviewed v3 variant manifest including the restored `-EncodedCommand` slice |
+| artifacts/evasion_variant_manifest_candidate_v3.csv | Strict candidate subset after the v3 review rerun |
+| artifacts/evasion_eval_candidate_baseline_v3.csv | Baseline model evaluation on the v3 strict candidate evasion set |
+| artifacts/evasion_eval_candidate_merged_v3.csv | V3 candidate evasion results merged with seed metadata and baseline deltas |
+| artifacts/evasion_candidate_benchmark_summary_v3.csv | Technique-level summary for the current strict candidate evasion benchmark run |
+| artifacts/evasion_candidate_family_summary_v3.csv | Family-level summary for the current strict candidate evasion benchmark run |
+| artifacts/evasion_variant_manifest_candidate_provisional_v1.csv | Provisional candidate subset that adds pure `IEX` rows without weakening the strict benchmark |
+| artifacts/evasion_eval_candidate_baseline_provisional_v1.csv | Baseline model evaluation on the provisional candidate evasion set |
+| artifacts/evasion_eval_candidate_merged_provisional_v1.csv | Provisional candidate evasion results merged with seed metadata, tiers, and baseline deltas |
+| artifacts/evasion_candidate_benchmark_summary_provisional_v1.csv | Technique-level summary for the provisional candidate evasion benchmark run |
+| artifacts/evasion_candidate_family_summary_provisional_v1.csv | Family-level summary for the provisional candidate evasion benchmark run |
 | artifacts/evasion_head_group_ablation_early_invoke_webrequest_seed_v2_h100_summary.csv | Early-head grouped ablation summary for the original `Invoke-WebRequest` seed cohort used in evasion follow-up |
 | artifacts/evasion_head_group_ablation_early_invoke_webrequest_variant_v2_h100_summary.csv | Early-head grouped ablation summary for the `invoke_webrequest_alias` variants |
 | artifacts/evasion_head_group_ablation_late_invoke_webrequest_seed_v2_h100_summary.csv | Late-bundle grouped ablation summary for the original `Invoke-WebRequest` seed cohort |

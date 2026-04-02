@@ -1417,6 +1417,15 @@ def count_resolved_literal_equivalents(text: str, literal: str) -> int:
             flags=re.IGNORECASE,
         )
         total += len(pattern.findall(text))
+        # Some conservative rewrites preserve the literal while keeping trailing
+        # whitespace in the right-hand fragment, e.g. "-Encoded"+"Command ".
+        if not right.endswith(" "):
+            pattern_with_trailing_space = re.compile(
+                rf"(?P<q>['\"]){re.escape(left)}(?P=q)\s*\+\s*"
+                rf"(?P<q2>['\"]){re.escape(right)}\s+(?P=q2)",
+                flags=re.IGNORECASE,
+            )
+            total += len(pattern_with_trailing_space.findall(text))
     return total
 
 
@@ -2599,6 +2608,66 @@ def review_evasion_variants(
     return review_df, updated_manifest, metadata
 
 
+def build_evasion_candidate_manifest(
+    reviewed_manifest: pd.DataFrame,
+    *,
+    seed_manifest: Optional[pd.DataFrame] = None,
+    tier: str = "strict",
+) -> Tuple[pd.DataFrame, Dict[str, object]]:
+    if tier not in {"strict", "provisional_iex"}:
+        raise ValueError(f"Unsupported candidate tier: {tier!r}")
+
+    required = {"variant_id", "seed_id", "static_parse_ok", "static_invariants_ok", "viability_reason"}
+    missing = required - set(reviewed_manifest.columns)
+    if missing:
+        raise ValueError(f"Reviewed manifest missing required columns: {sorted(missing)!r}")
+
+    candidates = reviewed_manifest.copy()
+    seed_indicator_by_id: Dict[str, str] = {}
+    if seed_manifest is not None:
+        if not {"seed_id", "primary_indicator"}.issubset(seed_manifest.columns):
+            raise ValueError("Seed manifest must contain seed_id and primary_indicator columns.")
+        seed_indicator_by_id = (
+            seed_manifest[["seed_id", "primary_indicator"]]
+            .drop_duplicates(subset=["seed_id"])
+            .set_index("seed_id")["primary_indicator"]
+            .astype(str)
+            .to_dict()
+        )
+        candidates["seed_primary_indicator"] = candidates["seed_id"].astype(str).map(seed_indicator_by_id)
+    elif tier != "strict":
+        raise ValueError("Seed manifest is required for non-strict candidate tiers.")
+
+    strict_mask = (candidates["static_parse_ok"] == True) & (candidates["static_invariants_ok"] == True)
+    candidates["candidate_tier"] = pd.NA
+    candidates["candidate_reason"] = pd.NA
+    candidates.loc[strict_mask, "candidate_tier"] = "strict"
+    candidates.loc[strict_mask, "candidate_reason"] = "parse_valid_and_invariants_ok"
+
+    if tier == "provisional_iex":
+        provisional_mask = (
+            (candidates["seed_primary_indicator"] == "IEX")
+            & (candidates["static_invariants_ok"] == True)
+            & (candidates["static_parse_ok"] != True)
+            & candidates["viability_reason"].astype(str).str.contains("missing_required_runtime", na=False)
+        )
+        candidates.loc[provisional_mask, "candidate_tier"] = "provisional_iex"
+        candidates.loc[
+            provisional_mask,
+            "candidate_reason",
+        ] = "invariants_ok_missing_runtime_side_parse_validation"
+
+    candidate_df = candidates[candidates["candidate_tier"].notna()].copy()
+    metadata = {
+        "candidate_tier_requested": tier,
+        "candidate_count": int(len(candidate_df)),
+        "strict_count": int((candidate_df["candidate_tier"] == "strict").sum()) if len(candidate_df) else 0,
+        "provisional_count": int((candidate_df["candidate_tier"] != "strict").sum()) if len(candidate_df) else 0,
+        "technique_counts": candidate_df["technique_id"].value_counts().sort_index().to_dict() if len(candidate_df) else {},
+    }
+    return candidate_df, metadata
+
+
 def optional_int_field(row: pd.Series, field_name: str) -> Optional[int]:
     if field_name not in row.index:
         return None
@@ -2857,6 +2926,43 @@ def cmd_review_evasion_variants(args: argparse.Namespace) -> int:
                 "review_csv": str(review_output),
                 "updated_manifest_csv": str(updated_manifest_output),
                 "metadata": str(metadata_output),
+                **metadata,
+            },
+            indent=2,
+            sort_keys=True,
+        )
+    )
+    return 0
+
+
+def cmd_build_evasion_candidate_manifest(args: argparse.Namespace) -> int:
+    reviewed_manifest = pd.read_csv(args.reviewed_manifest)
+    seed_manifest = pd.read_csv(args.seed_manifest) if args.seed_manifest else None
+    candidate_df, metadata = build_evasion_candidate_manifest(
+        reviewed_manifest,
+        seed_manifest=seed_manifest,
+        tier=args.tier,
+    )
+
+    output_path = Path(args.output)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    candidate_df.to_csv(output_path, index=False)
+
+    metadata_path = Path(args.metadata_output)
+    write_json(
+        metadata_path,
+        {
+            "reviewed_manifest_csv": str(args.reviewed_manifest),
+            "seed_manifest_csv": str(args.seed_manifest) if args.seed_manifest else None,
+            "candidate_manifest_csv": str(output_path),
+            **metadata,
+        },
+    )
+    print(
+        json.dumps(
+            {
+                "output": str(output_path),
+                "metadata": str(metadata_path),
                 **metadata,
             },
             indent=2,
@@ -6073,6 +6179,25 @@ def build_parser() -> argparse.ArgumentParser:
         default=DEFAULT_ARTIFACT_DIR / "evasion_variant_review_metadata.json",
     )
     review_evasion_parser.set_defaults(func=cmd_review_evasion_variants)
+
+    candidate_evasion_parser = subparsers.add_parser(
+        "build-evasion-candidate-manifest",
+        help="Select strict or provisional evasion candidates from a reviewed variant manifest.",
+    )
+    candidate_evasion_parser.add_argument("--reviewed-manifest", type=Path, required=True)
+    candidate_evasion_parser.add_argument("--seed-manifest", type=Path, default=None)
+    candidate_evasion_parser.add_argument("--tier", choices=["strict", "provisional_iex"], default="strict")
+    candidate_evasion_parser.add_argument(
+        "--output",
+        type=Path,
+        default=DEFAULT_ARTIFACT_DIR / "evasion_variant_manifest_candidate.csv",
+    )
+    candidate_evasion_parser.add_argument(
+        "--metadata-output",
+        type=Path,
+        default=DEFAULT_ARTIFACT_DIR / "evasion_variant_manifest_candidate_metadata.json",
+    )
+    candidate_evasion_parser.set_defaults(func=cmd_build_evasion_candidate_manifest)
 
     family_summary_parser = subparsers.add_parser(
         "summarize-family-overlap",

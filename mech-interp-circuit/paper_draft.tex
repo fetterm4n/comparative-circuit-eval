@@ -1,0 +1,247 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{setspace}
+\usepackage{amsmath, amssymb}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage[numbers]{natbib}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue,
+  citecolor=blue,
+  urlcolor=blue,
+  pdftitle={From Detection to Evasion: Mechanistic Circuit Evaluation of Malicious Code Classification in LLMs}
+}
+
+\setlength{\parskip}{0.5em}
+\setlength{\parindent}{0pt}
+\onehalfspacing
+
+\title{From Detection to Evasion: Mechanistic Circuit Evaluation of Malicious Code Classification in LLMs}
+\author{Ryan Fetterman \\ Cisco Foundation AI}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Large language models are increasingly used for security-relevant classification tasks, but their internal decision-making remains poorly understood. We study malicious PowerShell classification in a domain-specific LLM and evaluate a mechanistic circuit hypothesis spanning early indicator detection, later decision consolidation, and behavior under conservative evasion. The core validated claim in this draft is based on a 96-pair within-family matched cohort in which benign and malicious scripts share suspicious indicator strings. On this cohort, grouped path patching supports a minimal direct branch from early head \texttt{L0H11} into a late \texttt{Layer 12} route \texttt{L12H15/L12H5/L12H4}, while a broader late carrier \texttt{L12H15/L12H5/L12H4/L12H28} provides stronger sufficiency. Grouped ablation further suggests that \texttt{L12H2} behaves more like an auxiliary family-sensitive helper than part of the stable core writer set. We then evaluate conservative syntax-preserving obfuscations using a strict candidate benchmark plus a separate provisional \texttt{IEX} extension. Two techniques produce real misses, with \texttt{invoke\_webrequest\_alias} as the strongest current failure mode, while newly benchmarked \texttt{DownloadFile}, \texttt{-EncodedCommand}, and provisional pure \texttt{IEX} slices do not produce additional misses in the current run. The strongest failure mode does not appear to delete the validated late carrier. Instead, malicious evidence remains present earlier in the late stage and is used differently downstream. These results support a concrete mechanistic robustness claim: evasion can arise from downstream redistribution of dependence on malicious evidence rather than from simple disappearance of the underlying signal.
+\end{abstract}
+
+\textbf{Keywords:} mechanistic interpretability, large language models, malware detection, PowerShell, evasion, attribution, causal intervention
+
+\section{Introduction}
+Large language models are now used in cybersecurity workflows including code triage, malware analysis, and policy-based blocking. Despite strong empirical performance, it is often unclear what internal computations produce a malicious-versus-benign classification and how these computations fail under adversarial or obfuscated inputs. This gap is especially important in security settings, where downstream users may overtrust a model's confidence without understanding whether the model is tracking robust malicious behavior or merely brittle surface indicators. More broadly, recent mechanistic work has emphasized the value of moving from coarse behavioral descriptions toward explicit circuit-level explanations of model behavior \citep{ameisen2025attributiongraphs,lindsey2025biology}.
+
+This draft investigates mechanistic structure in a malicious PowerShell classification model. The motivating hypothesis is that early model components detect suspicious strings or behaviors, while later components transform this evidence into the final decision. We do not aim to claim a fully decomposed circuit. Instead, we aim to identify a compact, intervention-supported route that is specific enough to test under controlled matched examples and under conservative evasion, in the spirit of recent circuit and attribution-graph analyses \citep{ameisen2025attributiongraphs,lindsey2025biology}.
+
+The current write-up is organized around three claims. First, earlier discovery results suggest an early Layer 0 detector family, with \texttt{L0H11} as the cleanest validated upstream entry point. Second, decisive grouped interventions on a 96-pair within-family matched cohort support a minimal direct late route \texttt{L0H11 $\rightarrow$ L12H15/L12H5/L12H4} and a stronger sufficiency-oriented late carrier \texttt{L12H15/L12H5/L12H4/L12H28}. Third, evasion need not remove this late carrier; the strongest current evasion slice suggests later blocks can redistribute how the model depends on malicious evidence downstream.
+
+\section{Contributions}
+\begin{itemize}[leftmargin=1.5em]
+  \item We construct and evaluate an overlap-controlled malicious PowerShell validation setting in which benign and malicious scripts share suspicious indicator strings.
+  \item We distinguish historical discovery-stage evidence from the final intervention-supported claim, and center the main result on a 96-pair within-family matched cohort.
+  \item We identify a clean minimal direct branch and a stronger sufficiency-oriented late carrier using grouped path patching and grouped ablation.
+  \item We show that the strongest current evasion result is better explained by downstream redistribution than by simple route deletion.
+  \item We strengthen the robustness claim boundary by reporting both positive evasion failures and newly added negative-result slices under a strict candidate benchmark, plus a separate provisional \texttt{IEX} extension.
+\end{itemize}
+
+\begin{table}[t]
+\centering
+\caption{Claim ladder for the current study. This table separates what is treated as discovery context from what is treated as the main validated claim.}
+\label{tab:claim-ladder}
+\begin{tabular}{p{0.18\linewidth} p{0.28\linewidth} p{0.42\linewidth}}
+\toprule
+Claim level & Main statement & Role in this draft \\
+\midrule
+Discovery & Early Layer 0 detector family, especially \texttt{L0H11} and \texttt{L0H9} & Historical context used to motivate later interventions; not the final evidentiary basis by itself \\
+Validation & \texttt{L0H11 $\rightarrow$ L12H15/L12H5/L12H4} & Cleanest minimal direct branch on the 96-pair cohort \\
+Validation & \texttt{L12H15/L12H5/L12H4/L12H28} & Stronger sufficiency-oriented late carrier on the 96-pair cohort \\
+Refinement & \texttt{L12H2} helps some grouped ablations but weakens the main patching comparison & Auxiliary family-sensitive helper rather than stable sufficiency core \\
+Evasion & \texttt{invoke\_webrequest\_alias} preserves late malicious evidence but changes downstream dependence & Strongest current failure mode; supports redistribution rather than deletion \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Results at a Glance}
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Main validated route:} On the 96-pair cohort, the cleanest minimal direct branch is \texttt{L0H11 $\rightarrow$ L12H15/L12H5/L12H4}, supported by grouped path patching and grouped ablation.
+  \item \textbf{Stronger sufficiency carrier:} The broader late carrier \texttt{L12H15/L12H5/L12H4/L12H28} is the strongest overall sufficiency-oriented route in the main 96-pair comparison.
+  \item \textbf{\texttt{H2} is auxiliary, not core:} Removing \texttt{H2} improves the main patching result, but including \texttt{H2} still helps grouped ablation for several families. This is why we treat it as an auxiliary helper rather than part of the stable sufficiency core.
+  \item \textbf{Family-level variation is real:} The best route is not identical across all indicator families. Some families prefer the minimal branch, some prefer the fuller top-five bundle, and several are strongest under the \texttt{H2}-free carrier.
+  \item \textbf{Strongest current evasion result:} Under \texttt{invoke\_webrequest\_alias}, the late malicious-evidence carrier appears to survive early in the late stage, but downstream computation changes how that evidence is used by the final decision.
+  \item \textbf{Broader evasion coverage:} Newly added strict \texttt{DownloadFile} and \texttt{-EncodedCommand} slices and a separate provisional pure \texttt{IEX} slice do not produce new misses in the current run, which helps bound the claim.
+  \item \textbf{Bottom line:} The current evidence supports a mechanistic story that runs from early detection into a validated late carrier, while also showing that evasion can arise from downstream redistribution rather than simple disappearance of malicious evidence.
+\end{itemize}
+
+\section{Problem Setting}
+The task is binary malicious-code classification for PowerShell scripts. The key mechanistic difficulty is that many suspicious strings are not uniquely malicious: benign administrative scripts can contain tokens such as \texttt{IEX}, \texttt{FromBase64String}, \texttt{DownloadString}, \texttt{Invoke-WebRequest}, or \texttt{-EncodedCommand}. We therefore use matched benign and malicious examples sharing suspicious indicators, so that the interpretability problem is not trivially solved by superficial token presence alone.
+
+\section{Dataset and Evaluation Cohorts}
+\subsection{Source Dataset}
+The source corpus contains 2{,}556 labeled PowerShell scripts, with one empty-content row removed during preprocessing. The class balance after filtering is approximately even. A substantial long tail of long scripts motivates explicit length controls for tractable mechanistic analysis.
+
+\subsection{Matched Validation Cohorts}
+Two related cohorts matter in this draft:
+\begin{itemize}[leftmargin=1.5em]
+  \item An older 18-pair overlap-controlled cohort used primarily for discovery and pilot causal analysis.
+  \item A larger 96-pair within-family matched cohort used as the main evidentiary basis for the current repo-facing claim.
+\end{itemize}
+
+The 96-pair cohort materially improves matched-control coverage but is not a fully independent holdout because scripts are reused across pairings. In this draft we treat that limitation as a scope boundary rather than as an unresolved blocker, while reserving stronger script-disjoint holdouts for future work.
+
+\section{Methods}
+\subsection{Discovery}
+Discovery-stage analyses include attention recurrence, reduced-layer head interventions, full-model layer ablation, residual-direction patching, and head-write tracing into task-aligned residual directions. These analyses are used to generate candidate routes and to narrow late-stage attention and MLP bands of interest. Conceptually, this stage is closest to attribution-graph-style localization, where broad candidate structures are identified before stronger causal tests are used to refine the claim \citep{ameisen2025attributiongraphs}.
+
+\subsection{Validation}
+The final claim is based on grouped interventions on the 96-pair cohort:
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Grouped path patching} is used primarily as a sufficiency test.
+  \item \textbf{Grouped head ablation} is used primarily as a necessity test.
+\end{itemize}
+
+Throughout the paper, a more negative mean intervention effect indicates a stronger weakening of the model's malicious judgment. Flip rate reports the fraction of examples whose final prediction changes under intervention.
+
+\subsection{Evasion}
+We evaluate conservative syntax-preserving obfuscation techniques and then follow the strongest misses with paired mechanistic probes. The central question is whether evasion removes the validated malicious-evidence route or instead changes how the model uses that evidence downstream. The current artifact set distinguishes a \emph{strict candidate} benchmark, which requires the existing parse and invariant screen, from a separate \emph{provisional} tier used only for pure \texttt{IEX} variants whose invariants pass but whose runtime-side parse validation is unavailable in the current environment.
+
+\section{Main Results}
+\subsection{Validated Late Route}
+On the 96-pair cohort, grouped path patching supports a minimal direct branch:
+\[
+\texttt{L0H11} \rightarrow \texttt{L12H15/L12H5/L12H4}
+\]
+with mean effect approximately \(-3.156\) and flip rate \(0.5625\).
+
+The stronger sufficiency-oriented late carrier is:
+\[
+\texttt{L12H15/L12H5/L12H4/L12H28}
+\]
+with mean effect approximately \(-3.293\) and flip rate \(0.625\).
+
+The role of \texttt{L12H2} is more nuanced. Removing \texttt{H2} improves the main path-patching result, while the full top-five bundle remains slightly stronger under grouped ablation. Our current interpretation is therefore that \texttt{L12H2} is an auxiliary family-sensitive helper, not part of the most stable sufficiency core.
+
+\begin{table}[t]
+\centering
+\caption{Core grouped intervention results on the 96-pair validation cohort. Values shown here are the current repo-facing summary numbers and can be expanded later with standard errors or per-family breakdowns.}
+\label{tab:main-results}
+\begin{tabular}{lcc}
+\toprule
+Route / Bundle & Mean effect & Flip rate \\
+\midrule
+\texttt{L0H11 $\rightarrow$ L12H15/L12H5/L12H4} & $-3.156$ & $0.5625$ \\
+\texttt{L12H15/L12H5/L12H4/L12H2/L12H28} & $-3.265$ & $0.5833$ \\
+\texttt{L12H15/L12H5/L12H4/L12H28} & $-3.293$ & $0.6250$ \\
+\texttt{L12H15/L12H5/L12H4/L12H2} & $-2.886$ & $0.4896$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Interpretation of Early and Late Stages}
+Historical discovery evidence suggests an early Layer 0 detector family, especially \texttt{L0H11} and \texttt{L0H9}. However, the final validated claim in this draft does not rest on a broad early-head story. Instead, it uses \texttt{L0H11} as the cleanest upstream entry point into the validated late route. The stronger late-stage evidence localizes to attention around Layers 12--13 and a broader distributed MLP contribution.
+
+\subsection{Family-Level Variation}
+The 96-pair cohort also reveals a useful family-level pattern. The best patch route is not identical across all indicator families. The minimal branch is strongest for \texttt{DownloadFile}, the fuller top-five late bundle is strongest for \texttt{FromBase64String} and \texttt{Invoke-Expression}, and the \texttt{H2}-free carrier is strongest for \texttt{-EncodedCommand}, \texttt{DownloadString}, \texttt{IEX}, and \texttt{Invoke-WebRequest}. This pattern supports the current interpretation that \texttt{H2} is not part of the most stable sufficiency core.
+
+At the same time, grouped ablation suggests that \texttt{H2} still helps on some families, especially \texttt{-EncodedCommand}, \texttt{DownloadFile}, \texttt{DownloadString}, and \texttt{Invoke-WebRequest}. By contrast, \texttt{FromBase64String} and \texttt{Invoke-Expression} are close to neutral under this comparison. The family-level picture therefore reinforces the write-up distinction between a stable sufficiency-oriented carrier and a narrower auxiliary helper.
+
+\begin{table}[t]
+\centering
+\caption{Compact family-level summary from the 96-pair route interventions. ``Best patch route'' reports the route with the most negative family-level patching effect among the four main late-route variants.}
+\label{tab:family-results}
+\begin{tabular}{lcll}
+\toprule
+Family & Pairs & Best patch route & \texttt{H2} under ablation \\
+\midrule
+\texttt{-EncodedCommand} & 2 & H2-free carrier & Helps \\
+\texttt{DownloadFile} & 20 & Minimal branch & Helps \\
+\texttt{DownloadString} & 10 & H2-free carrier & Helps \\
+\texttt{FromBase64String} & 20 & Top-5 bundle & Near-neutral \\
+\texttt{IEX} & 6 & H2-free carrier & Near-neutral / sign-mixed \\
+\texttt{Invoke-Expression} & 20 & Top-5 bundle & Near-neutral \\
+\texttt{Invoke-WebRequest} & 18 & H2-free carrier & Helps \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.92\linewidth]{artifacts/figure_route_comparison.png}
+\caption{Conceptual route-comparison figure for the four main 96-pair late-route variants. The key point is that patching and ablation do not rank the variants identically: removing \texttt{H2} improves the main sufficiency comparison, while including \texttt{H2} still helps some family-level ablations.}
+\label{fig:route-comparison}
+\end{figure}
+
+\section{Evasion Results}
+The current benchmark is best read as a two-tier robustness evaluation rather than a single flat table. The strict candidate tier contains parse-validated and invariant-validated variants. A separate provisional tier adds pure \texttt{IEX} scriptblock-creation variants whose invariants pass but whose runtime-side parse validation is missing in the current environment. This separation keeps the benchmark bar explicit while still allowing broader coverage reporting.
+
+The benchmark currently contains two artifact-backed failure modes:
+\begin{itemize}[leftmargin=1.5em]
+  \item \texttt{downloadstring\_psobject\_invoke}, which yields a narrower miss pattern.
+  \item \texttt{invoke\_webrequest\_alias}, which is the strongest current failure mode.
+\end{itemize}
+
+\begin{table}[t]
+\centering
+\caption{Current evasion benchmark status. The strict tier preserves the original benchmark bar. The provisional tier is reported separately so that pure \texttt{IEX} coverage can be measured without weakening the main admission rule.}
+\label{tab:evasion-results}
+\begin{tabular}{llll}
+\toprule
+Tier & Technique & Pairs & Outcome \\
+\midrule
+Strict & \texttt{invoke\_webrequest\_alias} & 4 & $4/4$ misses \\
+Strict & \texttt{downloadstring\_psobject\_invoke} & 6 & $2/6$ misses \\
+Strict & \texttt{downloadfile\_psobject\_invoke} & 4 & $0/4$ misses \\
+Strict & \texttt{split\_quoted\_encodedcommand\_literal} & 2 & $0/2$ misses \\
+Provisional & \texttt{iex\_scriptblock\_create} & 4 & $0/4$ misses \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The strongest mechanistic result is not that the validated route disappears. Instead, under \texttt{invoke\_webrequest\_alias}, the usual late malicious-evidence write remains visible earlier in the late stage, while downstream computation changes how the final decision depends on that evidence. In the current interpretation, this is better described as downstream redistribution or repurposing than as simple route deletion. This framing is consistent with the broader lesson from recent mechanistic studies that behaviorally similar outputs can arise from materially different internal pathways and downstream uses of shared evidence \citep{lindsey2025biology}.
+
+The broader benchmark picture sharpens the claim boundary. The current evidence does \emph{not} support a generic statement that conservative string-hiding automatically defeats the model. The newly added strict \texttt{DownloadFile} and \texttt{-EncodedCommand} slices and the provisional pure \texttt{IEX} slice all remain robust in the current run. So the present robustness claim is deliberately narrower: some conservative rewrites do evade the model, but the clearest current failures are concentrated in specific slices, especially \texttt{invoke\_webrequest\_alias} and the narrower \texttt{FromBase64String}-linked \texttt{downloadstring\_psobject\_invoke} pattern.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.92\linewidth]{artifacts/figure_validated_route.png}
+\caption{Conceptual summary of the current validated route. The cleanest minimal branch runs from \texttt{L0H11} into \texttt{L12H15/L12H5/L12H4}, while adding \texttt{L12H28} gives the stronger sufficiency-oriented late carrier. \texttt{L12H2} is shown separately because the current evidence supports it as an auxiliary helper rather than as part of the stable core sufficiency route.}
+\label{fig:mechanistic-summary}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.92\linewidth]{artifacts/figure_evasion_redistribution.png}
+\caption{Conceptual summary of the strongest current evasion interpretation. Under \texttt{invoke\_webrequest\_alias}, the late malicious-evidence carrier is still present by \texttt{resid\_pre13}, but later computation changes how the final decision depends on that evidence by \texttt{resid\_pre31}.}
+\label{fig:evasion-summary}
+\end{figure}
+
+\section{Limitations}
+This draft has several clear limitations:
+\begin{itemize}[leftmargin=1.5em]
+  \item The 96-pair cohort is not a fully independent holdout.
+  \item The late-stage computation is only partially decomposed; grouped routes are supported more strongly than individual heads or individual neurons.
+  \item The evasion benchmark is stronger than the initial two-slice result, but its positive failures are still narrow. The strict benchmark adds negative-result coverage for \texttt{DownloadFile} and \texttt{-EncodedCommand}, while pure \texttt{IEX} remains provisional rather than strict because runtime-side syntax validation is still unavailable in the current environment.
+  \item The current evidence is strongest for head-group and residual-direction claims, not for a fully enumerated circuit graph.
+\end{itemize}
+
+\section{Future Work}
+The most important expansion is a stronger script-disjoint holdout with broader benign coverage across indicator families. Additional work should also move the provisional pure \texttt{IEX} slice into the strict benchmark by running runtime-side validation, broaden the evasion benchmark beyond the currently strongest positive slices, and further decompose the late decision stage into more specific subnetworks or feature-level routes.
+
+\section{Conclusion}
+This draft argues that a useful mechanistic account of malicious code classification in an LLM can be made precise enough to validate under matched controls and to test under conservative evasion. The present evidence supports a compact late-stage route centered on \texttt{L0H11} and a Layer 12 late carrier, while also showing that evasion can preserve malicious evidence and still change the final outcome through downstream redistribution. Just as importantly, the updated benchmark now includes informative negative-result slices as well as the strongest misses, which makes the robustness claim sharper and better bounded. The broader lesson is that mechanistic evaluation in security settings should track not only whether a model detects dangerous evidence, but also how later computation preserves, discounts, or repurposes that evidence before final readout.
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end{document}

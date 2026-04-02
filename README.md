@@ -67,22 +67,21 @@ Current status:
   - syntax and invariant review
   - paired seed/variant evaluation
 - Fixed the local MPSGraph failure by moving causal interventions from `hook_result` to `hook_z`.
-- Scaled the overlap-controlled 4-layer causal run to the full 18-pair validated cohort.
-- Extended the late-stage validation on an H100 host, including a 96-pair within-family matched cohort and evasion follow-up probes.
+- Preserved the original 18-pair overlap-controlled run as a discovery-stage pilot and artifact record.
+- Extended the late-stage validation on an H100 host, using a 96-pair within-family matched cohort as the current basis for repo-facing circuit claims, plus evasion follow-up probes.
 
 Best current result:
 
-- The original root claim is only partially validated and needed refinement.
-- Early layer-0 recurrence generalizes well, but the strongest portable causal signal is concentrated in `L0H11` and `L0H9`, not the full original four-head set.
-- The cleanest currently supported direct branch is `L0H11 -> L12H15/L12H5/L12H4`.
-- The cleaner late sufficiency-oriented carrier is `L12H15/L12H5/L12H4/L12H28`, while `L12H2` behaves more like a family-sensitive auxiliary head.
-- The first runnable evasion benchmark has now produced a real miss: `downloadstring_psobject_invoke` can evade on a small `DownloadString` slice, and current probes suggest a necessity-versus-sufficiency split in the late-stage circuit rather than simple route deletion.
+- The current repo-facing claim is grounded in the 96-pair within-family matched cohort rather than the older 18-pair pilot.
+- On that 96-pair cohort, the cleanest currently supported direct branch is `L0H11 -> L12H15/L12H5/L12H4` (`mean Δ = -3.156`, `flip_rate = 0.5625`).
+- The stronger sufficiency-oriented late carrier on the same cohort is `L12H15/L12H5/L12H4/L12H28` (`mean Δ = -3.293`, `flip_rate = 0.625`), while `L12H2` behaves more like an auxiliary ablation-sensitive helper than a stable core writer.
+- The runnable evasion benchmark now has two explicit tiers: a strict candidate screen and a provisional `IEX` extension. The strict screen covers `DownloadString`, `DownloadFile`, `Invoke-WebRequest`, `Invoke-Expression`, and `-EncodedCommand`. A separate provisional tier adds the pure `IEX` scriptblock-creation slice without weakening the strict benchmark. Two techniques produce real misses, with `invoke_webrequest_alias` as the strongest current one. Current probes suggest a necessity-versus-sufficiency split in the late-stage circuit rather than simple route deletion.
 
 ## Current Limitations
 
 - The 96-pair cohort is useful but not a fully independent holdout because source scripts are reused across multiple pairings.
 - The late-stage decision process is only partially decomposed: the route is validated at the head-group level, but the redistributed computation under evasion is not yet isolated.
-- The evasion benchmark is now real, but still narrow. The first concrete failure mode is `DownloadString`-focused and should not yet be overgeneralized.
+- The evasion benchmark is broader than the first pass, but it is still not comprehensive. Current strict candidate results include `DownloadFile` and `-EncodedCommand` without new misses, and the separate provisional `IEX` tier likewise shows `0/4` misses. The remaining limitation is that pure `IEX` still lacks runtime-side parse validation in this environment.
 - Linux-side syntax review uses `tree-sitter` as a fallback when real PowerShell runtimes are unavailable, so runnable validity is still strongest when later rechecked on Windows PowerShell or `pwsh`.
 
-The repo now contains a complete reduced-layer validation pipeline, CUDA-backed late-stage follow-up, and a first artifact-backed evasion benchmark. The remaining work is mostly about generalization and deeper decomposition rather than basic tooling.
+The repo now contains a complete reduced-layer validation pipeline, CUDA-backed late-stage follow-up, and a first artifact-backed evasion benchmark. We treat stronger independent holdout construction and broader family coverage as future expansion, not as blockers on the current study.

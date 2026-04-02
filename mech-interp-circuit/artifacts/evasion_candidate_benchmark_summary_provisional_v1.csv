@@ -1,0 +1,12 @@
+candidate_tier,technique_id,variant_count,evasion_success_rate,classification_change_rate,mean_variant_logit_diff,mean_logit_delta_vs_seed
+provisional_iex,iex_scriptblock_create,4,0.0,0.0,1.8046875,1.3046875
+strict,invoke_webrequest_alias,4,1.0,1.0,-0.28125,-0.4375
+strict,downloadstring_psobject_invoke,6,0.3333333333333333,0.3333333333333333,0.9375,-1.1380208333333333
+strict,downloadfile_psobject_invoke,4,0.0,0.0,5.203125,-1.6796875
+strict,start_process_call_operator_string,4,0.0,0.0,6.5546875,-0.328125
+strict,invoke_expression_scriptblock_create,4,0.0,0.0,0.015625,-0.109375
+strict,invoke_webrequest_call_operator_string,4,0.0,0.0,0.21875,0.0625
+strict,split_quoted_encodedcommand_literal,2,0.0,0.0,4.6875,0.203125
+strict,invoke_expression_call_operator_string,4,0.0,0.0,0.359375,0.234375
+strict,iex_scriptblock_create,6,0.0,0.0,4.203125,0.7994791666666666
+strict,iex_call_operator_string,6,0.0,0.0,4.658854166666667,1.2552083333333333

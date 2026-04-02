@@ -363,7 +363,8 @@ Required v1 probes:
 
 File:
 
-- `artifacts/evasion_benchmark_summary.csv`
+- `artifacts/evasion_candidate_benchmark_summary_v3.csv`
+- `artifacts/evasion_candidate_family_summary_v3.csv`
 
 One row per technique or family aggregate.
 
@@ -455,6 +456,11 @@ A variant enters the benchmark only if:
 
 If any of these fail, the variant is not counted in evasion success metrics.
 
+Current strict-candidate note:
+
+- the v3 benchmark includes `DownloadString`, `DownloadFile`, `Invoke-WebRequest`, `Invoke-Expression`, and `-EncodedCommand`
+- a separate provisional tier can include pure `IEX` variants when invariants hold and the only blocker is missing runtime-side parse validation
+
 ---
 
 ## Recommended V1 Benchmark Size
@@ -499,12 +505,20 @@ Each accepted variant should be classified into one of these outcome buckets:
 
 The benchmark should produce these files:
 
-- `artifacts/evasion_seed_manifest.csv`
-- `artifacts/evasion_variant_manifest.csv`
-- `artifacts/evasion_variant_review.csv`
-- `artifacts/evasion_eval_baseline.csv`
+- `artifacts/evasion_seed_manifest_v2.csv`
+- `artifacts/evasion_variant_manifest_reviewed_v3.csv`
+- `artifacts/evasion_variant_review_v3.csv`
+- `artifacts/evasion_variant_manifest_candidate_v3.csv`
+- `artifacts/evasion_variant_manifest_candidate_provisional_v1.csv`
+- `artifacts/evasion_eval_candidate_baseline_v3.csv`
+- `artifacts/evasion_eval_candidate_merged_v3.csv`
+- `artifacts/evasion_eval_candidate_baseline_provisional_v1.csv`
+- `artifacts/evasion_eval_candidate_merged_provisional_v1.csv`
 - `artifacts/evasion_eval_circuit.csv`
-- `artifacts/evasion_benchmark_summary.csv`
+- `artifacts/evasion_candidate_benchmark_summary_v3.csv`
+- `artifacts/evasion_candidate_family_summary_v3.csv`
+- `artifacts/evasion_candidate_benchmark_summary_provisional_v1.csv`
+- `artifacts/evasion_candidate_family_summary_provisional_v1.csv`
 - `artifacts/evasion_benchmark_metadata.json`
 
 ---

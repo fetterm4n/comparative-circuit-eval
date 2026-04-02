@@ -6,20 +6,24 @@ Identify and causally validate circuits responsible for malicious PowerShell det
 
 ## Current Repo State
 
-- Early detector is localized and causally supported: strongest portable heads are `L0H11` and `L0H9`
-- Best current minimal direct branch is `L0H11 -> L12H15/L12H5/L12H4`
-- Best current cleaner sufficiency-oriented late carrier is `L12H15/L12H5/L12H4/L12H28`
-- `L12H2` now looks like a family-sensitive auxiliary late head: it weakens the 96-pair path-patching result when included, but improves grouped ablation on several families
-- Main mechanistic cohort remains the 18-pair overlap-controlled set
-- A larger interim cohort now exists with 96 valid within-family matched pairs, but it reuses source scripts and should not be treated as a fully independent holdout
-- A runnable evasion benchmark now exists with two artifact-backed failure modes under conservative, syntax-preserving obfuscation:
+- The active repo claim is anchored to the 96-pair within-family matched cohort, not the earlier 18-pair pilot
+- Best current minimal direct branch on that 96-pair cohort is `L0H11 -> L12H15/L12H5/L12H4`
+- Best current cleaner sufficiency-oriented late carrier on that 96-pair cohort is `L12H15/L12H5/L12H4/L12H28`
+- `L12H2` now looks like a family-sensitive auxiliary late head: removing it improves 96-pair path patching, but including it improves grouped ablation on several families
+- The 18-pair overlap-controlled set remains useful as discovery-stage history, but it is no longer the basis for repo-facing validation claims
+- The 96-pair cohort materially improves matched-control coverage, but it reuses source scripts and should not be treated as a fully independent holdout
+- A runnable evasion benchmark now exists with a strict candidate tier plus a separate provisional `IEX` extension
+- The strict candidate tier covers `DownloadString`, `DownloadFile`, `Invoke-WebRequest`, `Invoke-Expression`, and `-EncodedCommand`
+- Two artifact-backed failure modes remain the substantive misses under conservative, syntax-preserving obfuscation:
   - `downloadstring_psobject_invoke`
   - `invoke_webrequest_alias`
+- `DownloadFile` and `-EncodedCommand` now have benchmarked strict candidate slices with no observed misses in the current run
+- The pure `IEX` slice is now included as a provisional candidate tier: invariant-checked, benchmarked, and still `0/4` on the current run, but not part of the strict benchmark because the current environment lacks a PowerShell runtime and the fallback parse screen does not accept those variants
 - The evasion story is now mechanistically specific:
   - on evaded variants, the validated late writer family remains present and still writes the familiar malicious-evidence direction at `resid_pre13`
   - the dependence on that evidence is redistributed downstream between `resid_pre13` and `resid_pre31`
   - by `resid_pre31`, the anti-causal split is already present in the late residual stream
-- Remaining gaps are stronger independent generalization, broader evasion coverage across more families, and final writeup consolidation rather than another major mechanistic search
+- The core study is complete at the current 96-pair validation bar; future expansion should target stronger independent generalization and broader evasion coverage rather than another major mechanistic search
 
 ---
 
@@ -54,12 +58,12 @@ Identify and causally validate circuits responsible for malicious PowerShell det
 ## Notebook 2: Circuit Validation
 
 ### Goals
-- Prove causal role
-- Quantify effects
+- Prove causal role on the 96-pair cohort
+- Quantify late-route effects
 
 ### Tasks
-- Activation patching
-- Head ablation
+- Grouped path patching
+- Grouped head ablation
 - Batch evaluation
 
 ---
@@ -85,12 +89,12 @@ Identify and causally validate circuits responsible for malicious PowerShell det
 ## Success Criteria
 
 - Circuit identified: substantially complete
-- Causal validation proven on the main overlap-controlled cohort: substantially complete
-- Generalization shown on the interim expanded 96-pair cohort: partial, with known dependence caveat
+- Causal validation proven on the 96-pair within-family cohort: substantially complete
+- Current study complete at the 96-pair within-family validation bar: complete
 - Evasion benchmark established: complete
 - At least one real evasion mechanism characterized mechanistically: complete
 
-## Practical Next Steps
+## Future Expansion
 
 - Consolidate the final claim around:
   - minimal direct branch: `L0H11 -> L12H15/L12H5/L12H4`
@@ -99,10 +103,9 @@ Identify and causally validate circuits responsible for malicious PowerShell det
   - final evasion read: the late carrier survives, but downstream late blocks redistribute how the final decision depends on it under obfuscation
 - Merge the March 31 evasion follow-ups into the main writeup and artifact narrative
 - Build a more independent holdout with more distinct scripts rather than only recombined within-family pairings
-- Expand the evasion benchmark beyond the current `DownloadString` and `Invoke-WebRequest` slices
-- Add more runnable obfuscation families for `DownloadFile`, `IEX`, and `-EncodedCommand`
+- Finish runtime-side validation for the pure `IEX` evasion slice so it can move from the provisional tier into the strict candidate benchmark
 - Prepare the final figure and artifact shortlist around:
-  - 18-pair mechanistic core
+  - 96-pair minimal direct branch
   - 96-pair late-carrier refinement
   - `downloadstring_psobject_invoke` necessity/sufficiency split
   - `invoke_webrequest_alias` downstream redistribution result
