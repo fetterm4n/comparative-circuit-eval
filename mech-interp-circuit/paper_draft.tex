@@ -1,18 +1,16 @@
-\documentclass[11pt]{article}
+\documentclass{article}
 
-\usepackage[margin=1in]{geometry}
+\usepackage[preprint]{neurips_2024}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
-\usepackage{lmodern}
 \usepackage{microtype}
-\usepackage{setspace}
 \usepackage{amsmath, amssymb}
 \usepackage{booktabs}
 \usepackage{graphicx}
 \usepackage{xcolor}
-\usepackage{hyperref}
 \usepackage{enumitem}
-\usepackage[numbers]{natbib}
+\usepackage{hyperref}
+\usepackage{url}
 
 \hypersetup{
   colorlinks=true,
@@ -22,13 +20,12 @@
   pdftitle={From Detection to Evasion: Mechanistic Circuit Evaluation of Malicious Code Classification in LLMs}
 }
 
-\setlength{\parskip}{0.5em}
-\setlength{\parindent}{0pt}
-\onehalfspacing
-
 \title{From Detection to Evasion: Mechanistic Circuit Evaluation of Malicious Code Classification in LLMs}
-\author{Ryan Fetterman \\ Cisco Foundation AI}
-\date{\today}
+\author{%
+  Ryan Fetterman \\
+  Cisco Foundation AI
+}
+\date{}
 
 \begin{document}
 
@@ -114,7 +111,7 @@ The final claim is based on grouped interventions on the 96-pair cohort:
 Throughout the paper, a more negative mean intervention effect indicates a stronger weakening of the model's malicious judgment. Flip rate reports the fraction of examples whose final prediction changes under intervention.
 
 \subsection{Evasion}
-We evaluate conservative syntax-preserving obfuscation techniques and then follow the strongest misses with paired mechanistic probes. The central question is whether evasion removes the validated malicious-evidence route or instead changes how the model uses that evidence downstream. The current artifact set distinguishes a \emph{strict candidate} benchmark, which requires the existing parse and invariant screen, from a separate \emph{provisional} tier used only for pure \texttt{IEX} variants whose invariants pass but whose runtime-side parse validation is unavailable in the current environment.
+We evaluate conservative syntax-preserving obfuscation techniques and then follow the strongest misses with paired mechanistic probes. The central question is whether evasion removes the validated malicious-evidence route or instead changes how the model uses that evidence downstream. The benchmark includes keyword-hiding rewrites, execution indirection, and object-method indirection. Representative transformations include replacing \texttt{Invoke-WebRequest} with the alias \texttt{iwr}, replacing direct execution forms with \texttt{\& ([scriptblock]::Create(...))}, and replacing direct \texttt{DownloadString}/\texttt{DownloadFile} calls with indirect \texttt{PSObject.Methods[...].Invoke(...)} forms. Variants are admitted when they preserve the intended behavior under the existing invariant checks and parse screen. The only exception is a small pure \texttt{IEX} slice, which is reported with a note because runtime-side parse validation is not available in the current environment.
 
 \section{Main Results}
 \subsection{Validated Late Route}
@@ -183,34 +180,42 @@ Family & Pairs & Best patch route & \texttt{H2} under ablation \\
 \end{figure}
 
 \section{Evasion Results}
-The current benchmark is best read as a two-tier robustness evaluation rather than a single flat table. The strict candidate tier contains parse-validated and invariant-validated variants. A separate provisional tier adds pure \texttt{IEX} scriptblock-creation variants whose invariants pass but whose runtime-side parse validation is missing in the current environment. This separation keeps the benchmark bar explicit while still allowing broader coverage reporting.
-
-The benchmark currently contains two artifact-backed failure modes:
-\begin{itemize}[leftmargin=1.5em]
-  \item \texttt{downloadstring\_psobject\_invoke}, which yields a narrower miss pattern.
-  \item \texttt{invoke\_webrequest\_alias}, which is the strongest current failure mode.
-\end{itemize}
+The benchmark shows a clear ranking across evasion families. The strongest current failure mode is simple alias substitution in the \texttt{Invoke-WebRequest} family: replacing the full command name with \texttt{iwr} yields misses on all four tested variants. The only other positive result is much narrower. Indirect \texttt{DownloadString} method invocation produces misses in two of six variants, and both of those misses come from \texttt{FromBase64String}-linked seeds rather than from the direct \texttt{DownloadString} seeds themselves. By contrast, the current \texttt{DownloadFile}, \texttt{-EncodedCommand}, \texttt{Invoke-Expression}, and pure \texttt{IEX} slices do not produce misses in the present run.
 
 \begin{table}[t]
 \centering
-\caption{Current evasion benchmark status. The strict tier preserves the original benchmark bar. The provisional tier is reported separately so that pure \texttt{IEX} coverage can be measured without weakening the main admission rule.}
+\caption{Current evasion benchmark status. Most variants satisfy the standard parse and invariant checks. The pure \texttt{IEX} row is included for coverage but is marked separately because runtime-side parse validation is unavailable in the current environment.}
 \label{tab:evasion-results}
 \begin{tabular}{llll}
 \toprule
-Tier & Technique & Pairs & Outcome \\
+Technique & Seed family / commandlet & Pairs & Outcome \\
 \midrule
-Strict & \texttt{invoke\_webrequest\_alias} & 4 & $4/4$ misses \\
-Strict & \texttt{downloadstring\_psobject\_invoke} & 6 & $2/6$ misses \\
-Strict & \texttt{downloadfile\_psobject\_invoke} & 4 & $0/4$ misses \\
-Strict & \texttt{split\_quoted\_encodedcommand\_literal} & 2 & $0/2$ misses \\
-Provisional & \texttt{iex\_scriptblock\_create} & 4 & $0/4$ misses \\
+\texttt{invoke\_webrequest\_alias} & \texttt{Invoke-WebRequest} & 4 & $4/4$ misses \\
+\texttt{downloadstring\_psobject\_invoke} & \texttt{DownloadString}/\texttt{FromBase64String} & 6 & $2/6$ misses \\
+\texttt{downloadfile\_psobject\_invoke} & \texttt{DownloadFile} & 4 & $0/4$ misses \\
+\texttt{split\_quoted\_encodedcommand\_literal} & \texttt{-EncodedCommand} & 2 & $0/2$ misses \\
+\texttt{iex\_scriptblock\_create} & pure \texttt{IEX} & 4 & $0/4$ misses (not parse-validated) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\caption{Representative side-by-side example of a successful conservative evasion. In this case, the malicious behavior is unchanged, but replacing the explicit \texttt{Invoke-WebRequest} token with the alias \texttt{iwr} is sufficient to flip the model's prediction on this seed.}
+\label{tab:evasion-example}
+\begin{tabular}{p{0.18\linewidth} p{0.72\linewidth}}
+\toprule
+Version & Script fragment \\
+\midrule
+Seed & \texttt{Invoke-WebRequest -Uri http://stderr.pl/procdump.exe -OutFile c:\textbackslash temp\textbackslash sendme.exe} \\
+Variant & \texttt{iwr -Uri http://stderr.pl/procdump.exe -OutFile c:\textbackslash temp\textbackslash sendme.exe} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 The strongest mechanistic result is not that the validated route disappears. Instead, under \texttt{invoke\_webrequest\_alias}, the usual late malicious-evidence write remains visible earlier in the late stage, while downstream computation changes how the final decision depends on that evidence. In the current interpretation, this is better described as downstream redistribution or repurposing than as simple route deletion. This framing is consistent with the broader lesson from recent mechanistic studies that behaviorally similar outputs can arise from materially different internal pathways and downstream uses of shared evidence \citep{lindsey2025biology}.
 
-The broader benchmark picture sharpens the claim boundary. The current evidence does \emph{not} support a generic statement that conservative string-hiding automatically defeats the model. The newly added strict \texttt{DownloadFile} and \texttt{-EncodedCommand} slices and the provisional pure \texttt{IEX} slice all remain robust in the current run. So the present robustness claim is deliberately narrower: some conservative rewrites do evade the model, but the clearest current failures are concentrated in specific slices, especially \texttt{invoke\_webrequest\_alias} and the narrower \texttt{FromBase64String}-linked \texttt{downloadstring\_psobject\_invoke} pattern.
+The broader benchmark picture sharpens the claim boundary. The current evidence does \emph{not} support a generic statement that conservative string-hiding automatically defeats the model. The most effective rewrite is the \texttt{Invoke-WebRequest} alias substitution, and the only other positive result is the narrower \texttt{downloadstring\_psobject\_invoke} pattern concentrated in \texttt{FromBase64String}-linked seeds. The present \texttt{DownloadFile}, \texttt{-EncodedCommand}, and pure \texttt{IEX} slices remain robust in the current run. So the robustness claim is narrower and easier to state plainly: the model has specific weaknesses around some web-request and string-reconstruction patterns, not a broad failure against all conservative obfuscation.
 
 \begin{figure}[t]
 \centering
@@ -231,15 +236,15 @@ This draft has several clear limitations:
 \begin{itemize}[leftmargin=1.5em]
   \item The 96-pair cohort is not a fully independent holdout.
   \item The late-stage computation is only partially decomposed; grouped routes are supported more strongly than individual heads or individual neurons.
-  \item The evasion benchmark is stronger than the initial two-slice result, but its positive failures are still narrow. The strict benchmark adds negative-result coverage for \texttt{DownloadFile} and \texttt{-EncodedCommand}, while pure \texttt{IEX} remains provisional rather than strict because runtime-side syntax validation is still unavailable in the current environment.
+  \item The evasion benchmark is stronger than the initial two-slice result, but its positive failures are still narrow. Negative-result coverage now includes \texttt{DownloadFile} and \texttt{-EncodedCommand}, while the pure \texttt{IEX} slice is reported with a validation note because runtime-side syntax validation is still unavailable in the current environment.
   \item The current evidence is strongest for head-group and residual-direction claims, not for a fully enumerated circuit graph.
 \end{itemize}
 
 \section{Future Work}
-The most important expansion is a stronger script-disjoint holdout with broader benign coverage across indicator families. Additional work should also move the provisional pure \texttt{IEX} slice into the strict benchmark by running runtime-side validation, broaden the evasion benchmark beyond the currently strongest positive slices, and further decompose the late decision stage into more specific subnetworks or feature-level routes.
+The most important expansion is a stronger script-disjoint holdout with broader benign coverage across indicator families. Additional work should also complete runtime-side validation for the pure \texttt{IEX} slice, broaden the evasion benchmark beyond the currently strongest positive web-request and string-reconstruction slices, and further decompose the late decision stage into more specific subnetworks or feature-level routes.
 
 \section{Conclusion}
-This draft argues that a useful mechanistic account of malicious code classification in an LLM can be made precise enough to validate under matched controls and to test under conservative evasion. The present evidence supports a compact late-stage route centered on \texttt{L0H11} and a Layer 12 late carrier, while also showing that evasion can preserve malicious evidence and still change the final outcome through downstream redistribution. Just as importantly, the updated benchmark now includes informative negative-result slices as well as the strongest misses, which makes the robustness claim sharper and better bounded. The broader lesson is that mechanistic evaluation in security settings should track not only whether a model detects dangerous evidence, but also how later computation preserves, discounts, or repurposes that evidence before final readout.
+This draft argues that a useful mechanistic account of malicious code classification in an LLM can be made precise enough to validate under matched controls and to test under conservative evasion. The present evidence supports a compact late-stage route centered on \texttt{L0H11} and a Layer 12 late carrier, while also showing that evasion can preserve malicious evidence and still change the final outcome through downstream redistribution. The benchmark now makes that robustness claim more specific: the clearest failures come from \texttt{Invoke-WebRequest} alias hiding and a narrower \texttt{FromBase64String}/\texttt{DownloadString} reconstruction slice, while several other conservative rewrites remain robust. The broader lesson is that mechanistic evaluation in security settings should track not only whether a model detects dangerous evidence, but also how later computation preserves, discounts, or repurposes that evidence before final readout.
 
 \bibliographystyle{plainnat}
 \bibliography{references}
