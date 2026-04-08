@@ -1,0 +1,18 @@
+{
+  "basis_labels": [
+    "mean_delta",
+    "logit_readout"
+  ],
+  "basis_path": "mech-interp-circuit/artifacts/evasion_invoke_webrequest_seed_v2_resid_pre13_contrastive_h100_basis.pt",
+  "device": "cuda",
+  "diagnostics": {
+    "logit_dir_norm": 1.1250205039978027,
+    "mean_delta_logit_dir_cosine": -0.0070967604406178,
+    "mean_delta_norm": 2.466778039932251
+  },
+  "layer": 13,
+  "num_pairs": 4,
+  "pairs_csv": "mech-interp-circuit/artifacts/evasion_invoke_webrequest_seed_v2_resid_pre13_contrastive_h100_pairs.csv",
+  "resid_kind": "pre",
+  "template_name": "meta-llama/Llama-3.1-8B-Instruct"
+}

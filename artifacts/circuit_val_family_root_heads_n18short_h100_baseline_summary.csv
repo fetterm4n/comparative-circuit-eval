@@ -1,0 +1,8 @@
+pair_indicator,rows,pairs,accuracy,benign_rows,benign_accuracy,malicious_rows,malicious_accuracy,mean_logit_diff,mean_malicious_logit_diff,mean_benign_logit_diff
+-EncodedCommand,2,1,1.0,1,1.0,1,1.0,1.0234375,3.890625,-1.84375
+DownloadFile,2,1,1.0,1,1.0,1,1.0,1.796875,5.046875,-1.453125
+DownloadString,2,1,1.0,1,1.0,1,1.0,-1.0234375,1.34375,-3.390625
+FromBase64String,10,5,1.0,5,1.0,5,1.0,0.72421875,3.9484375,-2.5
+IEX,2,1,1.0,1,1.0,1,1.0,-0.8984375,0.375,-2.171875
+Invoke-Expression,14,7,1.0,7,1.0,7,1.0,0.9676339285714286,4.220982142857143,-2.2857142857142856
+Invoke-WebRequest,4,2,1.0,2,1.0,2,1.0,1.0703125,5.359375,-3.21875

@@ -1,2 +1,8 @@
 .DS_Store
 .ipynb_checkpoints/
+.venv/
+__pycache__/
+*.pyc
+artifacts/.DS_Store
+paper/
+RESUME_*.md

@@ -1,0 +1,2 @@
+patch_label,pair_count,mean_delta,max_delta,min_delta,flip_rate,mean_base_logit_diff
+h12.15+h12.5+h12.4+h12.28,6,-2.6770833333333335,-0.984375,-5.328125,1.0,2.0755208333333335

@@ -1,0 +1,7 @@
+patch_label,base_logit_diff,patched_logit_diff,delta_logit_diff,effect_pct,pair_idx,pair_indicator,benign_filename,malicious_filename,flip_to_benign
+h12.15+h12.5+h12.4,0.59375,-0.453125,-1.046875,-176.3157894736842,1,DownloadString,1113.ps1,3100.ps1,True
+h12.15+h12.5+h12.4,4.921875,0.1875,-4.734375,-96.19047619047619,2,DownloadString,1113.ps1,3062.ps1,False
+h12.15+h12.5+h12.4,4.5625,0.4375,-4.125,-90.41095890410958,3,DownloadString,1113.ps1,338.ps1,False
+h12.15+h12.5+h12.4,1.34375,-0.234375,-1.578125,-117.44186046511629,4,DownloadString,1113.ps1,450.ps1,True
+h12.15+h12.5+h12.4,0.515625,0.1875,-0.328125,-63.63636363636363,5,FromBase64String,1238.ps1,3537.ps1,False
+h12.15+h12.5+h12.4,0.515625,-1.078125,-1.59375,-309.09090909090907,6,FromBase64String,1670.ps1,3537.ps1,True

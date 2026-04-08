@@ -1,0 +1,20 @@
+{
+  "basis_path": "mech-interp-circuit/artifacts/circuit_val_resid_pre12_subspace_n18_h100_basis.pt",
+  "device": "cuda",
+  "explained_cumulative": [
+    0.3483604039106299,
+    0.5182212713027946,
+    0.6396895288174719,
+    0.7317071491584402,
+    0.7807108271242507,
+    0.8227720780090221,
+    0.8566849353734886,
+    0.8856258116235005
+  ],
+  "layer": 12,
+  "max_rank": 8,
+  "num_pairs": 18,
+  "pairs_csv": "mech-interp-circuit/artifacts/circuit_val_resid_pre12_subspace_n18_h100_pairs.csv",
+  "resid_kind": "pre",
+  "template_name": "meta-llama/Llama-3.1-8B-Instruct"
+}

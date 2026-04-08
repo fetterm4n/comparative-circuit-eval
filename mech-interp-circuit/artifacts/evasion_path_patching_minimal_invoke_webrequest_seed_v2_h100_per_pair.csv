@@ -1,5 +1,0 @@
-patch_label,base_logit_diff,patched_logit_diff,delta_logit_diff,effect_pct,pair_idx,pair_indicator,benign_filename,malicious_filename,flip_to_benign
-h0.11+h12.15+h12.5+h12.4,0.171875,-2.078125,-2.25,-1309.0909090909092,86,Invoke-WebRequest,3784.ps1,1362.ps1,True
-h0.11+h12.15+h12.5+h12.4,0.171875,-1.390625,-1.5625,-909.0909090909091,87,Invoke-WebRequest,4058.ps1,1362.ps1,True
-h0.11+h12.15+h12.5+h12.4,0.171875,-1.125,-1.296875,-754.5454545454546,88,Invoke-WebRequest,3104.ps1,1362.ps1,True
-h0.11+h12.15+h12.5+h12.4,0.171875,-1.453125,-1.625,-945.4545454545455,89,Invoke-WebRequest,896.ps1,1362.ps1,True

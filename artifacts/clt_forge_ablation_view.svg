@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="700" height="400">
+    <!-- Background -->
+    <rect width="700" height="400" fill="#f5f5f5"/>
+    <rect x="20" y="20" width="660" height="360" fill="white" stroke="none" rx="12"/>
+    
+    <!-- Title -->
+    <text x="40" y="45" fill="#666" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-transform="uppercase" letter-spacing="1px">Graph &amp; Interventions</text>
+    
+    <!-- Graph area (moved up significantly) -->
+    <g transform="translate(50, 0)">
+        <line x1="300.0" y1="156.38888888888889" x2="300.0" y2="100.83333333333331" stroke="#8B4513" stroke-width="3"/>
+<polygon points="300.0,100.83333333333331 304.0,108.83333333333331 296.0,108.83333333333331" fill="#8B4513"/>
+<line x1="330.0" y1="176.94444444444446" x2="300.0" y2="156.38888888888889" stroke="#D2691E" stroke-width="4"/>
+<polygon points="300.0,156.38888888888889 308.86038473974406,157.61101092195702 304.33853321739196,164.21046990052503" fill="#D2691E"/>
+<line x1="150.0" y1="211.94444444444446" x2="300.0" y2="211.94444444444446" stroke="#8B4513" stroke-width="3"/>
+<polygon points="300.0,211.94444444444446 292.0,215.94444444444446 292.0,207.94444444444446" fill="#8B4513"/>
+<line x1="450.0" y1="211.94444444444446" x2="300.0" y2="156.38888888888889" stroke="#8B4513" stroke-width="3"/>
+<polygon points="300.0,156.38888888888889 308.89124750908405,155.41640869258282 306.11273266249526,162.91839877837248" fill="#8B4513"/>
+<line x1="300.0" y1="267.5" x2="150.0" y2="211.94444444444446" stroke="#8B4513" stroke-width="3"/>
+<polygon points="150.0,211.94444444444446 158.891247509084,210.9719642481384 156.11273266249526,218.47395433392805" fill="#8B4513"/>
+        <rect x="250.0" y="250.0" width="100" height="35" fill="#e8e8e8" stroke="#999" stroke-width="2" rx="8"/>
+<text x="300.0" y="272.0" text-anchor="middle" fill="#333" font-family="Arial, sans-serif" font-size="12" font-weight="bold">indicator tokens</text>
+<rect x="235.0" y="245.0" width="30" height="16" fill="white" stroke="#ccc" stroke-width="1" rx="4"/>
+<text x="250.0" y="257.0" text-anchor="middle" fill="#8B4513" font-family="Arial, sans-serif" font-size="10" font-weight="bold">100%</text>
+<rect x="100.0" y="194.44444444444446" width="100" height="35" fill="#e8e8e8" stroke="#999" stroke-width="2" rx="8"/>
+<text x="150.0" y="216.44444444444446" text-anchor="middle" fill="#333" font-family="Arial, sans-serif" font-size="12" font-weight="bold">L0H11</text>
+<rect x="85.0" y="189.44444444444446" width="30" height="16" fill="white" stroke="#ccc" stroke-width="1" rx="4"/>
+<text x="100.0" y="201.44444444444446" text-anchor="middle" fill="#8B4513" font-family="Arial, sans-serif" font-size="10" font-weight="bold">91%</text>
+<rect x="250.0" y="194.44444444444446" width="100" height="35" fill="#f0f0f0" stroke="#ddd" stroke-width="2" rx="8"/>
+<text x="300.0" y="216.44444444444446" text-anchor="middle" fill="#bbb" font-family="Arial, sans-serif" font-size="12" font-weight="bold">L12H15/H5/H4/H28</text>
+<rect x="235.0" y="189.44444444444446" width="30" height="16" fill="white" stroke="#ccc" stroke-width="1" rx="4"/>
+<text x="250.0" y="201.44444444444446" text-anchor="middle" fill="#8B4513" font-family="Arial, sans-serif" font-size="10" font-weight="bold">17%</text>
+<rect x="230.0" y="189.44444444444446" width="58" height="16" fill="#D2691E" stroke="none" rx="12"/>
+<text x="259.0" y="201.44444444444446" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="10" font-weight="bold">ablate</text>
+<rect x="400.0" y="194.44444444444446" width="100" height="35" fill="#e8e8e8" stroke="#999" stroke-width="2" rx="8"/>
+<text x="450.0" y="216.44444444444446" text-anchor="middle" fill="#333" font-family="Arial, sans-serif" font-size="12" font-weight="bold">L12H2
+aux helper</text>
+<rect x="385.0" y="189.44444444444446" width="30" height="16" fill="white" stroke="#ccc" stroke-width="1" rx="4"/>
+<text x="400.0" y="201.44444444444446" text-anchor="middle" fill="#8B4513" font-family="Arial, sans-serif" font-size="10" font-weight="bold">48%</text>
+<rect x="380.0" y="189.44444444444446" width="42" height="16" fill="#D2691E" stroke="none" rx="12"/>
+<text x="401.0" y="201.44444444444446" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="10" font-weight="bold">keep</text>
+<rect x="250.0" y="138.88888888888889" width="100" height="35" fill="#e8e8e8" stroke="#999" stroke-width="2" rx="8"/>
+<text x="300.0" y="160.88888888888889" text-anchor="middle" fill="#333" font-family="Arial, sans-serif" font-size="12" font-weight="bold">resid_pre13
+weakened evidence</text>
+<rect x="235.0" y="133.88888888888889" width="30" height="16" fill="white" stroke="#ccc" stroke-width="1" rx="4"/>
+<text x="250.0" y="145.88888888888889" text-anchor="middle" fill="#8B4513" font-family="Arial, sans-serif" font-size="10" font-weight="bold">29%</text>
+<rect x="250.0" y="83.33333333333331" width="100" height="35" fill="#e8e8e8" stroke="#999" stroke-width="2" rx="8"/>
+<text x="300.0" y="105.33333333333331" text-anchor="middle" fill="#333" font-family="Arial, sans-serif" font-size="12" font-weight="bold">ALLOW logit</text>
+<rect x="235.0" y="78.33333333333331" width="30" height="16" fill="white" stroke="#ccc" stroke-width="1" rx="4"/>
+<text x="250.0" y="90.33333333333331" text-anchor="middle" fill="#8B4513" font-family="Arial, sans-serif" font-size="10" font-weight="bold">63%</text>
+<rect x="280.0" y="159.44444444444446" width="100" height="35" fill="#f0f0f0" stroke="#ddd" stroke-width="2" rx="8"/>
+<text x="330.0" y="181.44444444444446" text-anchor="middle" fill="#bbb" font-family="Arial, sans-serif" font-size="12" font-weight="bold">weakened late carrier</text>
+<rect x="265.0" y="154.44444444444446" width="30" height="16" fill="white" stroke="#ccc" stroke-width="1" rx="4"/>
+<text x="280.0" y="166.44444444444446" text-anchor="middle" fill="#8B4513" font-family="Arial, sans-serif" font-size="10" font-weight="bold">23%</text>
+    </g>
+    
+    <!-- Prompt section -->
+    <line x1="40" y1="290" x2="660" y2="290" stroke="#ddd" stroke-width="1"/>
+    <text x="40" y="310" fill="#666" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-transform="uppercase" letter-spacing="0.5px">Prompt</text>
+    
+    <!-- Prompt text (GitHub-compatible) -->
+    <text x="40" y="325" fill="#333" font-family="Arial, sans-serif" font-size="12">Late-carrier ablation view: grouped intervention weakens malicious evidence and</text>
+<text x="40" y="340" fill="#333" font-family="Arial, sans-serif" font-size="12">the final BLOCK preference</text>
+    
+    <!-- Top outputs section -->
+    <text x="40" y="350" fill="#666" font-family="Arial, sans-serif" font-size="10" font-weight="bold" text-transform="uppercase" letter-spacing="0.5px">Top Outputs</text>
+    
+    <!-- Output items -->
+    <g transform="translate(0, 5)">
+        <rect x="40" y="350" width="78" height="20" fill="#e8e8e8" stroke="none" rx="6"/>
+<text x="45" y="364" fill="#333" font-family="Arial, sans-serif" font-size="11" font-weight="bold">ALLOW <tspan fill="#555" font-size="10">61%</tspan></text>
+<rect x="128" y="350" width="78" height="20" fill="#e8e8e8" stroke="none" rx="6"/>
+<text x="133" y="364" fill="#333" font-family="Arial, sans-serif" font-size="11" font-weight="bold">BLOCK <tspan fill="#555" font-size="10">27%</tspan></text>
+<rect x="216" y="350" width="80" height="20" fill="#e8e8e8" stroke="none" rx="6"/>
+<text x="221" y="364" fill="#333" font-family="Arial, sans-serif" font-size="11" font-weight="bold">benign <tspan fill="#555" font-size="10">6%</tspan></text>
+    </g>
+</svg>

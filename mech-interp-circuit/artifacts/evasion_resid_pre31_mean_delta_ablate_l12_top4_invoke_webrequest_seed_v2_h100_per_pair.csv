@@ -1,5 +1,0 @@
-intervention_label,mode,basis_label,target_layer,target_resid_kind,pair_idx,pair_indicator,benign_filename,malicious_filename,base_logit_diff,intervened_logit_diff,logit_delta,flip_to_benign,base_projection,intervened_projection,projection_delta
-ablate_h12.15+h12.5+h12.4+h12.28,ablate,mean_delta,31,pre,86,Invoke-WebRequest,3784.ps1,1362.ps1,0.171875,0.046875,-0.125,False,10.859375,10.65625,-0.203125
-ablate_h12.15+h12.5+h12.4+h12.28,ablate,mean_delta,31,pre,87,Invoke-WebRequest,4058.ps1,1362.ps1,0.171875,0.046875,-0.125,False,10.859375,10.65625,-0.203125
-ablate_h12.15+h12.5+h12.4+h12.28,ablate,mean_delta,31,pre,88,Invoke-WebRequest,3104.ps1,1362.ps1,0.171875,0.046875,-0.125,False,10.859375,10.65625,-0.203125
-ablate_h12.15+h12.5+h12.4+h12.28,ablate,mean_delta,31,pre,89,Invoke-WebRequest,896.ps1,1362.ps1,0.171875,0.046875,-0.125,False,10.859375,10.65625,-0.203125

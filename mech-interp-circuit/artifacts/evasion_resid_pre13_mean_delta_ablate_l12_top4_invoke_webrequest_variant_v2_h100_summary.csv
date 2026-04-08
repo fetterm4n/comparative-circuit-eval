@@ -1,2 +1,0 @@
-intervention_label,pair_count,mean_base_logit_diff,mean_intervened_logit_diff,mean_logit_delta,flip_rate,mean_base_projection,mean_intervened_projection,mean_projection_delta,positive_projection_delta_frac
-ablate_h12.15+h12.5+h12.4+h12.28,4,-0.296875,0.046875,0.34375,0.0,1.8994140625,1.7080078125,-0.19140625,0.0

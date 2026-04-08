@@ -1,0 +1,5 @@
+ablation_label,base_logit_diff,ablated_logit_diff,delta_logit_diff,effect_pct,pair_idx,pair_indicator,benign_filename,malicious_filename,flip_to_benign
+h12.15+h12.5+h12.4+h12.28,0.171875,0.046875,-0.125,-72.72727272727273,86,Invoke-WebRequest,3784.ps1,1362.ps1,False
+h12.15+h12.5+h12.4+h12.28,0.171875,0.046875,-0.125,-72.72727272727273,87,Invoke-WebRequest,4058.ps1,1362.ps1,False
+h12.15+h12.5+h12.4+h12.28,0.171875,0.046875,-0.125,-72.72727272727273,88,Invoke-WebRequest,3104.ps1,1362.ps1,False
+h12.15+h12.5+h12.4+h12.28,0.171875,0.046875,-0.125,-72.72727272727273,89,Invoke-WebRequest,896.ps1,1362.ps1,False

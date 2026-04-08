@@ -1,0 +1,29 @@
+{
+  "ablation_csv": "mech-interp-circuit/artifacts/circuit_val_pair1_causal_l4_root_h100_ablation.csv",
+  "benign_filename": "1735.ps1",
+  "benign_manifest_rank": null,
+  "device": "cuda",
+  "first_n_layers": 4,
+  "heads": [
+    {
+      "head": 11,
+      "layer": 0
+    },
+    {
+      "head": 8,
+      "layer": 0
+    },
+    {
+      "head": 23,
+      "layer": 0
+    },
+    {
+      "head": 9,
+      "layer": 0
+    }
+  ],
+  "malicious_filename": "3321.ps1",
+  "malicious_manifest_rank": null,
+  "pair_idx": 1,
+  "patch_csv": "mech-interp-circuit/artifacts/circuit_val_pair1_causal_l4_root_h100_patch.csv"
+}

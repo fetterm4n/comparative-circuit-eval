@@ -1,0 +1,10 @@
+{
+  "device": "mps",
+  "first_n_layers": 4,
+  "num_pairs": 18,
+  "pairs_csv": "mech-interp-circuit/artifacts/circuit_val_batch_attention_l4_n18_pairs.csv",
+  "per_pair_csv": "mech-interp-circuit/artifacts/circuit_val_batch_attention_l4_n18_per_pair.csv",
+  "summary_csv": "mech-interp-circuit/artifacts/circuit_val_batch_attention_l4_n18_summary.csv",
+  "template_name": "meta-llama/Llama-3.1-8B-Instruct",
+  "topk": 15
+}

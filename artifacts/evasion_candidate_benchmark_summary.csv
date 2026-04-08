@@ -1,0 +1,7 @@
+technique_id,family,variant_count,evasion_success_rate,classification_change_rate,mean_variant_logit_diff,mean_seed_logit_diff,mean_logit_delta_vs_seed,min_logit_delta_vs_seed,max_logit_delta_vs_seed
+downloadstring_psobject_invoke,string_construction,6,0.3333333333333333,0.3333333333333333,0.9401041666666666,2.0755208333333335,-1.1354166666666667,-2.03125,-0.5625
+downloadfile_psobject_invoke,string_construction,4,0.0,0.0,5.19921875,6.8828125,-1.68359375,-3.296875,-0.765625
+start_process_call_operator_string,keyword_hiding,4,0.0,0.0,6.57421875,6.8828125,-0.30859375,-0.859375,0.515625
+invoke_webrequest_call_operator_string,keyword_hiding,2,0.0,0.0,0.234375,0.15625,0.078125,0.078125,0.078125
+invoke_expression_call_operator_string,execution_indirection,4,0.0,0.0,0.375,0.125,0.25,0.25,0.25
+iex_call_operator_string,execution_indirection,6,0.0,0.0,4.658854166666667,3.4036458333333335,1.2552083333333333,0.265625,2.125

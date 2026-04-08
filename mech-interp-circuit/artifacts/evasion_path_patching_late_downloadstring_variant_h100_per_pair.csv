@@ -1,7 +1,0 @@
-patch_label,base_logit_diff,patched_logit_diff,delta_logit_diff,effect_pct,pair_idx,pair_indicator,benign_filename,malicious_filename,flip_to_benign
-h12.15+h12.5+h12.4+h12.28,0.078125,-1.15625,-1.234375,-1580.0,1,DownloadString,1113.ps1,450__seed_285f5d043e6d__downloadstring_psobject_invoke.ps1,True
-h12.15+h12.5+h12.4+h12.28,3.09375,0.03125,-3.0625,-98.98989898989899,2,DownloadString,1113.ps1,3062__seed_ed17a1e2d507__downloadstring_psobject_invoke.ps1,False
-h12.15+h12.5+h12.4+h12.28,2.515625,-0.203125,-2.71875,-108.07453416149069,3,DownloadString,1113.ps1,338__seed_d684039eb859__downloadstring_psobject_invoke.ps1,True
-h12.15+h12.5+h12.4+h12.28,0.046875,-1.140625,-1.1875,-2533.333333333333,4,DownloadString,1113.ps1,3100__seed_c59b1d02106e__downloadstring_psobject_invoke.ps1,True
-h12.15+h12.5+h12.4+h12.28,-0.109375,-0.515625,-0.40625,-371.42857142857144,5,FromBase64String,1238.ps1,3537__seed_833f6cd11ac6__downloadstring_psobject_invoke.ps1,True
-h12.15+h12.5+h12.4+h12.28,-0.109375,-1.640625,-1.53125,-1400.0,6,FromBase64String,1670.ps1,3537__seed_59fd6d3c0181__downloadstring_psobject_invoke.ps1,True

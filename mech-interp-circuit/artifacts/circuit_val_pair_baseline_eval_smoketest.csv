@@ -1,2 +1,0 @@
-filename,label,predicted_label,target_token,predicted_token,logit_diff,correct,used_char_len,was_truncated
-1735.ps1,benign,benign,ALLOW,ALLOW,-1.828125,True,952,False
