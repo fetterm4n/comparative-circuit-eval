@@ -1,0 +1,19 @@
+{
+  "best_layer": 1,
+  "best_test_accuracy": 1.0,
+  "best_test_auroc": 1.0,
+  "curve_csv": "/home/ryan/mech-interp-circuit-validation/artifacts/feature_emergence_linear_probe.csv",
+  "curve_png": "/home/ryan/mech-interp-circuit-validation/artifacts/feature_emergence_linear_probe.png",
+  "device": "cuda",
+  "max_samples_per_label": 48,
+  "model_name": "fdtn-ai/Foundation-Sec-8B-Instruct",
+  "probe_l2": 0.01,
+  "probe_max_iter": 250,
+  "random_seed": 42,
+  "rows_total": 96,
+  "template_name": "meta-llama/Llama-3.1-8B-Instruct",
+  "test_fraction": 0.25,
+  "test_rows": 24,
+  "torch_dtype": "float16",
+  "train_rows": 72
+}
