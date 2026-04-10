@@ -21,7 +21,15 @@ On the 96-pair matched cohort, grouped path patching shows that:
 - the minimal direct branch removes about 90% of the model's average malicious decision margin and flips `54/96` predictions
 - the stronger late carrier removes about 93% of that average margin and flips `60/96` predictions
 
-The repository also includes an evasion benchmark built from conservative syntax-preserving rewrites. The strongest current failure mode is `Invoke-WebRequest` alias substitution, and the benchmark follow-up supports a downstream-redistribution interpretation: the late malicious-evidence carrier can remain detectable upstream while later computation still produces misclassification.
+The repository also includes a two-tier evasion benchmark built from syntax-preserving PowerShell rewrites.
+
+- `baseline_v1`
+  Conservative rewrites that stay close to the original benchmark style, such as alias substitution, simple token splitting, call-operator indirection, and quoted-literal reconstruction. This tier is intended as the stable benchmark baseline.
+
+- `realistic_v2`
+  A more realistic defensive-evasion robustness tier that adds stronger string and command reconstruction patterns, including backticks, format strings, ASCII or Base64 recovery, invisible Unicode normalization, and alternate quoting or subexpressions. This tier is intended to stress whether the same internal route survives more deployment-plausible obfuscation.
+
+The strongest current baseline failure mode is `Invoke-WebRequest` alias substitution. In the newer realistic tier, `invoke_expression_format_string` adds a second concrete failure mode. Across both tiers, the follow-up evidence supports the same broad interpretation: the validated late malicious-evidence carrier can remain present while later computation still produces misclassification.
 
 ## Repository Structure
 
@@ -32,7 +40,7 @@ The repository also includes an evasion benchmark built from conservative syntax
   Current measured findings, claim boundaries, and interpretation notes.
 
 - `EVASION_BENCHMARK_SCHEMA.md`
-  Schema and definitions for the evasion benchmark outputs and review fields.
+  Schema and definitions for the two-tier evasion benchmark outputs, presets, and review fields.
 
 - `PLAN.md`
   Project plan and execution notes for the scaled validation and evasion work.
