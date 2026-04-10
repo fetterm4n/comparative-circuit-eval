@@ -17,6 +17,7 @@ importable even when ``transformer_lens`` is not installed locally.
 from __future__ import annotations
 
 import argparse
+import base64
 import csv
 import gc
 import hashlib
@@ -1022,6 +1023,12 @@ def replace_command_token(script: str, command: str, replacement: str) -> Option
     return updated if count > 0 and updated != script else None
 
 
+def replace_quoted_literal_with_expression(script: str, literal: str, replacement_expr: str) -> Optional[str]:
+    pattern = re.compile(rf"(?P<q>['\"]){re.escape(literal)}(?P=q)")
+    updated, count = pattern.subn(replacement_expr, script)
+    return updated if count > 0 and updated != script else None
+
+
 def split_quoted_literal(script: str, literal: str, left: str, right: str) -> Optional[str]:
     pattern = re.compile(rf"(?P<q>['\"]){re.escape(literal)}(?P=q)")
 
@@ -1081,17 +1088,80 @@ def split_quoted_literal_lenient(script: str, literal: str, left: str, right: st
     return updated if count > 0 and updated != script else None
 
 
+def literal_split_parts(literal: str) -> Tuple[str, str]:
+    if literal == "IEX":
+        return "I", "EX"
+    if "-" in literal:
+        left, right = literal.split("-", 1)
+        return f"{left}-", right
+    camel_match = re.match(r"^(.*?)([A-Z][a-zA-Z0-9]+)$", literal)
+    if camel_match:
+        return camel_match.group(1), camel_match.group(2)
+    midpoint = max(1, len(literal) // 2)
+    return literal[:midpoint], literal[midpoint:]
+
+
+def base64_ascii_expression(literal: str) -> str:
+    encoded = base64.b64encode(literal.encode("ascii")).decode("ascii")
+    return f"[Text.Encoding]::ASCII.GetString([Convert]::FromBase64String('{encoded}'))"
+
+
+def ascii_char_array_expression(literal: str) -> str:
+    codes = ",".join(str(ord(ch)) for ch in literal)
+    return f"(-join ([char[]]({codes})))"
+
+
+def format_string_expression(literal: str) -> str:
+    left, right = literal_split_parts(literal)
+    return f"('{{0}}{{1}}' -f '{left}','{right}')"
+
+
+def subexpression_string_expression(literal: str) -> str:
+    left, right = literal_split_parts(literal)
+    return f"\"$('{left}'){right}\""
+
+
+def backtick_string_expression(literal: str) -> str:
+    left, right = literal_split_parts(literal)
+    return f"\"{left}`{right}\""
+
+
+def zero_width_strip_expression(literal: str) -> str:
+    left, right = literal_split_parts(literal)
+    return f"(('{left}'+[char]0x200B+'{right}').Replace([char]0x200B,''))"
+
+
 def apply_evasion_technique(script: str, technique_id: str) -> Optional[str]:
     if technique_id == "iex_call_operator_string":
         return replace_command_token(script, "IEX", "&('I'+'EX')")
+    if technique_id == "iex_format_string":
+        return replace_command_token(script, "IEX", f"&({format_string_expression('IEX')})")
+    if technique_id == "iex_ascii_char_array":
+        return replace_command_token(script, "IEX", f"&({ascii_char_array_expression('IEX')})")
     if technique_id == "iex_scriptblock_create":
         return replace_invoke_expression_with_scriptblock_create(script, "IEX")
     if technique_id == "invoke_expression_call_operator_string":
         return replace_command_token(script, "Invoke-Expression", "&('Invoke-'+'Expression')")
+    if technique_id == "invoke_expression_backtick_string":
+        return replace_command_token(script, "Invoke-Expression", f"&({backtick_string_expression('Invoke-Expression')})")
+    if technique_id == "invoke_expression_format_string":
+        return replace_command_token(script, "Invoke-Expression", f"&({format_string_expression('Invoke-Expression')})")
+    if technique_id == "invoke_expression_base64_ascii":
+        return replace_command_token(script, "Invoke-Expression", f"&({base64_ascii_expression('Invoke-Expression')})")
+    if technique_id == "invoke_expression_subexpression_string":
+        return replace_command_token(script, "Invoke-Expression", f"&({subexpression_string_expression('Invoke-Expression')})")
     if technique_id == "invoke_expression_scriptblock_create":
         return replace_invoke_expression_with_scriptblock_create(script, "Invoke-Expression")
     if technique_id == "invoke_webrequest_call_operator_string":
         return replace_command_token(script, "Invoke-WebRequest", "&('Invoke-'+'WebRequest')")
+    if technique_id == "invoke_webrequest_backtick_string":
+        return replace_command_token(script, "Invoke-WebRequest", f"&({backtick_string_expression('Invoke-WebRequest')})")
+    if technique_id == "invoke_webrequest_format_string":
+        return replace_command_token(script, "Invoke-WebRequest", f"&({format_string_expression('Invoke-WebRequest')})")
+    if technique_id == "invoke_webrequest_base64_ascii":
+        return replace_command_token(script, "Invoke-WebRequest", f"&({base64_ascii_expression('Invoke-WebRequest')})")
+    if technique_id == "invoke_webrequest_subexpression_string":
+        return replace_command_token(script, "Invoke-WebRequest", f"&({subexpression_string_expression('Invoke-WebRequest')})")
     if technique_id == "invoke_webrequest_alias":
         return replace_command_token_with_alias(script, "Invoke-WebRequest", "iwr")
     if technique_id == "start_process_call_operator_string":
@@ -1111,6 +1181,18 @@ def apply_evasion_technique(script: str, technique_id: str) -> Optional[str]:
         return split_quoted_literal(script, "Invoke-WebRequest", "Invoke-", "WebRequest")
     if technique_id == "split_quoted_downloadstring_literal":
         return split_quoted_literal(script, "DownloadString", "Download", "String")
+    if technique_id == "downloadstring_base64_ascii":
+        return replace_quoted_literal_with_expression(
+            script,
+            "DownloadString",
+            base64_ascii_expression("DownloadString"),
+        )
+    if technique_id == "downloadstring_subexpression_string":
+        return replace_quoted_literal_with_expression(
+            script,
+            "DownloadString",
+            subexpression_string_expression("DownloadString"),
+        )
     if technique_id == "split_quoted_downloadfile_literal":
         return split_quoted_literal(script, "DownloadFile", "Download", "File")
     if technique_id == "split_quoted_encodedcommand_literal":
@@ -1118,6 +1200,19 @@ def apply_evasion_technique(script: str, technique_id: str) -> Optional[str]:
         if updated is not None:
             return updated
         return split_quoted_literal_lenient(script, "-EncodedCommand", "-Encoded", "Command")
+    if technique_id == "encodedcommand_zero_width_strip":
+        updated = replace_quoted_literal_with_expression(
+            script,
+            "-EncodedCommand",
+            zero_width_strip_expression("-EncodedCommand"),
+        )
+        if updated is not None:
+            return updated
+        return replace_quoted_literal_with_expression(
+            script,
+            "-EncodedCommand ",
+            zero_width_strip_expression("-EncodedCommand") + "+' '",
+        )
     if technique_id == "downloadstring_psobject_invoke":
         return replace_method_call_with_psobject_invoke(script, "DownloadString", "Download", "String")
     if technique_id == "downloadfile_psobject_invoke":
@@ -1138,6 +1233,32 @@ EVASION_TECHNIQUES: Dict[str, EvasionTechnique] = {
         semantic_invariants=("scriptblock or string operand to IEX stays unchanged", "execution remains in-process"),
         static_checks=("parse_ok", "command_token_replaced", "no_operand_change"),
         notes="Conservative token rewrite; variant still needs parse validation before acceptance.",
+    ),
+    "iex_format_string": EvasionTechnique(
+        technique_id="iex_format_string",
+        family="keyword_hiding",
+        description="Rewrite bare IEX command tokens into a call-operator invocation over a format-string reconstruction.",
+        runtime_target="cross_runtime",
+        target_indicators=("IEX",),
+        preconditions=("script contains a standalone IEX command token",),
+        forbidden_if=("IEX occurs only inside strings or comments",),
+        expected_indicator_delta="remove_literal",
+        semantic_invariants=("scriptblock or string operand to IEX stays unchanged", "execution remains in-process"),
+        static_checks=("parse_ok", "command_token_replaced", "no_operand_change"),
+        notes="Realistic v2 benchmark technique covering `-f`-style command reconstruction.",
+    ),
+    "iex_ascii_char_array": EvasionTechnique(
+        technique_id="iex_ascii_char_array",
+        family="string_construction",
+        description="Rewrite bare IEX command tokens into a call-operator invocation over an ASCII char-array reconstruction.",
+        runtime_target="cross_runtime",
+        target_indicators=("IEX",),
+        preconditions=("script contains a standalone IEX command token",),
+        forbidden_if=("IEX occurs only inside strings or comments",),
+        expected_indicator_delta="remove_literal",
+        semantic_invariants=("scriptblock or string operand to IEX stays unchanged", "resolved command string remains IEX"),
+        static_checks=("parse_ok", "command_token_replaced", "no_operand_change", "resolved_string_equivalent"),
+        notes="Realistic v2 benchmark technique covering ASCII character assembly.",
     ),
     "iex_scriptblock_create": EvasionTechnique(
         technique_id="iex_scriptblock_create",
@@ -1165,6 +1286,58 @@ EVASION_TECHNIQUES: Dict[str, EvasionTechnique] = {
         static_checks=("parse_ok", "command_token_replaced", "no_operand_change"),
         notes="Suitable for direct command-token occurrences rather than quoted literals.",
     ),
+    "invoke_expression_backtick_string": EvasionTechnique(
+        technique_id="invoke_expression_backtick_string",
+        family="keyword_hiding",
+        description="Rewrite Invoke-Expression command tokens into a call-operator invocation over a backtick-split double-quoted string.",
+        runtime_target="cross_runtime",
+        target_indicators=("Invoke-Expression",),
+        preconditions=("script contains a standalone Invoke-Expression command token",),
+        forbidden_if=("indicator appears only as data",),
+        expected_indicator_delta="remove_literal",
+        semantic_invariants=("command operands remain identical", "execution order remains identical"),
+        static_checks=("parse_ok", "command_token_replaced", "no_operand_change", "resolved_string_equivalent"),
+        notes="Realistic v2 benchmark technique covering backtick-based token splitting.",
+    ),
+    "invoke_expression_format_string": EvasionTechnique(
+        technique_id="invoke_expression_format_string",
+        family="keyword_hiding",
+        description="Rewrite Invoke-Expression command tokens into a call-operator invocation over a format-string reconstruction.",
+        runtime_target="cross_runtime",
+        target_indicators=("Invoke-Expression",),
+        preconditions=("script contains a standalone Invoke-Expression command token",),
+        forbidden_if=("indicator appears only as data",),
+        expected_indicator_delta="remove_literal",
+        semantic_invariants=("command operands remain identical", "execution order remains identical"),
+        static_checks=("parse_ok", "command_token_replaced", "no_operand_change", "resolved_string_equivalent"),
+        notes="Realistic v2 benchmark technique covering `-f` reconstruction.",
+    ),
+    "invoke_expression_base64_ascii": EvasionTechnique(
+        technique_id="invoke_expression_base64_ascii",
+        family="string_construction",
+        description="Rewrite Invoke-Expression command tokens into a call-operator invocation over a Base64-to-ASCII reconstruction.",
+        runtime_target="cross_runtime",
+        target_indicators=("Invoke-Expression",),
+        preconditions=("script contains a standalone Invoke-Expression command token",),
+        forbidden_if=("indicator appears only as data",),
+        expected_indicator_delta="remove_literal",
+        semantic_invariants=("command operands remain identical", "resolved command string remains Invoke-Expression"),
+        static_checks=("parse_ok", "command_token_replaced", "no_operand_change", "resolved_string_equivalent"),
+        notes="Realistic v2 benchmark technique covering Base64 and ASCII decoding.",
+    ),
+    "invoke_expression_subexpression_string": EvasionTechnique(
+        technique_id="invoke_expression_subexpression_string",
+        family="string_construction",
+        description="Rewrite Invoke-Expression command tokens into a call-operator invocation over a double-quoted subexpression string.",
+        runtime_target="cross_runtime",
+        target_indicators=("Invoke-Expression",),
+        preconditions=("script contains a standalone Invoke-Expression command token",),
+        forbidden_if=("indicator appears only as data",),
+        expected_indicator_delta="remove_literal",
+        semantic_invariants=("command operands remain identical", "resolved command string remains Invoke-Expression"),
+        static_checks=("parse_ok", "command_token_replaced", "no_operand_change", "resolved_string_equivalent"),
+        notes="Realistic v2 benchmark technique covering alternate quoting and subexpressions.",
+    ),
     "invoke_expression_scriptblock_create": EvasionTechnique(
         technique_id="invoke_expression_scriptblock_create",
         family="execution_indirection",
@@ -1190,6 +1363,58 @@ EVASION_TECHNIQUES: Dict[str, EvasionTechnique] = {
         semantic_invariants=("request arguments remain identical", "network target remains identical"),
         static_checks=("parse_ok", "command_token_replaced", "request_args_preserved"),
         notes="Conservative command-name hiding only; does not alter URLs or flags.",
+    ),
+    "invoke_webrequest_backtick_string": EvasionTechnique(
+        technique_id="invoke_webrequest_backtick_string",
+        family="keyword_hiding",
+        description="Rewrite Invoke-WebRequest command tokens into a call-operator invocation over a backtick-split double-quoted string.",
+        runtime_target="cross_runtime",
+        target_indicators=("Invoke-WebRequest",),
+        preconditions=("script contains a standalone Invoke-WebRequest command token",),
+        forbidden_if=("script relies on shell-specific alias behavior instead of command invocation",),
+        expected_indicator_delta="remove_literal",
+        semantic_invariants=("request arguments remain identical", "network target remains identical"),
+        static_checks=("parse_ok", "command_token_replaced", "request_args_preserved", "resolved_string_equivalent"),
+        notes="Realistic v2 benchmark technique covering backtick-based token splitting.",
+    ),
+    "invoke_webrequest_format_string": EvasionTechnique(
+        technique_id="invoke_webrequest_format_string",
+        family="keyword_hiding",
+        description="Rewrite Invoke-WebRequest command tokens into a call-operator invocation over a format-string reconstruction.",
+        runtime_target="cross_runtime",
+        target_indicators=("Invoke-WebRequest",),
+        preconditions=("script contains a standalone Invoke-WebRequest command token",),
+        forbidden_if=("script relies on shell-specific alias behavior instead of command invocation",),
+        expected_indicator_delta="remove_literal",
+        semantic_invariants=("request arguments remain identical", "network target remains identical"),
+        static_checks=("parse_ok", "command_token_replaced", "request_args_preserved", "resolved_string_equivalent"),
+        notes="Realistic v2 benchmark technique covering `-f` reconstruction.",
+    ),
+    "invoke_webrequest_base64_ascii": EvasionTechnique(
+        technique_id="invoke_webrequest_base64_ascii",
+        family="string_construction",
+        description="Rewrite Invoke-WebRequest command tokens into a call-operator invocation over a Base64-to-ASCII reconstruction.",
+        runtime_target="cross_runtime",
+        target_indicators=("Invoke-WebRequest",),
+        preconditions=("script contains a standalone Invoke-WebRequest command token",),
+        forbidden_if=("script relies on shell-specific alias behavior instead of command invocation",),
+        expected_indicator_delta="remove_literal",
+        semantic_invariants=("request arguments remain identical", "resolved command string remains Invoke-WebRequest"),
+        static_checks=("parse_ok", "command_token_replaced", "request_args_preserved", "resolved_string_equivalent"),
+        notes="Realistic v2 benchmark technique covering Base64 and ASCII decoding.",
+    ),
+    "invoke_webrequest_subexpression_string": EvasionTechnique(
+        technique_id="invoke_webrequest_subexpression_string",
+        family="string_construction",
+        description="Rewrite Invoke-WebRequest command tokens into a call-operator invocation over a double-quoted subexpression string.",
+        runtime_target="cross_runtime",
+        target_indicators=("Invoke-WebRequest",),
+        preconditions=("script contains a standalone Invoke-WebRequest command token",),
+        forbidden_if=("script relies on shell-specific alias behavior instead of command invocation",),
+        expected_indicator_delta="remove_literal",
+        semantic_invariants=("request arguments remain identical", "resolved command string remains Invoke-WebRequest"),
+        static_checks=("parse_ok", "command_token_replaced", "request_args_preserved", "resolved_string_equivalent"),
+        notes="Realistic v2 benchmark technique covering alternate quoting and subexpressions.",
     ),
     "invoke_webrequest_alias": EvasionTechnique(
         technique_id="invoke_webrequest_alias",
@@ -1269,6 +1494,32 @@ EVASION_TECHNIQUES: Dict[str, EvasionTechnique] = {
         static_checks=("parse_ok", "string_literal_rewritten", "resolved_string_equivalent"),
         notes="Useful for scripts that dispatch methods or APIs through string variables.",
     ),
+    "downloadstring_base64_ascii": EvasionTechnique(
+        technique_id="downloadstring_base64_ascii",
+        family="string_construction",
+        description="Rewrite quoted DownloadString literals into a Base64-to-ASCII reconstruction expression.",
+        runtime_target="cross_runtime",
+        target_indicators=("DownloadString",),
+        preconditions=("script contains a quoted DownloadString string literal",),
+        forbidden_if=("indicator is not represented as a quoted literal",),
+        expected_indicator_delta="remove_literal",
+        semantic_invariants=("resolved string value remains identical", "surrounding evaluation semantics remain identical"),
+        static_checks=("parse_ok", "string_literal_rewritten", "resolved_string_equivalent"),
+        notes="Realistic v2 benchmark technique covering Base64 and ASCII string recovery.",
+    ),
+    "downloadstring_subexpression_string": EvasionTechnique(
+        technique_id="downloadstring_subexpression_string",
+        family="string_construction",
+        description="Rewrite quoted DownloadString literals into a double-quoted subexpression string.",
+        runtime_target="cross_runtime",
+        target_indicators=("DownloadString",),
+        preconditions=("script contains a quoted DownloadString string literal",),
+        forbidden_if=("indicator is not represented as a quoted literal",),
+        expected_indicator_delta="remove_literal",
+        semantic_invariants=("resolved string value remains identical", "surrounding evaluation semantics remain identical"),
+        static_checks=("parse_ok", "string_literal_rewritten", "resolved_string_equivalent"),
+        notes="Realistic v2 benchmark technique covering alternate quoting and subexpressions.",
+    ),
     "split_quoted_downloadfile_literal": EvasionTechnique(
         technique_id="split_quoted_downloadfile_literal",
         family="string_construction",
@@ -1294,6 +1545,19 @@ EVASION_TECHNIQUES: Dict[str, EvasionTechnique] = {
         semantic_invariants=("resolved flag value remains identical", "argument order remains identical"),
         static_checks=("parse_ok", "string_literal_rewritten", "resolved_string_equivalent"),
         notes="Conservative because it preserves the exact final parameter token.",
+    ),
+    "encodedcommand_zero_width_strip": EvasionTechnique(
+        technique_id="encodedcommand_zero_width_strip",
+        family="string_construction",
+        description="Rewrite quoted -EncodedCommand literals into a zero-width-character string that is normalized back via Replace().",
+        runtime_target="cross_runtime",
+        target_indicators=("-EncodedCommand",),
+        preconditions=("script contains a quoted -EncodedCommand string literal",),
+        forbidden_if=("flag is not represented as a quoted literal",),
+        expected_indicator_delta="remove_literal",
+        semantic_invariants=("resolved flag value remains identical", "argument order remains identical"),
+        static_checks=("parse_ok", "string_literal_rewritten", "resolved_string_equivalent"),
+        notes="Realistic v2 benchmark technique covering invisible Unicode removal before use.",
     ),
     "downloadstring_psobject_invoke": EvasionTechnique(
         technique_id="downloadstring_psobject_invoke",
@@ -1323,6 +1587,46 @@ EVASION_TECHNIQUES: Dict[str, EvasionTechnique] = {
     ),
 }
 
+EVASION_BASELINE_TECHNIQUES: Tuple[str, ...] = (
+    "iex_call_operator_string",
+    "iex_scriptblock_create",
+    "invoke_expression_call_operator_string",
+    "invoke_expression_scriptblock_create",
+    "invoke_webrequest_call_operator_string",
+    "invoke_webrequest_alias",
+    "start_process_call_operator_string",
+    "new_object_webclient_type_string",
+    "split_quoted_invoke_expression_literal",
+    "split_quoted_invoke_webrequest_literal",
+    "split_quoted_downloadstring_literal",
+    "split_quoted_downloadfile_literal",
+    "split_quoted_encodedcommand_literal",
+    "downloadstring_psobject_invoke",
+    "downloadfile_psobject_invoke",
+)
+
+EVASION_REALISTIC_V2_TECHNIQUES: Tuple[str, ...] = (
+    "iex_format_string",
+    "iex_ascii_char_array",
+    "invoke_expression_backtick_string",
+    "invoke_expression_format_string",
+    "invoke_expression_base64_ascii",
+    "invoke_expression_subexpression_string",
+    "invoke_webrequest_backtick_string",
+    "invoke_webrequest_format_string",
+    "invoke_webrequest_base64_ascii",
+    "invoke_webrequest_subexpression_string",
+    "downloadstring_base64_ascii",
+    "downloadstring_subexpression_string",
+    "encodedcommand_zero_width_strip",
+)
+
+EVASION_TECHNIQUE_PRESETS: Dict[str, Tuple[str, ...]] = {
+    "baseline_v1": EVASION_BASELINE_TECHNIQUES,
+    "realistic_v2": EVASION_REALISTIC_V2_TECHNIQUES,
+    "all": tuple(dict.fromkeys(EVASION_BASELINE_TECHNIQUES + EVASION_REALISTIC_V2_TECHNIQUES)),
+}
+
 
 def list_evasion_techniques(techniques: Optional[Sequence[str]] = None) -> List[Dict[str, object]]:
     selected = techniques or EVASION_TECHNIQUES.keys()
@@ -1349,12 +1653,19 @@ def list_evasion_techniques(techniques: Optional[Sequence[str]] = None) -> List[
 
 def parse_technique_list(raw: Optional[str]) -> List[str]:
     if not raw:
-        return list(EVASION_TECHNIQUES.keys())
+        return list(EVASION_TECHNIQUE_PRESETS["baseline_v1"])
     items = [item.strip() for item in raw.split(",") if item.strip()]
-    unknown = [item for item in items if item not in EVASION_TECHNIQUES]
+    expanded: List[str] = []
+    for item in items:
+        preset = EVASION_TECHNIQUE_PRESETS.get(item)
+        if preset is not None:
+            expanded.extend(preset)
+        else:
+            expanded.append(item)
+    unknown = [item for item in expanded if item not in EVASION_TECHNIQUES]
     if unknown:
         raise ValueError(f"Unknown evasion techniques: {unknown!r}")
-    return items
+    return list(dict.fromkeys(expanded))
 
 
 def evaluate_variant_invariants(variant_row: pd.Series, seed_row: Optional[pd.Series]) -> Tuple[bool, List[str]]:
@@ -1426,6 +1737,13 @@ def count_resolved_literal_equivalents(text: str, literal: str) -> int:
                 flags=re.IGNORECASE,
             )
             total += len(pattern_with_trailing_space.findall(text))
+        zero_width_replace_pattern = re.compile(
+            rf"\(\s*\(\s*(?P<q>['\"]){re.escape(left)}(?P=q)\s*\+\s*\[char\]0x200B\s*\+\s*"
+            rf"(?P<q2>['\"]){re.escape(right)}(?P=q2)\s*\)\s*"
+            rf"\.\s*Replace\s*\(\s*\[char\]0x200B\s*,\s*(?P<q3>['\"])(?P=q3)\s*\)\s*\)",
+            flags=re.IGNORECASE,
+        )
+        total += len(zero_width_replace_pattern.findall(text))
     return total
 
 

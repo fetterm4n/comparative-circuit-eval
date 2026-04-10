@@ -1,0 +1,5 @@
+ablation_label,base_logit_diff,ablated_logit_diff,delta_logit_diff,effect_pct,pair_idx,pair_indicator,benign_filename,malicious_filename,flip_to_benign
+h12.15+h12.5+h12.4+h12.28,-0.125,0.875,1.0,800.0,61,Invoke-Expression,1767.ps1,2019__seed_d4aff830a1c9__invoke_expression_format_string.ps1,False
+h12.15+h12.5+h12.4+h12.28,-0.125,0.875,1.0,800.0,62,Invoke-Expression,583.ps1,2019__seed_8308722f08a5__invoke_expression_format_string.ps1,False
+h12.15+h12.5+h12.4+h12.28,-0.125,0.875,1.0,800.0,65,Invoke-Expression,489.ps1,2019__seed_a182289ca98a__invoke_expression_format_string.ps1,False
+h12.15+h12.5+h12.4+h12.28,-0.125,0.875,1.0,800.0,66,Invoke-Expression,485.ps1,2019__seed_4916dd4c361c__invoke_expression_format_string.ps1,False

@@ -1,0 +1,9 @@
+cohort,probe,label,pair_count,mean_base_logit_diff,mean_delta,flip_rate
+seed,early_ablation,h0.11+h0.9,4,0.125,-0.25,1.0
+variant,early_ablation,h0.11+h0.9,4,-0.125,-0.25,1.0
+seed,late_ablation,h12.15+h12.5+h12.4+h12.28,4,0.125,0.875,0.0
+variant,late_ablation,h12.15+h12.5+h12.4+h12.28,4,-0.125,1.0,0.0
+seed,minimal_patch,h0.11+h12.15+h12.5+h12.4,4,0.125,-0.9375,1.0
+variant,minimal_patch,h0.11+h12.15+h12.5+h12.4,4,-0.125,-0.875,1.0
+seed,late_patch,h12.15+h12.5+h12.4+h12.28,4,0.125,-1.0625,1.0
+variant,late_patch,h12.15+h12.5+h12.4+h12.28,4,-0.125,-1.03125,1.0

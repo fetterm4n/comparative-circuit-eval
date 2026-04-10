@@ -1,0 +1,352 @@
+{
+  "technique_count": 13,
+  "techniques": [
+    {
+      "description": "Rewrite bare IEX command tokens into a call-operator invocation over a format-string reconstruction.",
+      "expected_indicator_delta": "remove_literal",
+      "family": "keyword_hiding",
+      "forbidden_if": [
+        "IEX occurs only inside strings or comments"
+      ],
+      "notes": "Realistic v2 benchmark technique covering `-f`-style command reconstruction.",
+      "preconditions": [
+        "script contains a standalone IEX command token"
+      ],
+      "runtime_target": "cross_runtime",
+      "semantic_invariants": [
+        "scriptblock or string operand to IEX stays unchanged",
+        "execution remains in-process"
+      ],
+      "static_checks": [
+        "parse_ok",
+        "command_token_replaced",
+        "no_operand_change"
+      ],
+      "target_indicators": [
+        "IEX"
+      ],
+      "technique_id": "iex_format_string"
+    },
+    {
+      "description": "Rewrite bare IEX command tokens into a call-operator invocation over an ASCII char-array reconstruction.",
+      "expected_indicator_delta": "remove_literal",
+      "family": "string_construction",
+      "forbidden_if": [
+        "IEX occurs only inside strings or comments"
+      ],
+      "notes": "Realistic v2 benchmark technique covering ASCII character assembly.",
+      "preconditions": [
+        "script contains a standalone IEX command token"
+      ],
+      "runtime_target": "cross_runtime",
+      "semantic_invariants": [
+        "scriptblock or string operand to IEX stays unchanged",
+        "resolved command string remains IEX"
+      ],
+      "static_checks": [
+        "parse_ok",
+        "command_token_replaced",
+        "no_operand_change",
+        "resolved_string_equivalent"
+      ],
+      "target_indicators": [
+        "IEX"
+      ],
+      "technique_id": "iex_ascii_char_array"
+    },
+    {
+      "description": "Rewrite Invoke-Expression command tokens into a call-operator invocation over a backtick-split double-quoted string.",
+      "expected_indicator_delta": "remove_literal",
+      "family": "keyword_hiding",
+      "forbidden_if": [
+        "indicator appears only as data"
+      ],
+      "notes": "Realistic v2 benchmark technique covering backtick-based token splitting.",
+      "preconditions": [
+        "script contains a standalone Invoke-Expression command token"
+      ],
+      "runtime_target": "cross_runtime",
+      "semantic_invariants": [
+        "command operands remain identical",
+        "execution order remains identical"
+      ],
+      "static_checks": [
+        "parse_ok",
+        "command_token_replaced",
+        "no_operand_change",
+        "resolved_string_equivalent"
+      ],
+      "target_indicators": [
+        "Invoke-Expression"
+      ],
+      "technique_id": "invoke_expression_backtick_string"
+    },
+    {
+      "description": "Rewrite Invoke-Expression command tokens into a call-operator invocation over a format-string reconstruction.",
+      "expected_indicator_delta": "remove_literal",
+      "family": "keyword_hiding",
+      "forbidden_if": [
+        "indicator appears only as data"
+      ],
+      "notes": "Realistic v2 benchmark technique covering `-f` reconstruction.",
+      "preconditions": [
+        "script contains a standalone Invoke-Expression command token"
+      ],
+      "runtime_target": "cross_runtime",
+      "semantic_invariants": [
+        "command operands remain identical",
+        "execution order remains identical"
+      ],
+      "static_checks": [
+        "parse_ok",
+        "command_token_replaced",
+        "no_operand_change",
+        "resolved_string_equivalent"
+      ],
+      "target_indicators": [
+        "Invoke-Expression"
+      ],
+      "technique_id": "invoke_expression_format_string"
+    },
+    {
+      "description": "Rewrite Invoke-Expression command tokens into a call-operator invocation over a Base64-to-ASCII reconstruction.",
+      "expected_indicator_delta": "remove_literal",
+      "family": "string_construction",
+      "forbidden_if": [
+        "indicator appears only as data"
+      ],
+      "notes": "Realistic v2 benchmark technique covering Base64 and ASCII decoding.",
+      "preconditions": [
+        "script contains a standalone Invoke-Expression command token"
+      ],
+      "runtime_target": "cross_runtime",
+      "semantic_invariants": [
+        "command operands remain identical",
+        "resolved command string remains Invoke-Expression"
+      ],
+      "static_checks": [
+        "parse_ok",
+        "command_token_replaced",
+        "no_operand_change",
+        "resolved_string_equivalent"
+      ],
+      "target_indicators": [
+        "Invoke-Expression"
+      ],
+      "technique_id": "invoke_expression_base64_ascii"
+    },
+    {
+      "description": "Rewrite Invoke-Expression command tokens into a call-operator invocation over a double-quoted subexpression string.",
+      "expected_indicator_delta": "remove_literal",
+      "family": "string_construction",
+      "forbidden_if": [
+        "indicator appears only as data"
+      ],
+      "notes": "Realistic v2 benchmark technique covering alternate quoting and subexpressions.",
+      "preconditions": [
+        "script contains a standalone Invoke-Expression command token"
+      ],
+      "runtime_target": "cross_runtime",
+      "semantic_invariants": [
+        "command operands remain identical",
+        "resolved command string remains Invoke-Expression"
+      ],
+      "static_checks": [
+        "parse_ok",
+        "command_token_replaced",
+        "no_operand_change",
+        "resolved_string_equivalent"
+      ],
+      "target_indicators": [
+        "Invoke-Expression"
+      ],
+      "technique_id": "invoke_expression_subexpression_string"
+    },
+    {
+      "description": "Rewrite Invoke-WebRequest command tokens into a call-operator invocation over a backtick-split double-quoted string.",
+      "expected_indicator_delta": "remove_literal",
+      "family": "keyword_hiding",
+      "forbidden_if": [
+        "script relies on shell-specific alias behavior instead of command invocation"
+      ],
+      "notes": "Realistic v2 benchmark technique covering backtick-based token splitting.",
+      "preconditions": [
+        "script contains a standalone Invoke-WebRequest command token"
+      ],
+      "runtime_target": "cross_runtime",
+      "semantic_invariants": [
+        "request arguments remain identical",
+        "network target remains identical"
+      ],
+      "static_checks": [
+        "parse_ok",
+        "command_token_replaced",
+        "request_args_preserved",
+        "resolved_string_equivalent"
+      ],
+      "target_indicators": [
+        "Invoke-WebRequest"
+      ],
+      "technique_id": "invoke_webrequest_backtick_string"
+    },
+    {
+      "description": "Rewrite Invoke-WebRequest command tokens into a call-operator invocation over a format-string reconstruction.",
+      "expected_indicator_delta": "remove_literal",
+      "family": "keyword_hiding",
+      "forbidden_if": [
+        "script relies on shell-specific alias behavior instead of command invocation"
+      ],
+      "notes": "Realistic v2 benchmark technique covering `-f` reconstruction.",
+      "preconditions": [
+        "script contains a standalone Invoke-WebRequest command token"
+      ],
+      "runtime_target": "cross_runtime",
+      "semantic_invariants": [
+        "request arguments remain identical",
+        "network target remains identical"
+      ],
+      "static_checks": [
+        "parse_ok",
+        "command_token_replaced",
+        "request_args_preserved",
+        "resolved_string_equivalent"
+      ],
+      "target_indicators": [
+        "Invoke-WebRequest"
+      ],
+      "technique_id": "invoke_webrequest_format_string"
+    },
+    {
+      "description": "Rewrite Invoke-WebRequest command tokens into a call-operator invocation over a Base64-to-ASCII reconstruction.",
+      "expected_indicator_delta": "remove_literal",
+      "family": "string_construction",
+      "forbidden_if": [
+        "script relies on shell-specific alias behavior instead of command invocation"
+      ],
+      "notes": "Realistic v2 benchmark technique covering Base64 and ASCII decoding.",
+      "preconditions": [
+        "script contains a standalone Invoke-WebRequest command token"
+      ],
+      "runtime_target": "cross_runtime",
+      "semantic_invariants": [
+        "request arguments remain identical",
+        "resolved command string remains Invoke-WebRequest"
+      ],
+      "static_checks": [
+        "parse_ok",
+        "command_token_replaced",
+        "request_args_preserved",
+        "resolved_string_equivalent"
+      ],
+      "target_indicators": [
+        "Invoke-WebRequest"
+      ],
+      "technique_id": "invoke_webrequest_base64_ascii"
+    },
+    {
+      "description": "Rewrite Invoke-WebRequest command tokens into a call-operator invocation over a double-quoted subexpression string.",
+      "expected_indicator_delta": "remove_literal",
+      "family": "string_construction",
+      "forbidden_if": [
+        "script relies on shell-specific alias behavior instead of command invocation"
+      ],
+      "notes": "Realistic v2 benchmark technique covering alternate quoting and subexpressions.",
+      "preconditions": [
+        "script contains a standalone Invoke-WebRequest command token"
+      ],
+      "runtime_target": "cross_runtime",
+      "semantic_invariants": [
+        "request arguments remain identical",
+        "resolved command string remains Invoke-WebRequest"
+      ],
+      "static_checks": [
+        "parse_ok",
+        "command_token_replaced",
+        "request_args_preserved",
+        "resolved_string_equivalent"
+      ],
+      "target_indicators": [
+        "Invoke-WebRequest"
+      ],
+      "technique_id": "invoke_webrequest_subexpression_string"
+    },
+    {
+      "description": "Rewrite quoted DownloadString literals into a Base64-to-ASCII reconstruction expression.",
+      "expected_indicator_delta": "remove_literal",
+      "family": "string_construction",
+      "forbidden_if": [
+        "indicator is not represented as a quoted literal"
+      ],
+      "notes": "Realistic v2 benchmark technique covering Base64 and ASCII string recovery.",
+      "preconditions": [
+        "script contains a quoted DownloadString string literal"
+      ],
+      "runtime_target": "cross_runtime",
+      "semantic_invariants": [
+        "resolved string value remains identical",
+        "surrounding evaluation semantics remain identical"
+      ],
+      "static_checks": [
+        "parse_ok",
+        "string_literal_rewritten",
+        "resolved_string_equivalent"
+      ],
+      "target_indicators": [
+        "DownloadString"
+      ],
+      "technique_id": "downloadstring_base64_ascii"
+    },
+    {
+      "description": "Rewrite quoted DownloadString literals into a double-quoted subexpression string.",
+      "expected_indicator_delta": "remove_literal",
+      "family": "string_construction",
+      "forbidden_if": [
+        "indicator is not represented as a quoted literal"
+      ],
+      "notes": "Realistic v2 benchmark technique covering alternate quoting and subexpressions.",
+      "preconditions": [
+        "script contains a quoted DownloadString string literal"
+      ],
+      "runtime_target": "cross_runtime",
+      "semantic_invariants": [
+        "resolved string value remains identical",
+        "surrounding evaluation semantics remain identical"
+      ],
+      "static_checks": [
+        "parse_ok",
+        "string_literal_rewritten",
+        "resolved_string_equivalent"
+      ],
+      "target_indicators": [
+        "DownloadString"
+      ],
+      "technique_id": "downloadstring_subexpression_string"
+    },
+    {
+      "description": "Rewrite quoted -EncodedCommand literals into a zero-width-character string that is normalized back via Replace().",
+      "expected_indicator_delta": "remove_literal",
+      "family": "string_construction",
+      "forbidden_if": [
+        "flag is not represented as a quoted literal"
+      ],
+      "notes": "Realistic v2 benchmark technique covering invisible Unicode removal before use.",
+      "preconditions": [
+        "script contains a quoted -EncodedCommand string literal"
+      ],
+      "runtime_target": "cross_runtime",
+      "semantic_invariants": [
+        "resolved flag value remains identical",
+        "argument order remains identical"
+      ],
+      "static_checks": [
+        "parse_ok",
+        "string_literal_rewritten",
+        "resolved_string_equivalent"
+      ],
+      "target_indicators": [
+        "-EncodedCommand"
+      ],
+      "technique_id": "encodedcommand_zero_width_strip"
+    }
+  ]
+}

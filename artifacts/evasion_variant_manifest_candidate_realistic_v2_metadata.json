@@ -1,0 +1,22 @@
+{
+  "candidate_count": 46,
+  "candidate_manifest_csv": "/tmp/realistic_v2_candidate_manifest.csv",
+  "candidate_tier_requested": "strict",
+  "provisional_count": 0,
+  "reviewed_manifest_csv": "/tmp/realistic_v2_variant_manifest_reviewed.csv",
+  "seed_manifest_csv": "/home/ryan/mech-interp-circuit-validation/artifacts/evasion_seed_manifest_v2.csv",
+  "strict_count": 46,
+  "technique_counts": {
+    "encodedcommand_zero_width_strip": 2,
+    "iex_ascii_char_array": 6,
+    "iex_format_string": 6,
+    "invoke_expression_backtick_string": 4,
+    "invoke_expression_base64_ascii": 4,
+    "invoke_expression_format_string": 4,
+    "invoke_expression_subexpression_string": 4,
+    "invoke_webrequest_backtick_string": 4,
+    "invoke_webrequest_base64_ascii": 4,
+    "invoke_webrequest_format_string": 4,
+    "invoke_webrequest_subexpression_string": 4
+  }
+}

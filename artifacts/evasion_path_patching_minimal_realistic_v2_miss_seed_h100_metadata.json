@@ -1,0 +1,13 @@
+{
+  "combined": false,
+  "components": null,
+  "device": "cuda",
+  "first_n_layers": null,
+  "heads": "0.11,12.15,12.5,12.4",
+  "num_pairs": 4,
+  "per_pair_csv": "/tmp/realistic_v2_miss_seed_minimal_patch_per_pair.csv",
+  "resid_kind": "pre",
+  "residuals": null,
+  "summary_csv": "/tmp/realistic_v2_miss_seed_minimal_patch_summary.csv",
+  "template_name": "meta-llama/Llama-3.1-8B-Instruct"
+}

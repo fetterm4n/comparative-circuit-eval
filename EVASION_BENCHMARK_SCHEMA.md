@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This schema defines the first real evasion benchmark for the PowerShell circuit-validation work.
+This schema defines the first real evasion benchmark and a second more realistic robustness benchmark for the PowerShell circuit-validation work.
 
 The benchmark is designed to answer:
 
@@ -24,6 +24,13 @@ This benchmark covers:
 
 This benchmark does **not** require executing malware in the repo environment.
 Instead, variants must be viable by construction and pass explicit static/runtime-target checks.
+
+The repo now supports two explicit technique presets:
+
+- `baseline_v1`
+  - the original conservative benchmark used for the current strict candidate artifacts
+- `realistic_v2`
+  - a second defensive robustness benchmark focused on more realistic command and string reconstruction patterns
 
 ---
 
@@ -116,6 +123,7 @@ Representative transforms:
 - format-string reconstruction
 - case and backtick variations that remain valid PowerShell
 - quoted member or command names resolved at runtime
+- invisible Unicode insertion followed by explicit normalization before use
 
 Must preserve:
 
@@ -135,6 +143,7 @@ Representative transforms:
 - `[char]` code assembly
 - substring stitching
 - base64 decode only when the original script already decodes or consumes strings at runtime in a consistent way
+- double-quoted subexpression assembly such as `"$('Invoke-')Expression"`
 
 Must preserve:
 
@@ -460,6 +469,11 @@ Current strict-candidate note:
 
 - the v3 benchmark includes `DownloadString`, `DownloadFile`, `Invoke-WebRequest`, `Invoke-Expression`, and `-EncodedCommand`
 - a separate provisional tier can include pure `IEX` variants when invariants hold and the only blocker is missing runtime-side parse validation
+
+Current preset note:
+
+- `baseline_v1` preserves the original conservative technique set and remains the default when `--techniques` is omitted
+- `realistic_v2` adds defensive-evasion categories for invisible Unicode normalization, backtick-split strings, format-string reconstruction, ASCII or Base64 recovery, and alternate quoting or subexpressions
 
 ---
 
