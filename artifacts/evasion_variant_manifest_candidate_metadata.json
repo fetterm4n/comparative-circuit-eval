@@ -1,10 +1,10 @@
 {
   "candidate_count": 48,
-  "candidate_manifest_csv": "artifacts/llama3/llama3_evasion_candidate_v3_provisional.csv",
+  "candidate_manifest_csv": "artifacts/llama3/llama3_evasion_candidate_provisional_rawprompt.csv",
   "candidate_tier_requested": "provisional_iex",
   "provisional_count": 4,
   "reviewed_manifest_csv": "artifacts/foundation_sec/evasion_variant_manifest_reviewed_v3.csv",
-  "seed_manifest_csv": "artifacts/foundation_sec/evasion_seed_manifest_v2.csv",
+  "seed_manifest_csv": "artifacts/llama3/llama3_evasion_seed_manifest_rawprompt.csv",
   "strict_count": 44,
   "technique_counts": {
     "downloadfile_psobject_invoke": 4,
