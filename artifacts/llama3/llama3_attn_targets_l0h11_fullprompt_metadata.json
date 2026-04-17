@@ -1,0 +1,16 @@
+{
+  "device": "cuda",
+  "first_n_layers": 1,
+  "layer_filter": null,
+  "num_pairs": 18,
+  "pairs_csv": "artifacts/llama3/llama3_attn_targets_l0h11_fullprompt_pairs.csv",
+  "per_pair_csv": "artifacts/llama3/llama3_attn_targets_l0h11_fullprompt_per_pair.csv",
+  "summary_csv": "artifacts/llama3/llama3_attn_targets_l0h11_fullprompt_summary.csv",
+  "target_head": [
+    0,
+    11
+  ],
+  "target_head_csv": "artifacts/llama3/llama3_attn_targets_l0h11_fullprompt_attn_targets.csv",
+  "template_name": "meta-llama/Llama-3.1-8B-Instruct",
+  "topk": 5
+}

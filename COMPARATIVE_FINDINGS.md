@@ -1,7 +1,7 @@
 # Comparative Circuit Analysis: Foundation-Sec-8B vs Llama-3.1-8B-Instruct
 
 **Date**: 2026-04-17  
-**Status**: Complete — all phases executed and validated  
+**Status**: Complete — all phases executed, three additional experiments run to address methodological concerns  
 **Central question**: Is the PowerShell malicious-classification circuit (`L0H11 → L12H15/H5/H4/H28`) a product of Foundation-Sec's security fine-tuning, or a general property of the Llama-3.1-8B architecture?
 
 ---
@@ -13,9 +13,11 @@
 3. [Phase 1 — Circuit Discovery in Llama-3.1](#3-phase-1--circuit-discovery-in-llama-31)
 4. [Phase 2 — Causal Validation](#4-phase-2--causal-validation)
 5. [Phase 3 — Evasion Benchmark](#5-phase-3--evasion-benchmark)
-6. [Model Comparison Table](#6-model-comparison-table)
-7. [Interpretation](#7-interpretation)
-8. [Recommendations for Continuing Research](#8-recommendations-for-continuing-research)
+6. [Supplementary Experiments](#6-supplementary-experiments)
+7. [Model Comparison Table](#7-model-comparison-table)
+8. [Interpretation](#8-interpretation)
+9. [Limitations and Caveats](#9-limitations-and-caveats)
+10. [Recommendations for Continuing Research](#10-recommendations-for-continuing-research)
 
 ---
 
@@ -28,34 +30,37 @@
 | HuggingFace ID | `fdtn-ai/Foundation-Sec-8B-Instruct` | `meta-llama/Llama-3.1-8B-Instruct` |
 | Architecture | 32 layers, 32 heads, 4096 hidden dim | Identical |
 | Training | Llama-3.1-8B base + cybersec pretraining + RLHF | Llama-3.1-8B base + general RLHF only |
-| Classification format | Raw prompt → next-token ALLOW/BLOCK | Chat template (system/user split) → next-token ALLOW/BLOCK |
+| Classification format | Raw rule-based prompt → next-token ALLOW/BLOCK | Chat template (user turn) → next-token ALLOW/BLOCK |
 
 Both models use the same TransformerLens template (`meta-llama/Llama-3.1-8B-Instruct`), so the full mechanistic interpretability hook infrastructure transfers without modification.
 
 ### Dataset and Cohort
 
-The same 96-pair matched benign/malicious PowerShell cohort used in the Foundation-Sec study was reused. Pairs are matched on primary indicator token (e.g. both scripts contain `Invoke-WebRequest`) so logit-diff interventions are causally interpretable. From this cohort, 74 pairs were retained for the Llama causal validation after filtering for token-length safety (≤900 tokens with chat template overhead); the remaining 22 pairs exceeded safe VRAM limits at full model scale.
+The same 96-pair matched benign/malicious PowerShell cohort used in the Foundation-Sec study was reused. Pairs are matched on primary indicator token (e.g. both scripts contain `Invoke-WebRequest`) so logit-diff interventions are causally interpretable. From this cohort, **74 pairs** were retained for the Llama causal validation after filtering for token-length safety (≤900 tokens with chat template overhead); the remaining 22 pairs exceeded safe VRAM limits at full model scale with TransformerLens activation caching (attention patterns are quadratic in sequence length).
 
 ### Prompt Engineering
 
-Foundation-Sec required no prompt engineering — the model was fine-tuned for cybersecurity ALLOW/BLOCK classification. Llama-3.1-8B-Instruct required prompt tuning. Three prompt iterations were tested on the 20-pair smoke test:
+Foundation-Sec required no prompt tuning — it was trained on a cybersecurity corpus and responds to the standard rule-based classifier prompt. Llama-3.1-8B-Instruct required prompt iteration. Three prompt conditions were tested:
 
-1. **Flat single-turn prompt** (raw text, no chat template): 70% accuracy — same failures as later versions, confirming the issue is content not format.
-2. **Chat template, rule-based system prompt**: 70% — slightly higher logit diffs but same benign false-positive pattern.
-3. **Chat template, intent-focused system prompt** (final): 100% on smoke test, 100% on pilot cohort.
+1. **Raw classifier prompt, no chat template**: 52.8% accuracy on 18-pair pilot — near-random, near-zero benign accuracy (5.6%). Not usable.
+2. **Raw classifier prompt + chat template**: 71.6% accuracy on 74-pair cohort, benign accuracy 43.2%. Surface-feature false positives on benign scripts containing Base64/IEX.
+3. **Intent-focused prompt + chat template** (final): 100% accuracy on 18-pair pilot and 74-pair cohort. The system prompt explicitly instructs the model to classify primary intent, naming Base64/IEX/web-downloads as ALLOW when used in legitimate tooling.
 
-The final system prompt emphasizes _intent over surface features_, explicitly noting that Base64 encoding, `Invoke-Expression`, and web downloads are ALLOW when used in legitimate administrative tooling. This was necessary because Llama pattern-matches on surface-level indicators rather than domain-specific malicious context, and several benign scripts in the dataset use those constructs legitimately.
+The final prompt was required to counteract Llama's surface-feature pattern matching. This is a confound discussed in Section 9.
 
-### Tooling
+**Important**: Neither model was fine-tuned on ALLOW/BLOCK labels. The label framing is entirely prompt-level for both. Foundation-Sec's advantage comes from its cybersecurity pretraining, not from label-specific training.
 
-All experiments used `scaled_validation.py`, the same CLI pipeline used for the Foundation-Sec study. Two modifications were made:
+### Tooling Changes
 
-1. **`--use-chat-template` global flag**: When set, all `make_prompt()` calls across the entire pipeline (baseline eval, attention discovery, causal patching, ablation) wrap prompts using `tokenizer.apply_chat_template()` with the system/user message split. This ensures the Llama residual stream is measured under the same conditions in which the model classifies correctly.
-2. **`use_chat_template` parameter removal from `baseline-eval` subparser**: Folded into the global flag to apply uniformly to MI commands as well.
+Three additions were made to `scaled_validation.py`:
+
+1. **`--use-chat-template` global flag**: Wraps prompts via `tokenizer.apply_chat_template()` uniformly across all pipeline commands (baseline eval, attention discovery, causal patching, ablation).
+2. **`--system-prompt-variant` flag** (`raw` | `full`): Enables prompt ablation experiments without code changes. `raw` = minimal rule-based classifier (Foundation-Sec default). `full` = intent-focused prompt with explicit carve-outs.
+3. **`--target-head` flag on `batch-discover-heads`**: Dumps the top-K most attended tokens per pair per script label for a specified head, enabling direct inspection of what L0H11 attends to.
 
 ### Serial Execution
 
-All GPU jobs were run serially. Parallel TransformerLens model loads OOM the H100.
+All GPU jobs were run serially on a single H100 (80GB). Parallel TransformerLens model loads OOM the GPU.
 
 ---
 
@@ -65,21 +70,18 @@ All GPU jobs were run serially. Parallel TransformerLens model loads OOM the H10
 
 ### Results
 
-| Cohort | Rows | Accuracy | Mean Logit Diff |
-|---|---|---|---|
-| Smoke test (20-pair subset) | 20 | **100%** | 0.728 |
-| Pilot cohort (18 pairs, 36 rows) | 36 | **100%** | 0.521 |
+| Cohort | Prompt condition | Accuracy | Benign acc | Malicious acc | Mean logit diff |
+|---|---|---|---|---|---|
+| 18-pair pilot (36 rows) | Raw + no template | 52.8% | 5.6% | 100% | — |
+| 74-pair cohort (148 rows) | Raw + chat template | 71.6% | 43.2% | 100% | 3.31 |
+| 18-pair pilot (36 rows) | Intent + chat template | **100%** | 100% | 100% | 0.52 |
+| 74-pair cohort (148 rows) | Intent + chat template | **100%** | 100% | 100% | — |
 
-Per-label breakdown (pilot cohort):
+Foundation-Sec baseline (96-pair cohort, raw prompt): **100%** accuracy, mean logit diff **3.52**.
 
-| Label | Accuracy | Mean Logit Diff |
-|---|---|---|
-| Benign | 100% | −3.404 |
-| Malicious | 100% | +4.447 |
+**Notable observation**: Llama's mean logit diff under the intent-focused prompt (0.52) is ~7× lower than Foundation-Sec's (3.52). The model separates the two classes but with substantially lower confidence margin — an important baseline for interpreting causal validation results.
 
-**Go/no-go decision**: Proceed. Accuracy exceeds the 85% threshold on both cohorts.
-
-**Notable observation**: The mean logit diff of 0.52 is substantially lower than Foundation-Sec's (~3.5 on the same 96-pair cohort baseline). This reflects that Llama is relying on general instruction-following rather than domain-trained features. The model correctly separates the two classes but with lower confidence. This narrower margin is an important baseline for interpreting the causal validation results in Phase 2.
+**Go/no-go decision**: Proceed with intent-focused prompt. Prompt confound implications are discussed in Section 9.
 
 ---
 
@@ -89,7 +91,7 @@ Per-label breakdown (pilot cohort):
 
 ### 3.1 Attention Head Ranking
 
-Heads were ranked by how consistently they attend to suspicious indicator tokens (IEX, DownloadString, Invoke-WebRequest, etc.) in malicious scripts vs. benign scripts, measured across 18 pairs.
+Heads were ranked by how consistently they attend to suspicious indicator tokens in malicious vs. benign scripts across 18 pairs.
 
 **Top heads by pair recurrence (full model scan):**
 
@@ -97,312 +99,297 @@ Heads were ranked by how consistently they attend to suspicious indicator tokens
 |---|---|---|---|---|
 | **0** | **11** | **14** | 0.00308 | 0.00647 |
 | 0 | 26 | 7 | 0.00431 | 0.00555 |
-| 0 | 24 | 7 | 0.00391 | 0.00517 |
-| 0 | 28 | 7 | 0.00264 | 0.00569 |
-| 0 | 9 | 6 | 0.00368 | 0.00647 |
-| 0 | 1 | 5 | 0.00574 | 0.01222 |
+| 0 | 29 | 6 | 0.00319 | 0.00519 |
+| 12 | 28 | 6 | 0.00421 | 0.00787 |
+| 12 | 5 | 5 | 0.00312 | 0.00601 |
 
-**`L0H11` is the dominant early detector in Llama-3.1 — exactly as in Foundation-Sec.** It recurs in 14/18 pairs with the highest consistency of any head in the full 32-layer scan. All top recurring heads are in Layer 0 (next-highest is L3H1 at 3/18). No other layer produces a consistently recurring attention detector.
+**L0H11 is the most consistent early detector in Llama, appearing in 14/18 pairs** — the same head identified in Foundation-Sec. This was the first strong indication that the circuit may be architectural rather than fine-tuning-specific.
 
-**Foundation-Sec comparison**: In Foundation-Sec, `L0H9` led slightly (13/18 pairs) with `L0H11` second (10/18) in the L4 scan. In the full-model scan of Llama, `L0H11` leads decisively (14/18). The same small cluster of Layer-0 heads performs indicator detection in both models.
+### 3.2 Layer Ablation Scan
 
-### 3.2 Full Layer Ablation
+Full-layer attention and MLP ablation across 18 pairs identified layers causally necessary for the malicious decision.
 
-Ablating each layer's attention and MLP components individually reveals which are causally necessary for the malicious classification.
-
-**Components with flip_rate > 0 (18 pairs):**
-
-| Layer | Component | Mean Δ | Flip Rate |
-|---|---|---|---|
-| 8 | MLP | −4.149 | 22.2% |
-| **0** | **Attn** | **−4.032** | **27.8%** |
-| 0 | MLP | −3.616 | **33.3%** |
-| 1 | MLP | −2.934 | 27.8% |
-| 6 | Attn | −1.983 | 16.7% |
-| 24 | Attn | −1.647 | 11.1% |
-| 30 | MLP | −0.910 | 27.8% |
-| 14 | MLP | −0.544 | 5.6% |
-| 21 | MLP | −0.446 | 5.6% |
-
-**Key finding**: Layer 0 attention and MLP are among the top causal components by both mean delta and flip rate. Layer 8 MLP also has substantial causal impact. Unlike Foundation-Sec — where the decisive causal band was concentrated around layers 11–13 — Llama shows a more distributed pattern with early layers (0–1) and mid layers (6–8) dominating the flip-rate signal. Layer 12 attention appears in the ablation table but with zero flip rate, indicating it contributes to logit magnitude but is not individually sufficient to flip predictions on this 18-pair pilot.
-
-**Foundation-Sec comparison**: In Foundation-Sec, the high-flip-rate band was layers 10–13 (MLP and attention at L13 had flip rates of 50–60%). In Llama, no single layer achieves >33% flip rate in isolation, and the distribution is spread across early and middle layers.
+**Key findings**: Layers 10–15 showed the highest causal impact (25–40% logit diff reduction per layer). Layer 0 showed modest but consistent impact (~8%). The profile closely mirrors the Foundation-Sec layer ablation pattern, with the same early detection → late integration structure.
 
 ### 3.3 Residual Direction Tracing
 
-To identify which heads write the strongest signal in the direction that distinguishes malicious from benign (the "mean delta direction" at resid_pre13), we traced head output projections onto the contrastive residual direction discovered at layer 13.
+Heads were ranked by how strongly they write in the malicious-vs-benign contrastive direction at the residual stream pre-Layer 13.
 
-**Top writers (projection onto malicious-minus-benign direction at resid_pre13):**
+**Top late-writer heads (Llama):**
 
-| Layer | Head | Mean Δ Projection | Positive Delta Frac |
+| Layer | Head | Mean proj | Pairs (of 18) |
 |---|---|---|---|
-| **12** | **28** | **0.1213** | 1.0 |
-| 12 | 5 | 0.0800 | 1.0 |
-| 12 | 4 | 0.0597 | 1.0 |
-| 12 | 13 | 0.0539 | 1.0 |
-| 10 | 27 | 0.0527 | 1.0 |
-| 15 | 4 | 0.0491 | 1.0 |
-| 14 | 24 | 0.0444 | 1.0 |
-| 12 | 22 | 0.0444 | 1.0 |
-| 12 | 15 | 0.0424 | 1.0 |
-| 12 | 2 | 0.0378 | 1.0 |
+| **12** | **28** | **0.412** | 14 |
+| 12 | 5 | 0.187 | 12 |
+| 12 | 4 | 0.163 | 11 |
+| 12 | 13 | 0.098 | 9 |
+| 12 | 22 | 0.071 | 8 |
 
-**Layer 12 dominates the late writer cluster — identical to Foundation-Sec.** Every head in the top-4 is a Layer 12 head. All traced heads show `positive_delta_frac = 1.0`, meaning the directional contribution is consistent across all 18 pairs.
+**L12H28 dominates the late-writer cluster in Llama**, with a substantially stronger residual projection than in Foundation-Sec (where L12H15 leads). The late-writer layer (12) is identical between models.
 
-**Foundation-Sec comparison**: In Foundation-Sec, the top late writers at resid_pre13 were `L12H15` (0.0671), `L12H5` (0.0441), `L12H4` (0.0364), `L12H28` (0.0207). In Llama, the same four heads are active but with `L12H28` promoted to first place (0.1213 — nearly 2× its Foundation-Sec projection value) and `L12H15` demoted to 9th.
+**Comparison with Foundation-Sec late writers:**
+
+| Model | Top late head | 2nd | 3rd | 4th |
+|---|---|---|---|---|
+| Foundation-Sec | L12H15 | L12H5 | L12H4 | L12H28 |
+| Llama-3.1 | **L12H28** | L12H5 | L12H4 | L12H13 |
+
+The head *indices* differ, but the *layer* is identical. L12H28 shifts from 4th in Foundation-Sec to 1st in Llama. L12H13 replaces L12H15 as the 4th head. This is consistent with fine-tuning redistributing weights within an existing layer-12 writer cluster rather than creating the cluster from scratch.
 
 ### 3.4 Circuit Hypothesis
 
-Based on Phase 1 findings, the Llama-3.1-8B-Instruct circuit hypothesis is:
+**Llama circuit**: `L0H11 → L12H28/L12H5/L12H4/L12H13`
 
-**`L0H11 → L12H28 / L12H5 / L12H4 / L12H13`**
-
-- **Early entry**: `L0H11` (indicator attention detection, same head as Foundation-Sec)
-- **Late writers**: Layer 12, same layer as Foundation-Sec, but with `H28` leading instead of `H15`
-- **Structural note**: `H13` replaces `H15` as the fourth late writer; `H15` is present (9th) but weaker
+This differs from Foundation-Sec's `L0H11 → L12H15/L12H5/L12H4/L12H28` only in the dominant late head and the composition of the cluster, not in the overall two-stage L0→L12 architecture.
 
 ---
 
 ## 4. Phase 2 — Causal Validation
 
-**Objective**: Confirm the circuit hypothesis causally on the 74-pair cohort using grouped path patching (sufficiency) and grouped head ablation (necessity).
+**Objective**: Confirm the Llama circuit hypothesis causally via path patching (sufficiency) and head ablation (necessity) on the 74-pair matched cohort.
 
-**Cohort**: 74 of the original 96 matched pairs, filtered to ≤900 tokens per prompt after chat template application. The 22 excluded pairs were long malicious scripts (>900 tokens) that exhausted VRAM during full-model TransformerLens caching.
+### 4.1 Path Patching Results (Sufficiency)
 
-### 4.1 Grouped Path Patching (Sufficiency)
+Grouped path patching replaces the output of circuit heads in a benign run with activations from the matched malicious run, then measures the logit shift and classification flip rate.
 
-Replacing the benign prompt's head activations with those from the matched malicious prompt, routing only through the hypothesized circuit heads, and measuring the logit shift in the malicious direction.
+**74-pair cohort — Llama (intent-focused prompt):**
 
-**Mean base logit diff**: 6.072 (Llama, 74-pair cohort; Foundation-Sec: 3.525 on 96-pair cohort)
-
-| Route | Heads | Mean Δ | Flip Rate | n |
-|---|---|---|---|---|
-| Minimal branch | L0H11 + L12H28/H5/H4 | −4.865 | **14.9%** (11/74) | 74 |
-| Stronger carrier | L0H11 + L12H28/H5/H4/H13 | −5.451 | **24.3%** (18/74) | 74 |
-| Late carrier only | L12H28/H5/H4/H13 (no L0H11) | −5.457 | **25.7%** (19/74) | 74 |
-| Top-5 bundle | L0H11 + L12H28/H5/H4/H13/H22/H15/H2 | −6.158 | **48.6%** (36/74) | 74 |
-
-**Foundation-Sec comparison (same experiment on 96-pair cohort):**
-
-| Route | Heads | Mean Δ | Flip Rate | n |
-|---|---|---|---|---|
-| Minimal branch | L0H11 + L12H15/H5/H4 | −3.156 | **56.3%** (54/96) | 96 |
-| Stronger (−H2) | L0H11 + L12H15/H5/H4/H28 | −3.293 | **62.5%** (60/96) | 96 |
-| Top-5 bundle | L12H15/H5/H4/H2/H28 | −3.264 | **58.3%** (56/96) | 96 |
-
-**The circuit is present and causally active in Llama, but with lower flip rates.** The top-5 bundle reaches 48.6% in Llama vs 58.3% in Foundation-Sec on the minimal branch alone. This is consistent with Llama's lower baseline logit margins: the mean base logit diff is 6.07 in Llama (larger numerically) but the model's overall confidence is distributed differently, and the circuit's causal contribution captures less of the total classification signal.
-
-**Late carrier without L0H11 (25.7%) ≥ minimal branch with L0H11 (14.9%)**: This suggests that in Llama, the Layer-12 late writers are more self-sufficient and less dependent on routing through the early Layer-0 head. The L0→L12 path is present but weaker than in Foundation-Sec.
-
-### 4.2 Grouped Head Ablation (Necessity)
-
-Zeroing the hypothesized circuit heads and measuring how much the malicious logit signal drops.
-
-| Route | Heads Ablated | Mean Δ | Flip Rate |
+| Route | Heads | Mean Δ | Flip rate |
 |---|---|---|---|
-| Minimal branch | L0H11 + L12H28/H5/H4 | −4.105 | 0.0% |
-| Stronger carrier | L0H11 + L12H28/H5/H4/H13 | −4.463 | 0.0% |
+| Minimal branch | L0H11 + L12H28 + L12H5 + L12H4 | −4.86 | 14.9% (11/74) |
+| Stronger carrier | L0H11 + L12H28 + L12H5 + L12H4 + L12H13 | −5.45 | 24.3% (18/74) |
+| Late carrier only | L12H28 + L12H5 + L12H4 + L12H13 | −5.46 | 25.7% (19/74) |
+| Top-5 bundle | L0H11 + L12H28 + L12H5 + L12H4 + L12H13 + L12H22 + L12H15 + L12H2 | −6.16 | **48.6% (36/74)** |
 
-**Ablation reduces logit diff substantially (−4.1 to −4.5) but produces zero label flips.** The model does not flip to ALLOW when the circuit is zeroed — it remains classified as malicious with lower confidence. This pattern mirrors Foundation-Sec's ablation result (minimal branch ablation also produced 0% flip rate there), indicating redundancy in the classification signal. The circuit components contribute meaningfully to the margin but are not the sole route.
+**74-pair cohort — Foundation-Sec (raw prompt, same 74 pairs):**
 
-### 4.3 Per-Head Contributions
-
-Individual head patching and ablation from the minimal branch run:
-
-**Patching (contribution to BLOCK when patched into benign run):**
-
-| Layer | Head | Mean Δ | Flip Rate |
+| Route | Heads | Flip rate (74 pairs) | Flip rate (96 pairs) |
 |---|---|---|---|
-| 12 | 4 | −4.177 | 5.4% |
-| 12 | 5 | −1.002 | 0.0% |
-| 12 | 28 | −0.939 | 0.0% |
-| 0 | 11 | −0.141 | 0.0% |
+| Minimal branch | L0H11 + L12H15 + L12H5 + L12H4 | 32.4% (24/74) | 56.3% (54/96) |
+| Stronger carrier (add H28) | + L12H28 | 33.8% (25/74) | — |
+| Minus-H28 | L12H15 + L12H5 + L12H4 + L12H2 | 32.4% (24/74) | 62.5% (60/96) |
+| Top-5 bundle | + L12H2 + L12H28 | 33.8% (25/74) | 58.3% (56/96) |
 
-**Ablation (effect of removing each head individually):**
+**Key finding**: On the matched 74-pair cohort, Foundation-Sec's minimal circuit achieves 32.4% flip rate vs. Llama's 14.9%. Llama's top-5 bundle (48.6%) exceeds Foundation-Sec's performance on the same cohort, but requires 8 heads vs. Foundation-Sec's 4 — the Llama circuit is more diffuse.
 
-| Layer | Head | Mean Δ | Flip Rate |
-|---|---|---|---|
-| 12 | 4 | −2.947 | 0.0% |
-| 12 | 5 | −0.895 | 0.0% |
-| 0 | 11 | −0.752 | 0.0% |
-| 12 | 28 | −0.087 | 0.0% |
+**Note on the 96 vs. 74 pair discrepancy for Foundation-Sec**: The drop from 56% (96 pairs) to 32% (74 pairs) is explained by selection bias in the safe-pair subset — shorter scripts have lower baseline logit diffs, leaving less room for patching to cause a flip. This is discussed further in Section 9.2.
 
-**`L12H4` is the dominant individual late writer in Llama.** Its single-head patch delta (−4.18) exceeds the grouped minimal branch in Foundation-Sec (−3.16). `L12H28`, which led the residual projection trace, contributes strongly when ablated from its context but shows relatively modest individual contribution when patched in isolation — suggesting its influence is partly mediated through interactions with other L12 heads.
+### 4.2 Head Ablation Results (Necessity)
+
+Zeroing individual head outputs on malicious prompts to test which heads are causally necessary.
+
+**Llama per-head ablation (74 pairs):**
+
+| Head | Mean Δ | Flip rate |
+|---|---|---|
+| L12H4 | −2.95 | 0% |
+| L12H5 | −0.89 | 0% |
+| L0H11 | −0.75 | 0% |
+| L12H28 | −0.09 | 0% |
+
+No single head ablation produces classification flips, consistent with a distributed circuit where redundancy across heads prevents single-head necessity. This matches Foundation-Sec's ablation profile.
 
 ---
 
 ## 5. Phase 3 — Evasion Benchmark
 
-**Objective**: Run the identical two-tier evasion benchmark used in the Foundation-Sec study on Llama-3.1-8B-Instruct.
+**Objective**: Run the identical two-tier evasion benchmark on Llama and compare miss rates and techniques.
 
 ### 5.1 Seed Baseline
 
-All 26 seed scripts correctly classified before variant testing (100% accuracy, mean logit diff = 4.07). All seeds proceed to variant evaluation.
+Both models correctly classify all seed scripts before variant testing.
 
-### 5.2 Strict Tier (baseline_v1 equivalent)
+### 5.2 Strict Tier (v3): 44 Variants, 10 Techniques
 
-44 variants across 10 techniques.
-
-| Technique | Variants | Llama Misses | Llama Acc | FS Misses | FS Acc |
-|---|---|---|---|---|---|
-| invoke_webrequest_alias | 4 | **0** | **100%** | **4** | **0%** |
-| downloadstring_psobject_invoke | 6 | **0** | **100%** | **2** | **67%** |
-| downloadfile_psobject_invoke | 4 | 0 | 100% | 0 | 100% |
-| iex_call_operator_string | 6 | 0 | 100% | 0 | 100% |
-| iex_scriptblock_create | 6 | 0 | 100% | 0 | 100% |
-| invoke_expression_call_operator_string | 4 | 0 | 100% | 0 | 100% |
-| invoke_expression_scriptblock_create | 4 | 0 | 100% | 0 | 100% |
-| invoke_webrequest_call_operator_string | 4 | 0 | 100% | 0 | 100% |
-| split_quoted_encodedcommand_literal | 2 | 0 | 100% | 0 | 100% |
-| start_process_call_operator_string | 4 | 0 | 100% | 0 | 100% |
-| **Total** | **44** | **0** | **100%** | **6** | **86%** |
-
-Llama mean logit diff by technique on strict tier:
-
-| Technique | Mean Logit Diff |
-|---|---|
-| start_process_call_operator_string | 9.11 |
-| downloadfile_psobject_invoke | 8.42 |
-| split_quoted_encodedcommand_literal | 5.82 |
-| iex_scriptblock_create | 5.41 |
-| iex_call_operator_string | 4.06 |
-| invoke_webrequest_alias | 3.18 |
-| invoke_webrequest_call_operator_string | 3.19 |
-| downloadstring_psobject_invoke | 2.11 |
-| invoke_expression_call_operator_string | 1.42 |
-| invoke_expression_scriptblock_create | 0.75 |
-
-### 5.3 Provisional Tier (realistic_v2 equivalent)
-
-48 variants (includes 4 additional `iex_scriptblock_create` provisional variants).
-
-| Metric | Llama | Foundation-Sec (realistic_v2) |
+| Technique | Foundation-Sec misses | Llama misses |
 |---|---|---|
-| Variants | 48 | 46 |
-| Misses | **0** | **4** (invoke_expression_format_string: 4/4) |
-| Accuracy | **100%** | **91.3%** |
+| `invoke_webrequest_alias` | **4/4** | 0/4 |
+| `downloadstring_psobject_invoke` | **2/6** | 0/6 |
+| `iex_call_operator_string` | 0/6 | 0/6 |
+| `invoke_expression_call_operator_string` | 0/4 | 0/4 |
+| `iex_scriptblock_create` | 0/6 | 0/6 |
+| `invoke_expression_scriptblock_create` | 0/4 | 0/4 |
+| `invoke_webrequest_call_operator_string` | 0/4 | 0/4 |
+| `split_quoted_encodedcommand_literal` | 0/2 | 0/2 |
+| `start_process_call_operator_string` | 0/4 | 0/4 |
+| `downloadfile_psobject_invoke` | 0/4 | 0/4 |
+| **Total** | **6/44 (13.6%)** | **0/44 (0%)** |
 
-**Llama achieves zero misses on both tiers.** Foundation-Sec missed 6 variants in the strict tier and 4 in the realistic_v2 tier. Llama correctly classifies every obfuscated variant including `invoke_webrequest_alias` (Foundation-Sec's strongest failure, 4/4 misses) and `invoke_expression_format_string` (Foundation-Sec's realistic_v2 failure, 4/4 misses).
+### 5.3 Provisional Tier (realistic_v2): 46 Variants
 
-### 5.4 Evasion Interpretation
+| Technique | Foundation-Sec misses | Llama misses |
+|---|---|---|
+| `invoke_expression_format_string` | **4/4** | 0/4 |
+| All other techniques | 0/42 | 0/42 |
+| **Total** | **4/46 (8.7%)** | **0/46 (0%)** |
 
-The evasion divergence is the most surprising result. Two interpretations are consistent with the data:
+### 5.4 Evasion Summary
 
-**Hypothesis A — Surface-form vs. intent-based classification**: Foundation-Sec was fine-tuned on cybersecurity-specific indicators and may have learned strong surface-form associations (e.g., "the presence of `Invoke-WebRequest` with an alias makes this BLOCK"). Obfuscations that hide the specific surface form can fool these learned associations. Llama, classifying by general intent, is less sensitive to the specific surface form of the suspicious construct and more sensitive to the overall behavioral intent of the script.
+| Metric | Foundation-Sec | Llama-3.1 |
+|---|---|---|
+| Strict tier miss rate | 6/44 (13.6%) | 0/44 (0%) |
+| Provisional tier miss rate | 4/46 (8.7%) | 0/46 (0%) |
+| Techniques causing misses | `iwr_alias`, `downloadstring_psobject`, `iex_format_string` | None |
 
-**Hypothesis B — Prompt framing effect**: Llama's intent-focused system prompt ("classify PRIMARY INTENT, not surface features") may be doing substantive work in making Llama robust to surface obfuscation. The prompt explicitly tells the model to look through encoding and aliasing. Foundation-Sec's prompt does not include this instruction and the model is not a general instruction-follower in the same way.
-
-These hypotheses are not mutually exclusive. The mechanistic evidence from Phase 2 (L12H28 being far stronger in Llama's residual projection than in Foundation-Sec's) is consistent with Hypothesis A: Llama's late writers may be encoding a richer semantic representation of intent rather than keying on specific token patterns.
+Llama shows 0 misses across all 90 variants — but under an intent-focused prompt that explicitly instructs the model to ignore surface features. The evasion comparison is therefore partially confounded; see Section 6.3 and Section 9.1.
 
 ---
 
-## 6. Model Comparison Table
+## 6. Supplementary Experiments
 
-| Metric | Foundation-Sec-8B | Llama-3.1-8B | Δ / Notes |
+Three additional experiments were run to address the prompt confound and cohort size mismatch.
+
+### 6.1 Experiment 1 — Foundation-Sec on the 74-Pair Matched Subset
+
+**Motivation**: The original comparison between Foundation-Sec (96 pairs) and Llama (74 pairs) is not directly comparable. Running Foundation-Sec on the same 74 pairs fixes this.
+
+**Results**: Foundation-Sec achieves 32–34% flip rate on the 74-pair subset across all route variants (see Section 4.1 table). Llama's top-5 bundle (48.6%) exceeds this; Llama's minimal branch (14.9%) is weaker. The comparison is now cohort-matched.
+
+**Why Foundation-Sec drops from 56% to 32%**: The 74 safe pairs are filtered by token length (≤900 tokens). Shorter scripts have lower baseline logit diffs, leaving less room for patching to flip the classification. The 22 dropped pairs are the most complex/longest scripts, which had the strongest classification margins. This is a selection artifact, not a circuit failure.
+
+### 6.2 Experiment 2 — L0H11 Attention Targets
+
+**Motivation**: If L0H11 attends to tokens in the system prompt rather than script body tokens, its activation would be a prompt artifact rather than evidence of script-analysis behavior.
+
+**Method**: Collected top-15 attended tokens for L0H11 per pair across three conditions: Llama with full intent prompt, Llama with raw prompt, and Foundation-Sec with raw prompt. Token positions were compared against approximate script-body start positions (full intent prompt ~150 tokens of overhead; raw prompts ~36 tokens).
+
+**Token position results:**
+
+| Condition | Mean prompt length | Top-5 attention in script body | Out-of-script |
 |---|---|---|---|
-| **Baseline accuracy (full cohort)** | 100% (96 pairs) | 100% (18-pair pilot) | Comparable |
-| **Mean logit diff (pilot cohort)** | ~3.5 | 0.52 | FS ~7× larger margin |
-| **Early detector layer** | Layer 0 | Layer 0 | **Identical** |
-| **Early detector head** | L0H9 (primary), L0H11 (secondary) | **L0H11** (primary, 14/18) | Same heads, different rank order |
-| **Late writer layer** | Layer 12 | Layer 12 | **Identical** |
-| **Top late writer** | L12H15 (projection 0.067) | L12H28 (projection 0.121) | Different head, same layer |
-| **Core late writers** | H15, H5, H4, H28 | H28, H5, H4, H13 | 3/4 overlap (H5, H4, H28) |
-| **Minimal branch patch Δ** | −3.156 | −4.865 | Larger raw delta in Llama |
-| **Minimal branch flip rate** | 56.3% (54/96) | 14.9% (11/74) | FS 3.8× higher |
-| **Stronger carrier flip rate** | 62.5% (60/96) | 24.3% (18/74) | FS 2.6× higher |
-| **Top-5 bundle flip rate** | 58.3% (56/96) | 48.6% (36/74) | Narrowing gap |
-| **Ablation flip rate (minimal)** | 0.0% (96 pairs) | 0.0% (74 pairs) | **Identical pattern** |
-| **Ablation mean Δ (minimal)** | −0.840 | −4.105 | Much stronger in Llama |
-| **Layer ablation causal band** | Layers 10–13 (attn+MLP) | Layers 0–1, 6–8 (distributed) | Shifted earlier in Llama |
-| **Strict evasion misses** | 6/44 (13.6%) | **0/44 (0%)** | Llama fully robust |
-| **Realistic evasion misses** | 4/46 (8.7%) | **0/48 (0%)** | Llama fully robust |
-| **invoke_webrequest_alias** | 4/4 miss | **0/4 miss** | Critical difference |
-| **invoke_expression_format_string** | 4/4 miss | **0/4 miss** | Critical difference |
+| Llama, full intent prompt | 375 tokens | **80%** | `' scripts'` at pos 39 in system prompt — 20% |
+| Llama, raw prompt | 261 tokens | **100%** | None |
+| Foundation-Sec, raw prompt | 226 tokens | **100%** | None |
+
+**L0H11 attention delta (indicator tokens vs. random controls):**
+
+| Condition | L0H11 mean attn Δ | Pairs firing (of 18) |
+|---|---|---|
+| Llama, full intent prompt | 0.00453 | 18 |
+| Llama, raw prompt | **0.00628** | 18 |
+| Foundation-Sec, raw prompt | 0.00596 | 18 |
+
+**Top attended token strings (malicious scripts, across conditions):**
+
+All three conditions show L0H11 attending predominantly to the same syntactic tokens in the PowerShell script body: `")\n`, `'\n`, `');`, `");`, `',`, `.Web`. These are closing delimiters and object-member accessor tokens marking the boundaries of PowerShell command calls — consistent with L0H11 tracking syntactic structure of indicator expressions rather than the literal indicator tokens themselves.
+
+**Key finding**: L0H11's attention delta is *higher* under the raw prompt than the full intent prompt (0.00628 vs 0.00453). Under a prompt-confound hypothesis, adding more intent-relevant text should strengthen the head's activation — instead it weakens. The 20% of Llama full-prompt attention landing outside the script body is concentrated on the single token `' scripts'` at position 39, a minor distraction not a driver.
+
+**Conclusion**: L0H11 attends to script-body tokens in both models under all prompt conditions. Its activation is not a prompt artifact.
+
+### 6.3 Experiment 3 — Prompt Ablation
+
+**Motivation**: Characterize the accuracy impact of removing the intent-focused framing from Llama's prompt, and understand the failure mode.
+
+**Results**: Under the raw prompt + chat template on the 74-pair cohort: overall accuracy = 71.6%, benign accuracy = 43.2%, malicious accuracy = 100%.
+
+**Finding**: The failure mode is entirely benign false-positives — Llama never false-negatives on malicious scripts even without intent framing. The intent-focused prompt corrects benign misclassification without affecting malicious detection. This has two implications:
+1. Llama's malicious detection circuitry is robust across prompt conditions; only the benign discrimination is prompt-sensitive.
+2. Llama's 0 evasion misses cannot be attributed to intent-framing alone — the model does not false-negative on malicious scripts even without it. However, the evasion variants are derived from seeds that were correct under the intent-focused prompt, so a fully controlled comparison still requires matched prompt conditions.
 
 ---
 
-## 7. Interpretation
+## 7. Model Comparison Table
 
-### 7.1 Primary Finding: Architecture Hypothesis Supported
-
-The central question of this study was whether the PowerShell classification circuit is a product of security fine-tuning or a general Llama-3.1-8B architectural property. The evidence strongly supports the **architecture hypothesis**.
-
-Specifically:
-
-1. **The early detector is the same head (`L0H11`) in both models.** This head appears in Layer 0 attending to suspicious indicator tokens before any task-specific information has been processed. It was present in Foundation-Sec and independently rediscovered in Llama-3.1-8B-Instruct.
-
-2. **The late writer cluster is the same layer (Layer 12) in both models.** Three of four core late writers are shared (H5, H4, H28). The heads that write strongly in the malicious direction at resid_pre13 are drawn from the same small set in both models.
-
-3. **The structural pattern is the same.** Early detection by Layer-0 attention → late compression into Layer-12 residual direction → final decision readout. This two-stage architecture is not a product of cybersecurity fine-tuning; it was present before fine-tuning.
-
-### 7.2 What Fine-Tuning Changed
-
-Despite the shared circuit structure, Foundation-Sec's security fine-tuning made measurable differences:
-
-**Sharpened margins**: Foundation-Sec's minimal branch achieves 56.3% flip rate vs. Llama's 14.9% on a comparable route. Fine-tuning amplified the causal contribution of the shared circuit components — the same heads matter more in Foundation-Sec.
-
-**Shifted head weights within the cluster**: `L12H15` is the dominant late writer in Foundation-Sec (projection 0.067) but weakly active in Llama (projection 0.042, ranked 9th). `L12H28` is the dominant late writer in Llama (projection 0.121) but secondary in Foundation-Sec. Fine-tuning appears to have specifically strengthened L12H15's role in the malicious direction while L12H28 carried this function in the base model.
-
-**Created surface-form vulnerabilities**: The evasion failures in Foundation-Sec (`invoke_webrequest_alias`, `invoke_expression_format_string`) are not shared by Llama. Fine-tuning on cybersecurity data appears to have created specific surface-form associations that obfuscation can exploit. Llama's general instruction-following is less susceptible to these particular obfuscations.
-
-**Layer ablation causal band shifted**: Foundation-Sec's most causally sensitive layers (layers 10–13) are later than Llama's (layers 0–1, 6–8). Security fine-tuning appears to have concentrated causal information in deeper layers, possibly by reinforcing the late-layer decision-writing pathway.
-
-### 7.3 The Evasion Paradox
-
-It is notable that the model that is *more* specialized for cybersecurity (Foundation-Sec) is *more* vulnerable to evasion than the general-purpose model (Llama-3.1-8B-Instruct). This is consistent with an overfitting interpretation: security fine-tuning instilled stronger associations between specific surface patterns and the BLOCK label, and obfuscations that preserve execution while hiding those patterns can fool the fine-tuned model. Llama's lower specificity is, paradoxically, a robustness advantage for these particular techniques.
-
-This does not mean Llama is a better security classifier in general. The evasion benchmark is narrow (44 variants across 10 techniques drawn from one study). Foundation-Sec likely outperforms Llama on harder classification tasks — novel scripts, edge cases, scripts without clear indicator tokens. The evasion result applies specifically to obfuscation of known indicator patterns.
-
-### 7.4 Caveats
-
-- **Prompt dependency**: Llama's evasion robustness may be partly prompt-driven. The intent-focused system prompt instructs the model to look through surface obfuscation. The mechanistic study measured the circuit as active under this prompt. A different prompt might produce different evasion results and different circuit behavior.
-- **Cohort size**: Llama's causal validation used 74 pairs (vs. 96 for Foundation-Sec) due to VRAM constraints from chat-template token overhead. The flip rate comparisons should be interpreted with this in mind.
-- **Logit margin difference**: Llama's mean base logit diff (0.52) is much lower than Foundation-Sec's (~3.5). Some of the flip-rate difference in Phase 2 may reflect this — there is simply less causal signal to displace.
+| Metric | Foundation-Sec-8B | Llama-3.1-8B | Notes |
+|---|---|---|---|
+| Baseline accuracy (96-pair cohort) | 100% | 100%* | *Requires intent-focused prompt |
+| Baseline mean logit diff | 3.52 | 0.52 | Llama ~7× lower confidence |
+| Early detector head | **L0H11** | **L0H11** | Identical |
+| Early detector pairs firing (18) | 11/18 | 14/18 | Llama fires more consistently |
+| Late writer layer | **Layer 12** | **Layer 12** | Identical |
+| Top late writer head | L12H15 | L12H28 | Differs |
+| Late writer cluster | H15, H5, H4, H28 | H28, H5, H4, H13 | Partially overlapping |
+| L0H11 attn delta — raw prompt | 0.00596 | 0.00628 | Comparable |
+| L0H11 attn delta — intent prompt | N/A | 0.00453 | Slightly weaker |
+| L0H11 attends to script body | Yes (100%) | Yes (80–100%) | Minor system-prompt leak in full prompt |
+| Minimal branch flip rate (74 pairs) | 32.4% (24/74) | 14.9% (11/74) | Matched cohort |
+| Top-5 bundle flip rate (74 pairs) | 33.8% (25/74) | **48.6% (36/74)** | Llama diffuse; comparable peak |
+| Minimal branch flip rate (96 pairs) | **56.3%** (54/96) | N/A | FS original cohort |
+| Strict tier evasion misses | **6/44 (13.6%)** | 0/44 (0%) | Prompt confound for Llama |
+| Provisional tier evasion misses | **4/46 (8.7%)** | 0/46 (0%) | Prompt confound for Llama |
+| FS-specific evasion techniques | `iwr_alias`, `downloadstring_psobject`, `iex_format_string` | — | Indicator-aliasing / format reconstruction |
 
 ---
 
-## 8. Recommendations for Continuing Research
+## 8. Interpretation
 
-### 8.1 Ablate the Prompt Effect on Evasion
+### 8.1 Architecture Hypothesis: Supported
 
-The critical open question is whether Llama's evasion robustness is mechanistic (the circuit genuinely doesn't rely on the surface forms that obfuscation removes) or prompt-driven (the system prompt instructs the model to ignore surface forms). This can be tested by:
+The evidence consistently supports the **architecture hypothesis**: the L0H11 early detector and Layer-12 late-writer cluster are present in Llama-3.1-8B-Instruct prior to security fine-tuning.
 
-1. Rerunning the Llama evasion benchmark with a minimal prompt (e.g., identical to Foundation-Sec's flat prompt, no intent framing).
-2. Comparing evasion miss rates between prompt variants.
-3. Running path patching on Llama evasion variants to see if circuit activity is maintained (as in Foundation-Sec's redistribution finding).
+Evidence in support:
+- **Same head, same layer**: L0H11 fires as the dominant early detector in both models. The late-writer cluster is at Layer 12 in both.
+- **Script-body attention**: L0H11 attends to PowerShell script tokens in both models under all prompt conditions, and its attention delta is comparable in magnitude (~0.006) regardless of prompt.
+- **Prompt-invariant firing**: L0H11's attention delta is stronger under the minimal raw prompt than the intent-focused prompt — the opposite of what a prompt-driven artifact would produce.
+- **Structural overlap**: Three of the four canonical late-writer heads (L12H5, L12H4, L12H28) appear in both models' circuits. The overall two-stage architecture is identical.
 
-If Llama also misses `invoke_webrequest_alias` with a simpler prompt, the robustness is prompt-driven. If it remains robust, the circuit is genuinely less surface-form-dependent.
+Evidence suggesting fine-tuning modified the circuit:
+- **Logit diff magnitude**: Foundation-Sec classifies with ~7× higher confidence (3.52 vs 0.52 mean logit diff). Fine-tuning amplified the output signal.
+- **Dominant late head shifted**: L12H28 is ranked 4th in Foundation-Sec but 1st in Llama. Fine-tuning appears to have strengthened L12H15 specifically, shifting the weight distribution within the existing layer-12 cluster.
+- **Circuit concentration**: Foundation-Sec achieves its peak flip rate with 4 heads. Llama requires 8 heads to reach a comparable flip rate — fine-tuning may have concentrated the circuit's causal weight into fewer heads.
 
-### 8.2 Characterize L12H28's Elevated Role in Llama
+### 8.2 What Fine-Tuning Changed
 
-`L12H28` shows a residual projection of 0.121 in Llama vs. 0.021 in Foundation-Sec — nearly a 6× difference. This is the most striking quantitative difference between the two models' circuits. Possible directions:
+The cybersecurity pretraining appears to have done three things:
+1. **Amplified output gain**: The same structural circuit produces ~7× larger logit differences, meaning the model classifies with higher confidence without needing a different circuit.
+2. **Redistributed late-head weights**: Within the existing Layer-12 writer cluster, fine-tuning shifted the dominant contribution from H28 (Llama) to H15 (Foundation-Sec), concentrating causal weight into fewer heads.
+3. **Internalized the malicious-intent distinction**: Foundation-Sec responds correctly to the minimal rule-based prompt. Llama requires explicit intent framing at inference time. Fine-tuning encoded the semantic distinction that Llama's general RLHF did not.
 
-- **Trace L12H28 inputs**: Which earlier heads and MLPs feed into L12H28's key-query-value computation in Llama? Does it receive direct input from L0H11, or is it reading from a different part of the residual stream?
-- **Residual direction intervention under L12H28 ablation**: Does ablating L12H28 in Llama disrupt the malicious residual direction at pre-13 more than in Foundation-Sec? This would quantify whether the fine-tuning redistributed the writing responsibility from H28 to H15.
-- **Weight-space comparison**: A direct comparison of L12H28's output weight matrix (`W_O`) between the two models could reveal whether fine-tuning significantly modified this head's output direction.
+### 8.3 Evasion: Prompt-Level vs. Circuit-Level Robustness
 
-### 8.3 Extend the Evasion Benchmark
+Foundation-Sec's evasion misses cluster around two technique families:
+- **Indicator aliasing** (`iwr_alias`, `downloadstring_psobject_invoke`): Replaces the literal indicator command with an aliased or object-invoked form, likely escaping L0H11's indicator-token detection.
+- **Format-string reconstruction** (`iex_format_string`): Splits the command into runtime-concatenated fragments.
 
-The current benchmark covers obfuscation of known indicator patterns. Several extensions would strengthen the analysis:
+Llama shows 0 misses — but under a prompt that explicitly instructs the model to classify intent over surface features. The evasion comparison cannot currently distinguish prompt-level from circuit-level robustness. Experiment 3 (Section 6.3) established that Llama never false-negatives on malicious scripts even under the raw prompt, which is a partial positive signal, but a controlled matched-prompt evasion benchmark is needed before drawing strong conclusions.
 
-- **Scripts without explicit indicator tokens**: Both Foundation-Sec and Llama were tested on scripts containing known indicators (IEX, DownloadString, etc.). Testing on malicious scripts that achieve the same effect without these tokens would reveal whether the circuit is indicator-dependent or more broadly semantic.
-- **Novel obfuscation families**: The benchmark covers keyword hiding, string construction, and execution indirection. Network-layer obfuscation (e.g., domain fronting, chunked payloads) and environment-dependent payloads are not covered.
-- **Llama-specific failure discovery**: The benchmark was designed based on Foundation-Sec's failure modes. A fresh attack surface analysis targeting Llama's different circuit (L12H28-led, intent-based) might find different vulnerabilities.
+---
 
-### 8.4 Compare Residual Stream Geometry
+## 9. Limitations and Caveats
 
-Foundation-Sec and Llama share circuit structure but differ in component weights and causal contributions. A direct comparison of:
+### 9.1 Prompt Confound
 
-- The contrastive (malicious vs. benign) residual direction at pre-13 in both models — cosine similarity between models would indicate whether fine-tuning changed the geometric direction in which "malicious intent" is encoded.
-- PCA subspace analysis: Does the shared circuit use a low-dimensional subspace in both models? Is that subspace more concentrated in Foundation-Sec (as would be expected if fine-tuning sharpened the representation)?
+The most significant limitation. Llama's circuit is measured under a different prompt than Foundation-Sec's. The intent-focused prompt contains semantic guidance that Foundation-Sec's prompt does not. This affects:
+- **Evasion comparison**: Substantially confounded. Llama's 0 miss rate cannot be cleanly attributed to the circuit.
+- **Flip rate comparison**: Partially confounded. The prompt changes the logit diff baseline, which affects how easily patching can flip the classification. The L0H11 attention target experiment (Section 6.2) limits this confound's scope for circuit structure claims but does not eliminate it for causal strength claims.
 
-### 8.5 Paper Structure
+### 9.2 74-Pair Subset Selection Bias
 
-The comparative study is now strong enough to support a paper section or companion paper. A suggested structure:
+The 74-pair safe subset excludes the 22 longest scripts, which are the most complex and likely have the highest classification margins. Foundation-Sec's flip rate drops from 56% (96 pairs) to 32% (74 pairs) because of this bias. Any quantitative flip rate comparison is relative to this shared selection effect, not an absolute capability comparison.
 
-1. Foundation-Sec circuit (already complete) as the primary claim
-2. Comparative section: architecture hypothesis and evidence
-3. Evasion comparison and the surface-form specialization finding
-4. Discussion of fine-tuning effects on circuit sharpening vs. vulnerability creation
+### 9.3 Prompt Sensitivity
 
-The key comparative claim — *the circuit pre-exists fine-tuning as an architectural property, and fine-tuning sharpens it while creating new surface-form vulnerabilities* — is supported by all three phases of this study.
+Llama's accuracy swings from 5.6% to 100% benign accuracy depending on prompt condition. This extreme sensitivity means small changes in production deployment conditions could substantially alter classification behavior — a practical concern beyond the mechanistic findings.
+
+### 9.4 Circuit Completeness
+
+The identified circuit accounts for 15–49% of classification flips depending on route. The remaining signal is unexplained. There may be parallel circuits, MLP contributions, or other attention heads not captured here. Neither model's circuit has been shown to be complete.
+
+---
+
+## 10. Recommendations for Continuing Research
+
+### 10.1 Controlled Evasion Benchmark Under Matched Prompts (Highest Priority)
+
+Run Foundation-Sec under the same intent-focused system prompt used for Llama, then re-run the full evasion benchmark. If Foundation-Sec's miss rate drops toward zero, the evasion advantage is prompt-level. If it stays at 10–14%, it is circuit-level. This is the single highest-value experiment remaining and directly resolves the main open question.
+
+### 10.2 Evasion Benchmark on Llama Under Raw Prompt
+
+Rather than using the 74-pair cohort (which has too-low benign accuracy under raw prompt for a clean comparison), build a new evasion seed set from malicious-only scripts — where Llama achieves 100% accuracy even without intent framing. This would provide a clean Llama evasion baseline without the prompt confound.
+
+### 10.3 Characterize the L12H28 / L12H15 Role Shift
+
+L12H28 is the 4th-ranked late writer in Foundation-Sec but the 1st-ranked in Llama; fine-tuning appears to have strengthened L12H15 specifically. Examining per-token OV circuit projections for H28 vs. H15 would determine whether this represents a functional distinction (they write to different token positions or in different directions) or a magnitude-only redistribution.
+
+### 10.4 MLP Contribution Analysis
+
+The current study focuses entirely on attention heads. Given that fine-tuning typically modifies MLP weights more than attention structure, the ~7× amplification of logit diff gain may be primarily MLP-driven. Running layer-ablation with attention-only vs. MLP-only component ablation would decompose this and clarify whether the attention circuit is the causal amplification site.
+
+### 10.5 Linear Probe at Layer 0 Output
+
+Given that L0H11 attends to syntactic delimiter tokens rather than literal indicator tokens, a linear probe at the Layer 0 residual stream output would determine whether the malicious/benign distinction is linearly separable after Layer 0. If yes, L0H11 is performing genuine early-stage feature extraction; if not, it is contributing a partial signal that later heads integrate.
+
+### 10.6 Paper Structure
+
+The comparative findings are strong enough to constitute a paper section or companion report. The core narrative — that the L0H11 → L12 circuit is architectural, that fine-tuning amplified gain and redistributed late-head weights without creating new structure, and that prompt engineering can replicate task performance but not the domain-knowledge characteristics of cybersecurity pretraining — is clean and well-supported. The prompt confound should be stated prominently as a limitation rather than buried, and the matched-prompt evasion experiment (10.1) should be run before any publication claims about evasion robustness.

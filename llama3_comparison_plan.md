@@ -1,5 +1,7 @@
 # Research Plan: Llama-3.1-8B-Instruct Comparative Circuit Study
 
+Audit update (2026-04-17): the corrected raw-prompt rerun now exists in this repo and fails the baseline gate on the validated 96-pair cohort (`98/192`, 51.0% accuracy). A formatting-only variant that wraps that same prompt with the Llama chat template also fails (`129/192`, 67.2% accuracy). Treat the rest of this document as workflow guidance for future alternate-condition work, not as evidence that the matched-condition comparison currently succeeds.
+
 ## Purpose
 
 This document is the self-contained pickup guide for the comparative mechanistic interpretability study between **Foundation-Sec-8B-Instruct** (the current paper) and **meta-llama/Llama-3.1-8B-Instruct** (the base instruction model). It is written to be handed back to Claude or any researcher at a later date without needing to reconstruct context.
@@ -29,8 +31,8 @@ Foundation-Sec-8B was created by continued pretraining of `meta-llama/Llama-3.1-
 | TransformerLens template | `meta-llama/Llama-3.1-8B-Instruct` | `meta-llama/Llama-3.1-8B-Instruct` |
 | Architecture | Identical (32L, 32H) | Identical |
 | Training | Llama base + cybersec pretraining + RLHF | Llama base + general RLHF only |
-| Label tokens | ` ALLOW` (73360), ` BLOCK` (29777) | **Must be re-established** (see Phase 0) |
-| Prompt template | Foundation-Sec chat format | Llama-3.1 chat format (same tokenizer family) |
+| Label tokens | ` ALLOW` (73360), ` BLOCK` (29777) | Re-derive from the Llama tokenizer at runtime |
+| Prompt template actually used in Foundation-Sec eval | Raw classifier prompt string | Use the same raw classifier prompt for the like-for-like comparison |
 
 **Important**: The TransformerLens `template_name` for both models is the same (`meta-llama/Llama-3.1-8B-Instruct`) because TL uses the template only to determine architecture/weight-loading conventions. This means the hook infrastructure works out of the box for Llama-3.1.
 
@@ -81,16 +83,23 @@ All Llama artifacts should use a distinct prefix to avoid overwriting Foundation
 
 ## Phase 0: Classification Task Setup (Do This First)
 
-**This is the gating step.** Llama-3.1-8B-Instruct was not trained for ALLOW/BLOCK classification. You must establish a working classification prompt and verify accuracy before any MI work.
+**This is the gating step.** Llama-3.1-8B-Instruct was not trained for ALLOW/BLOCK classification. You must establish that it works under the same raw classifier prompt used in Foundation-Sec before any MI work.
 
 ### Step 0.1 — Design a classification prompt
 
-Foundation-Sec was prompted with a specific cybersecurity instruction format. Llama needs a general instruction-following format. Design a prompt that:
-- Provides the task description (classify PowerShell scripts as malicious or benign)
-- Ends in a forced 2-token choice format (e.g., "Answer: ALLOW" or "Answer: BLOCK")
-- Or uses a next-token-prediction framing where the model completes "Classification: " with either "ALLOW" or "BLOCK"
+Foundation-Sec was prompted with the simple raw classifier string implemented in `mech-interp-circuit-validation/scaled_validation.py`:
 
-The simplest approach (maximizing reuse of `scaled_validation.py`) is to keep the same label words (ALLOW/BLOCK) and change only the system prompt / instruction context. The token IDs will be dynamically derived from the Llama tokenizer and will likely differ from Foundation-Sec's 73360/29777 — that's fine, the code handles this.
+```text
+You are a security classifier. Label the given PowerShell as:
+ALLOW = benign / administrative / normal usage
+BLOCK = malicious (downloading, execution, evasion, credential theft, etc.)
+
+Return ONLY one word: ALLOW or BLOCK.
+...
+Answer:
+```
+
+The comparative run should start with that exact prompt content. Do not assume a special Foundation-Sec chat prompt exists. If you later test a chat-template wrapper for Llama, treat that as a separate condition rather than the primary matched comparison.
 
 ### Step 0.2 — Run baseline accuracy check
 
@@ -98,7 +107,7 @@ Run `baseline-eval` on a small subset (10–20 pairs) to confirm accuracy:
 
 ```bash
 python scaled_validation.py baseline-eval \
-  --manifest artifacts/circuit_val_pair_manifest_t3000_valid.csv \
+  --manifest artifacts/foundation_sec/circuit_val_pair_manifest_t3000_valid_causal18_short.csv \
   --model-name meta-llama/Llama-3.1-8B-Instruct \
   --template-name meta-llama/Llama-3.1-8B-Instruct \
   --limit 20 \
@@ -116,7 +125,7 @@ Once the prompt works:
 
 ```bash
 python scaled_validation.py baseline-eval \
-  --manifest artifacts/circuit_val_pair_manifest_t3000_valid_causal18_short.csv \
+  --manifest artifacts/foundation_sec/circuit_val_pair_manifest_t3000_valid_causal18_short.csv \
   --model-name meta-llama/Llama-3.1-8B-Instruct \
   --template-name meta-llama/Llama-3.1-8B-Instruct \
   --output artifacts/llama3_circuit_val_pair_baseline_eval.csv
@@ -211,7 +220,7 @@ python scaled_validation.py discover-contrastive-residual-directions \
 
 ## Phase 2: Validation
 
-**Goal**: Confirm the Llama circuit hypothesis causally on the full 96-pair matched cohort.
+**Goal**: Confirm the Llama circuit hypothesis causally on the Foundation-Sec validated 96-pair cohort when feasible, or on a clearly documented safe subset derived from that same validated 96-pair manifest.
 
 Use the same procedure as Foundation-Sec but substitute the Llama circuit hypothesis from Phase 1.
 
@@ -251,7 +260,12 @@ Run at minimum these four route variants to enable direct comparison with Table 
 - H2-equivalent-free carrier (drop the suspected auxiliary head)
 - Top-5 bundle (include all top-5 late heads)
 
-**Validation deliverable**: Mean Δ and flip rate for each route on the 96-pair cohort. Record per-family results in the same format as Table 2 in `paper_draft.tex`.
+**Validation deliverable**: Mean Δ and flip rate for each route on either:
+
+1. the full validated 96-pair cohort, or
+2. a safe subset explicitly derived from `artifacts/foundation_sec/circuit_val_pair_manifest_t3000_combo_cap20_valid_h100.csv`
+
+If a subset is used, report the exact retained pair count and pair IDs. Do not relabel a pilot or subset artifact as `96pair`.
 
 ---
 
@@ -319,7 +333,7 @@ After all runs, build a comparison table with these rows:
 
 | Metric | Foundation-Sec-8B | Llama-3.1-8B | Interpretation |
 |---|---|---|---|
-| Baseline accuracy on 96-pair cohort | 100% | TBD | |
+| Baseline accuracy on validated 96-pair cohort | 100% | TBD | |
 | Early detector layer | Layer 0 | TBD | |
 | Late writer layer | Layer 12 | TBD | |
 | Minimal branch mean Δ | -3.156 | TBD | |
@@ -336,7 +350,7 @@ After all runs, build a comparison table with these rows:
 **Fine-tuning drives the circuit (strong support)**:
 - Llama has no Layer 0 detector (or it is much weaker), OR
 - Llama's circuit is located at substantially different layers, OR
-- Llama accuracy on the matched 96-pair cohort is significantly lower than Foundation-Sec
+- Llama accuracy on the matched validated 96-pair cohort is significantly lower than Foundation-Sec
 
 **Architecture drives the circuit (strong support)**:
 - Llama has a Layer 0 detector with similar heads (e.g., L0H11 or nearby heads)
@@ -387,7 +401,7 @@ After all runs, build a comparison table with these rows:
 After completing this study, the following artifacts and documents should exist:
 
 ### Artifacts (in `artifacts/llama3_*`)
-- `llama3_baseline_eval_96pair.csv` — Llama accuracy on matched cohort
+- `llama3_baseline_eval_96pair.csv` — currently misnamed in the repo; audit before reuse because the committed file is not a 96-pair baseline
 - `llama3_discovery_attn_full_n18_*.csv` — Attention discovery results
 - `llama3_layer_ablation_full_n18_*.csv` — Layer ablation scan
 - `llama3_trace_resid_pre*_n18_*.csv` — Residual direction tracing

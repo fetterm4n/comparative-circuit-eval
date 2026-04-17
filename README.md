@@ -33,7 +33,9 @@ The strongest current baseline failure mode is `Invoke-WebRequest` alias substit
 
 ## Comparative Circuit Study: Foundation-Sec-8B vs. Llama-3.1-8B-Instruct
 
-A comparative mechanistic interpretability study is now underway to determine whether the identified circuit is a product of cybersecurity-domain fine-tuning or a general property of the underlying Llama-3.1-8B architecture.
+A corrected like-for-like Llama rerun has now been completed under the same raw classifier prompt used in `mech-interp-circuit-validation`.
+
+Current result: no strict apples-to-apples Llama condition clears the baseline gate. On the validated 96-pair Foundation-Sec cohort, Llama-3.1-8B-Instruct reaches `51.0%` accuracy (`98/192`) with the raw prompt and `67.2%` accuracy (`129/192`) when that same prompt is merely wrapped in the Llama chat template. The repo should therefore not treat the earlier chat-template Llama MI artifacts as a matched-condition comparison.
 
 **Central question**: Is the circuit `L0H11 → L12H15/L12H5/L12H4/L12H28` specific to Foundation-Sec-8B's security training, or does it reflect a general inductive bias present in the base Llama-3.1-8B-Instruct model?
 
@@ -49,16 +51,16 @@ Foundation-Sec-8B was created by continued pretraining of `meta-llama/Llama-3.1-
 
 | Phase | Description | Status |
 |---|---|---|
-| 0 | Classification task setup — prompt design and baseline accuracy check | Pending |
-| 1 | Circuit discovery — attention head ranking, layer ablation, residual direction tracing | Pending |
-| 2 | Causal validation — grouped path patching and head ablation on 96-pair cohort | Pending |
+| 0 | Classification task setup — rerun with the Foundation-Sec raw classifier prompt | Complete |
+| 1 | Circuit discovery — attention head ranking, layer ablation, residual direction tracing | Blocked for matched-condition comparison |
+| 2 | Causal validation — grouped path patching and head ablation on the validated 96-pair cohort or an explicitly documented safe subset of it | Blocked for matched-condition comparison |
 | 3 | Evasion benchmark — run identical two-tier benchmark on Llama, compare miss rates | Pending |
 
 ### Baseline comparison targets (Foundation-Sec-8B)
 
 | Metric | Foundation-Sec-8B | Llama-3.1-8B |
 |---|---|---|
-| Baseline accuracy on 96-pair cohort | 100% | TBD |
+| Baseline accuracy on validated 96-pair cohort | 100% | 51.0% raw, 67.2% raw+chat |
 | Early detector layer | Layer 0 (`L0H11`) | TBD |
 | Late writer layer | Layer 12 | TBD |
 | Minimal branch mean Δ logit diff | -3.156 | TBD |
@@ -69,7 +71,7 @@ Foundation-Sec-8B was created by continued pretraining of `meta-llama/Llama-3.1-
 | `realistic_v2` evasion misses | 4/46 | TBD |
 | Circuit survives evasion? | Yes (redistribution pattern) | TBD |
 
-See `llama3_comparison_plan.md` for the full pickup guide, CLI commands, go/no-go criteria, and interpretation framework.
+See `COMPARATIVE_FINDINGS.md` for the corrected rerun result and `llama3_comparison_plan.md` for the comparison workflow and audit notes.
 
 ## Repository Structure
 

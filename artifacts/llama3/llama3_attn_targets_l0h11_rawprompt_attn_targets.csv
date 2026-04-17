@@ -1,0 +1,541 @@
+rank,token_pos,token_str,token_id,attention_weight,pair_idx,script_label,pair_indicator,prompt_len_tokens
+0,40,' as',439,0.079443,3,malicious,DownloadFile,142
+1,132,"'"")\n'",1158,0.067803,3,malicious,DownloadFile,142
+2,118,"'"");'",5146,0.06206,3,malicious,DownloadFile,142
+3,108,"""',""",518,0.053716,3,malicious,DownloadFile,142
+4,82,'\n',198,0.041413,3,malicious,DownloadFile,142
+5,134,'`\n',4077,0.035486,3,malicious,DownloadFile,142
+6,1,'<|start_header_id|>',128006,0.028684,3,malicious,DownloadFile,142
+7,88,'.Web',6609,0.028407,3,malicious,DownloadFile,142
+8,0,'<|begin_of_text|>',128000,0.028313,3,malicious,DownloadFile,142
+9,89,'Client',3032,0.02354,3,malicious,DownloadFile,142
+10,140,'<|end_header_id|>',128007,0.019116,3,malicious,DownloadFile,142
+11,86,' System',744,0.017502,3,malicious,DownloadFile,142
+12,92,'File',1738,0.017081,3,malicious,DownloadFile,142
+13,84,'-',12,0.016029,3,malicious,DownloadFile,142
+14,35,'.',13,0.015914,3,malicious,DownloadFile,142
+0,338,"' ""$'",5312,0.039873,3,benign,DownloadFile,383
+1,99,'Get',1991,0.037976,3,benign,DownloadFile,383
+2,336,' /',611,0.028823,3,benign,DownloadFile,383
+3,371,'Management',23030,0.027981,3,benign,DownloadFile,383
+4,40,' as',439,0.0262,3,benign,DownloadFile,383
+5,330,'()\n\n',2892,0.023306,3,benign,DownloadFile,383
+6,375,'`\n',4077,0.020336,3,benign,DownloadFile,383
+7,362,"'""\n'",702,0.017568,3,benign,DownloadFile,383
+8,275,'()\n',746,0.017196,3,benign,DownloadFile,383
+9,82,'\n',198,0.015883,3,benign,DownloadFile,383
+10,367,'-P',9483,0.015665,3,benign,DownloadFile,383
+11,308,'.Web',6609,0.015376,3,benign,DownloadFile,383
+12,166,'.com',916,0.014363,3,benign,DownloadFile,383
+13,251,'Request',1939,0.014245,3,benign,DownloadFile,383
+14,324,'Filename',21422,0.014169,3,benign,DownloadFile,383
+0,40,' as',439,0.075068,4,malicious,DownloadFile,139
+1,129,"'"")\n'",1158,0.06674,4,malicious,DownloadFile,139
+2,115,"'"");'",5146,0.061057,4,malicious,DownloadFile,139
+3,105,"""',""",518,0.05287,4,malicious,DownloadFile,139
+4,82,'\n',198,0.045274,4,malicious,DownloadFile,139
+5,131,'`\n',4077,0.034921,4,malicious,DownloadFile,139
+6,88,'.Web',6609,0.031098,4,malicious,DownloadFile,139
+7,89,'Client',3032,0.029637,4,malicious,DownloadFile,139
+8,1,'<|start_header_id|>',128006,0.028861,4,malicious,DownloadFile,139
+9,0,'<|begin_of_text|>',128000,0.028701,4,malicious,DownloadFile,139
+10,137,'<|end_header_id|>',128007,0.018825,4,malicious,DownloadFile,139
+11,127,'86',4218,0.018565,4,malicious,DownloadFile,139
+12,92,'File',1738,0.017872,4,malicious,DownloadFile,139
+13,86,' System',744,0.015614,4,malicious,DownloadFile,139
+14,45,' /',611,0.01549,4,malicious,DownloadFile,139
+0,338,"' ""$'",5312,0.039873,4,benign,DownloadFile,383
+1,99,'Get',1991,0.037976,4,benign,DownloadFile,383
+2,336,' /',611,0.028823,4,benign,DownloadFile,383
+3,371,'Management',23030,0.027981,4,benign,DownloadFile,383
+4,40,' as',439,0.0262,4,benign,DownloadFile,383
+5,330,'()\n\n',2892,0.023306,4,benign,DownloadFile,383
+6,375,'`\n',4077,0.020336,4,benign,DownloadFile,383
+7,362,"'""\n'",702,0.017568,4,benign,DownloadFile,383
+8,275,'()\n',746,0.017196,4,benign,DownloadFile,383
+9,82,'\n',198,0.015883,4,benign,DownloadFile,383
+10,367,'-P',9483,0.015665,4,benign,DownloadFile,383
+11,308,'.Web',6609,0.015376,4,benign,DownloadFile,383
+12,166,'.com',916,0.014363,4,benign,DownloadFile,383
+13,251,'Request',1939,0.014245,4,benign,DownloadFile,383
+14,324,'Filename',21422,0.014169,4,benign,DownloadFile,383
+0,40,' as',439,0.079672,5,malicious,DownloadFile,141
+1,131,"'"")\n'",1158,0.067478,5,malicious,DownloadFile,141
+2,116,"'"");'",5146,0.063548,5,malicious,DownloadFile,141
+3,105,"""',""",518,0.058212,5,malicious,DownloadFile,141
+4,82,'\n',198,0.041602,5,malicious,DownloadFile,141
+5,133,'`\n',4077,0.035288,5,malicious,DownloadFile,141
+6,1,'<|start_header_id|>',128006,0.028802,5,malicious,DownloadFile,141
+7,0,'<|begin_of_text|>',128000,0.028536,5,malicious,DownloadFile,141
+8,88,'.Web',6609,0.02714,5,malicious,DownloadFile,141
+9,89,'Client',3032,0.024352,5,malicious,DownloadFile,141
+10,139,'<|end_header_id|>',128007,0.019019,5,malicious,DownloadFile,141
+11,92,'File',1738,0.017415,5,malicious,DownloadFile,141
+12,84,'-',12,0.017296,5,malicious,DownloadFile,141
+13,127,'1',16,0.017103,5,malicious,DownloadFile,141
+14,86,' System',744,0.0171,5,malicious,DownloadFile,141
+0,338,"' ""$'",5312,0.039873,5,benign,DownloadFile,383
+1,99,'Get',1991,0.037976,5,benign,DownloadFile,383
+2,336,' /',611,0.028823,5,benign,DownloadFile,383
+3,371,'Management',23030,0.027981,5,benign,DownloadFile,383
+4,40,' as',439,0.0262,5,benign,DownloadFile,383
+5,330,'()\n\n',2892,0.023306,5,benign,DownloadFile,383
+6,375,'`\n',4077,0.020336,5,benign,DownloadFile,383
+7,362,"'""\n'",702,0.017568,5,benign,DownloadFile,383
+8,275,'()\n',746,0.017196,5,benign,DownloadFile,383
+9,82,'\n',198,0.015883,5,benign,DownloadFile,383
+10,367,'-P',9483,0.015665,5,benign,DownloadFile,383
+11,308,'.Web',6609,0.015376,5,benign,DownloadFile,383
+12,166,'.com',916,0.014363,5,benign,DownloadFile,383
+13,251,'Request',1939,0.014245,5,benign,DownloadFile,383
+14,324,'Filename',21422,0.014169,5,benign,DownloadFile,383
+0,40,' as',439,0.079672,6,malicious,DownloadFile,141
+1,131,"'"")\n'",1158,0.067478,6,malicious,DownloadFile,141
+2,116,"'"");'",5146,0.063548,6,malicious,DownloadFile,141
+3,105,"""',""",518,0.058212,6,malicious,DownloadFile,141
+4,82,'\n',198,0.041602,6,malicious,DownloadFile,141
+5,133,'`\n',4077,0.035288,6,malicious,DownloadFile,141
+6,1,'<|start_header_id|>',128006,0.028802,6,malicious,DownloadFile,141
+7,0,'<|begin_of_text|>',128000,0.028536,6,malicious,DownloadFile,141
+8,88,'.Web',6609,0.02714,6,malicious,DownloadFile,141
+9,89,'Client',3032,0.024352,6,malicious,DownloadFile,141
+10,139,'<|end_header_id|>',128007,0.019019,6,malicious,DownloadFile,141
+11,92,'File',1738,0.017415,6,malicious,DownloadFile,141
+12,84,'-',12,0.017296,6,malicious,DownloadFile,141
+13,127,'1',16,0.017103,6,malicious,DownloadFile,141
+14,86,' System',744,0.0171,6,malicious,DownloadFile,141
+0,338,"' ""$'",5312,0.039873,6,benign,DownloadFile,383
+1,99,'Get',1991,0.037976,6,benign,DownloadFile,383
+2,336,' /',611,0.028823,6,benign,DownloadFile,383
+3,371,'Management',23030,0.027981,6,benign,DownloadFile,383
+4,40,' as',439,0.0262,6,benign,DownloadFile,383
+5,330,'()\n\n',2892,0.023306,6,benign,DownloadFile,383
+6,375,'`\n',4077,0.020336,6,benign,DownloadFile,383
+7,362,"'""\n'",702,0.017568,6,benign,DownloadFile,383
+8,275,'()\n',746,0.017196,6,benign,DownloadFile,383
+9,82,'\n',198,0.015883,6,benign,DownloadFile,383
+10,367,'-P',9483,0.015665,6,benign,DownloadFile,383
+11,308,'.Web',6609,0.015376,6,benign,DownloadFile,383
+12,166,'.com',916,0.014363,6,benign,DownloadFile,383
+13,251,'Request',1939,0.014245,6,benign,DownloadFile,383
+14,324,'Filename',21422,0.014169,6,benign,DownloadFile,383
+0,40,' as',439,0.079672,7,malicious,DownloadFile,141
+1,131,"'"")\n'",1158,0.067478,7,malicious,DownloadFile,141
+2,116,"'"");'",5146,0.063548,7,malicious,DownloadFile,141
+3,105,"""',""",518,0.058212,7,malicious,DownloadFile,141
+4,82,'\n',198,0.041602,7,malicious,DownloadFile,141
+5,133,'`\n',4077,0.035288,7,malicious,DownloadFile,141
+6,1,'<|start_header_id|>',128006,0.028802,7,malicious,DownloadFile,141
+7,0,'<|begin_of_text|>',128000,0.028536,7,malicious,DownloadFile,141
+8,88,'.Web',6609,0.02714,7,malicious,DownloadFile,141
+9,89,'Client',3032,0.024352,7,malicious,DownloadFile,141
+10,139,'<|end_header_id|>',128007,0.019019,7,malicious,DownloadFile,141
+11,92,'File',1738,0.017415,7,malicious,DownloadFile,141
+12,84,'-',12,0.017296,7,malicious,DownloadFile,141
+13,127,'1',16,0.017103,7,malicious,DownloadFile,141
+14,86,' System',744,0.0171,7,malicious,DownloadFile,141
+0,338,"' ""$'",5312,0.039873,7,benign,DownloadFile,383
+1,99,'Get',1991,0.037976,7,benign,DownloadFile,383
+2,336,' /',611,0.028823,7,benign,DownloadFile,383
+3,371,'Management',23030,0.027981,7,benign,DownloadFile,383
+4,40,' as',439,0.0262,7,benign,DownloadFile,383
+5,330,'()\n\n',2892,0.023306,7,benign,DownloadFile,383
+6,375,'`\n',4077,0.020336,7,benign,DownloadFile,383
+7,362,"'""\n'",702,0.017568,7,benign,DownloadFile,383
+8,275,'()\n',746,0.017196,7,benign,DownloadFile,383
+9,82,'\n',198,0.015883,7,benign,DownloadFile,383
+10,367,'-P',9483,0.015665,7,benign,DownloadFile,383
+11,308,'.Web',6609,0.015376,7,benign,DownloadFile,383
+12,166,'.com',916,0.014363,7,benign,DownloadFile,383
+13,251,'Request',1939,0.014245,7,benign,DownloadFile,383
+14,324,'Filename',21422,0.014169,7,benign,DownloadFile,383
+0,40,' as',439,0.080196,8,malicious,DownloadFile,141
+1,131,"'"")\n'",1158,0.067922,8,malicious,DownloadFile,141
+2,116,"'"");'",5146,0.063967,8,malicious,DownloadFile,141
+3,105,"""',""",518,0.058595,8,malicious,DownloadFile,141
+4,82,'\n',198,0.041876,8,malicious,DownloadFile,141
+5,133,'`\n',4077,0.035521,8,malicious,DownloadFile,141
+6,1,'<|start_header_id|>',128006,0.028992,8,malicious,DownloadFile,141
+7,0,'<|begin_of_text|>',128000,0.028724,8,malicious,DownloadFile,141
+8,88,'.Web',6609,0.027319,8,malicious,DownloadFile,141
+9,89,'Client',3032,0.024513,8,malicious,DownloadFile,141
+10,139,'<|end_header_id|>',128007,0.019145,8,malicious,DownloadFile,141
+11,92,'File',1738,0.01753,8,malicious,DownloadFile,141
+12,84,'-',12,0.01741,8,malicious,DownloadFile,141
+13,86,' System',744,0.017213,8,malicious,DownloadFile,141
+14,35,'.',13,0.015903,8,malicious,DownloadFile,141
+0,338,"' ""$'",5312,0.039873,8,benign,DownloadFile,383
+1,99,'Get',1991,0.037976,8,benign,DownloadFile,383
+2,336,' /',611,0.028823,8,benign,DownloadFile,383
+3,371,'Management',23030,0.027981,8,benign,DownloadFile,383
+4,40,' as',439,0.0262,8,benign,DownloadFile,383
+5,330,'()\n\n',2892,0.023306,8,benign,DownloadFile,383
+6,375,'`\n',4077,0.020336,8,benign,DownloadFile,383
+7,362,"'""\n'",702,0.017568,8,benign,DownloadFile,383
+8,275,'()\n',746,0.017196,8,benign,DownloadFile,383
+9,82,'\n',198,0.015883,8,benign,DownloadFile,383
+10,367,'-P',9483,0.015665,8,benign,DownloadFile,383
+11,308,'.Web',6609,0.015376,8,benign,DownloadFile,383
+12,166,'.com',916,0.014363,8,benign,DownloadFile,383
+13,251,'Request',1939,0.014245,8,benign,DownloadFile,383
+14,324,'Filename',21422,0.014169,8,benign,DownloadFile,383
+0,40,' as',439,0.078605,9,malicious,DownloadFile,141
+1,131,"'"")\n'",1158,0.066574,9,malicious,DownloadFile,141
+2,116,"'"");'",5146,0.062697,9,malicious,DownloadFile,141
+3,105,"""',""",518,0.057432,9,malicious,DownloadFile,141
+4,82,'\n',198,0.041045,9,malicious,DownloadFile,141
+5,133,'`\n',4077,0.034816,9,malicious,DownloadFile,141
+6,1,'<|start_header_id|>',128006,0.028416,9,malicious,DownloadFile,141
+7,0,'<|begin_of_text|>',128000,0.028154,9,malicious,DownloadFile,141
+8,127,'x',87,0.027769,9,malicious,DownloadFile,141
+9,88,'.Web',6609,0.026777,9,malicious,DownloadFile,141
+10,89,'Client',3032,0.024026,9,malicious,DownloadFile,141
+11,112,'x',87,0.021326,9,malicious,DownloadFile,141
+12,139,'<|end_header_id|>',128007,0.018765,9,malicious,DownloadFile,141
+13,92,'File',1738,0.017182,9,malicious,DownloadFile,141
+14,84,'-',12,0.017065,9,malicious,DownloadFile,141
+0,338,"' ""$'",5312,0.039873,9,benign,DownloadFile,383
+1,99,'Get',1991,0.037976,9,benign,DownloadFile,383
+2,336,' /',611,0.028823,9,benign,DownloadFile,383
+3,371,'Management',23030,0.027981,9,benign,DownloadFile,383
+4,40,' as',439,0.0262,9,benign,DownloadFile,383
+5,330,'()\n\n',2892,0.023306,9,benign,DownloadFile,383
+6,375,'`\n',4077,0.020336,9,benign,DownloadFile,383
+7,362,"'""\n'",702,0.017568,9,benign,DownloadFile,383
+8,275,'()\n',746,0.017196,9,benign,DownloadFile,383
+9,82,'\n',198,0.015883,9,benign,DownloadFile,383
+10,367,'-P',9483,0.015665,9,benign,DownloadFile,383
+11,308,'.Web',6609,0.015376,9,benign,DownloadFile,383
+12,166,'.com',916,0.014363,9,benign,DownloadFile,383
+13,251,'Request',1939,0.014245,9,benign,DownloadFile,383
+14,324,'Filename',21422,0.014169,9,benign,DownloadFile,383
+0,40,' as',439,0.078605,10,malicious,DownloadFile,141
+1,131,"'"")\n'",1158,0.066574,10,malicious,DownloadFile,141
+2,116,"'"");'",5146,0.062697,10,malicious,DownloadFile,141
+3,105,"""',""",518,0.057432,10,malicious,DownloadFile,141
+4,82,'\n',198,0.041045,10,malicious,DownloadFile,141
+5,133,'`\n',4077,0.034816,10,malicious,DownloadFile,141
+6,1,'<|start_header_id|>',128006,0.028416,10,malicious,DownloadFile,141
+7,0,'<|begin_of_text|>',128000,0.028154,10,malicious,DownloadFile,141
+8,127,'x',87,0.027769,10,malicious,DownloadFile,141
+9,88,'.Web',6609,0.026777,10,malicious,DownloadFile,141
+10,89,'Client',3032,0.024026,10,malicious,DownloadFile,141
+11,112,'x',87,0.021326,10,malicious,DownloadFile,141
+12,139,'<|end_header_id|>',128007,0.018765,10,malicious,DownloadFile,141
+13,92,'File',1738,0.017182,10,malicious,DownloadFile,141
+14,84,'-',12,0.017065,10,malicious,DownloadFile,141
+0,338,"' ""$'",5312,0.039873,10,benign,DownloadFile,383
+1,99,'Get',1991,0.037976,10,benign,DownloadFile,383
+2,336,' /',611,0.028823,10,benign,DownloadFile,383
+3,371,'Management',23030,0.027981,10,benign,DownloadFile,383
+4,40,' as',439,0.0262,10,benign,DownloadFile,383
+5,330,'()\n\n',2892,0.023306,10,benign,DownloadFile,383
+6,375,'`\n',4077,0.020336,10,benign,DownloadFile,383
+7,362,"'""\n'",702,0.017568,10,benign,DownloadFile,383
+8,275,'()\n',746,0.017196,10,benign,DownloadFile,383
+9,82,'\n',198,0.015883,10,benign,DownloadFile,383
+10,367,'-P',9483,0.015665,10,benign,DownloadFile,383
+11,308,'.Web',6609,0.015376,10,benign,DownloadFile,383
+12,166,'.com',916,0.014363,10,benign,DownloadFile,383
+13,251,'Request',1939,0.014245,10,benign,DownloadFile,383
+14,324,'Filename',21422,0.014169,10,benign,DownloadFile,383
+0,40,' as',439,0.078605,11,malicious,DownloadFile,141
+1,131,"'"")\n'",1158,0.066574,11,malicious,DownloadFile,141
+2,116,"'"");'",5146,0.062697,11,malicious,DownloadFile,141
+3,105,"""',""",518,0.057432,11,malicious,DownloadFile,141
+4,82,'\n',198,0.041045,11,malicious,DownloadFile,141
+5,133,'`\n',4077,0.034816,11,malicious,DownloadFile,141
+6,1,'<|start_header_id|>',128006,0.028416,11,malicious,DownloadFile,141
+7,0,'<|begin_of_text|>',128000,0.028154,11,malicious,DownloadFile,141
+8,127,'x',87,0.027769,11,malicious,DownloadFile,141
+9,88,'.Web',6609,0.026777,11,malicious,DownloadFile,141
+10,89,'Client',3032,0.024026,11,malicious,DownloadFile,141
+11,112,'x',87,0.021326,11,malicious,DownloadFile,141
+12,139,'<|end_header_id|>',128007,0.018765,11,malicious,DownloadFile,141
+13,92,'File',1738,0.017182,11,malicious,DownloadFile,141
+14,84,'-',12,0.017065,11,malicious,DownloadFile,141
+0,338,"' ""$'",5312,0.039873,11,benign,DownloadFile,383
+1,99,'Get',1991,0.037976,11,benign,DownloadFile,383
+2,336,' /',611,0.028823,11,benign,DownloadFile,383
+3,371,'Management',23030,0.027981,11,benign,DownloadFile,383
+4,40,' as',439,0.0262,11,benign,DownloadFile,383
+5,330,'()\n\n',2892,0.023306,11,benign,DownloadFile,383
+6,375,'`\n',4077,0.020336,11,benign,DownloadFile,383
+7,362,"'""\n'",702,0.017568,11,benign,DownloadFile,383
+8,275,'()\n',746,0.017196,11,benign,DownloadFile,383
+9,82,'\n',198,0.015883,11,benign,DownloadFile,383
+10,367,'-P',9483,0.015665,11,benign,DownloadFile,383
+11,308,'.Web',6609,0.015376,11,benign,DownloadFile,383
+12,166,'.com',916,0.014363,11,benign,DownloadFile,383
+13,251,'Request',1939,0.014245,11,benign,DownloadFile,383
+14,324,'Filename',21422,0.014169,11,benign,DownloadFile,383
+0,40,' as',439,0.078265,12,malicious,DownloadFile,141
+1,131,"'"")\n'",1158,0.066287,12,malicious,DownloadFile,141
+2,116,"'"");'",5146,0.062426,12,malicious,DownloadFile,141
+3,105,"""',""",518,0.057184,12,malicious,DownloadFile,141
+4,82,'\n',198,0.040867,12,malicious,DownloadFile,141
+5,133,'`\n',4077,0.034665,12,malicious,DownloadFile,141
+6,1,'<|start_header_id|>',128006,0.028294,12,malicious,DownloadFile,141
+7,0,'<|begin_of_text|>',128000,0.028032,12,malicious,DownloadFile,141
+8,127,'2',17,0.02765,12,malicious,DownloadFile,141
+9,88,'.Web',6609,0.026661,12,malicious,DownloadFile,141
+10,89,'Client',3032,0.023922,12,malicious,DownloadFile,141
+11,112,'2',17,0.021234,12,malicious,DownloadFile,141
+12,139,'<|end_header_id|>',128007,0.018684,12,malicious,DownloadFile,141
+13,92,'File',1738,0.017108,12,malicious,DownloadFile,141
+14,84,'-',12,0.016991,12,malicious,DownloadFile,141
+0,338,"' ""$'",5312,0.039873,12,benign,DownloadFile,383
+1,99,'Get',1991,0.037976,12,benign,DownloadFile,383
+2,336,' /',611,0.028823,12,benign,DownloadFile,383
+3,371,'Management',23030,0.027981,12,benign,DownloadFile,383
+4,40,' as',439,0.0262,12,benign,DownloadFile,383
+5,330,'()\n\n',2892,0.023306,12,benign,DownloadFile,383
+6,375,'`\n',4077,0.020336,12,benign,DownloadFile,383
+7,362,"'""\n'",702,0.017568,12,benign,DownloadFile,383
+8,275,'()\n',746,0.017196,12,benign,DownloadFile,383
+9,82,'\n',198,0.015883,12,benign,DownloadFile,383
+10,367,'-P',9483,0.015665,12,benign,DownloadFile,383
+11,308,'.Web',6609,0.015376,12,benign,DownloadFile,383
+12,166,'.com',916,0.014363,12,benign,DownloadFile,383
+13,251,'Request',1939,0.014245,12,benign,DownloadFile,383
+14,324,'Filename',21422,0.014169,12,benign,DownloadFile,383
+0,40,' as',439,0.079493,13,malicious,DownloadFile,140
+1,130,"'"")\n'",1158,0.068326,13,malicious,DownloadFile,140
+2,116,"'"");'",5146,0.0625,13,malicious,DownloadFile,140
+3,106,"""',""",518,0.054096,13,malicious,DownloadFile,140
+4,82,'\n',198,0.044104,13,malicious,DownloadFile,140
+5,132,'`\n',4077,0.035739,13,malicious,DownloadFile,140
+6,1,'<|start_header_id|>',128006,0.029365,13,malicious,DownloadFile,140
+7,0,'<|begin_of_text|>',128000,0.029162,13,malicious,DownloadFile,140
+8,88,'.Web',6609,0.028927,13,malicious,DownloadFile,140
+9,89,'Client',3032,0.027531,13,malicious,DownloadFile,140
+10,138,'<|end_header_id|>',128007,0.01926,13,malicious,DownloadFile,140
+11,92,'File',1738,0.017977,13,malicious,DownloadFile,140
+12,84,'-',12,0.017295,13,malicious,DownloadFile,140
+13,86,' System',744,0.016596,13,malicious,DownloadFile,140
+14,35,'.',13,0.015557,13,malicious,DownloadFile,140
+0,338,"' ""$'",5312,0.039873,13,benign,DownloadFile,383
+1,99,'Get',1991,0.037976,13,benign,DownloadFile,383
+2,336,' /',611,0.028823,13,benign,DownloadFile,383
+3,371,'Management',23030,0.027981,13,benign,DownloadFile,383
+4,40,' as',439,0.0262,13,benign,DownloadFile,383
+5,330,'()\n\n',2892,0.023306,13,benign,DownloadFile,383
+6,375,'`\n',4077,0.020336,13,benign,DownloadFile,383
+7,362,"'""\n'",702,0.017568,13,benign,DownloadFile,383
+8,275,'()\n',746,0.017196,13,benign,DownloadFile,383
+9,82,'\n',198,0.015883,13,benign,DownloadFile,383
+10,367,'-P',9483,0.015665,13,benign,DownloadFile,383
+11,308,'.Web',6609,0.015376,13,benign,DownloadFile,383
+12,166,'.com',916,0.014363,13,benign,DownloadFile,383
+13,251,'Request',1939,0.014245,13,benign,DownloadFile,383
+14,324,'Filename',21422,0.014169,13,benign,DownloadFile,383
+0,40,' as',439,0.082674,14,malicious,DownloadFile,132
+1,122,"""'\n""",1270,0.062559,14,malicious,DownloadFile,132
+2,113,"""');""",4772,0.061874,14,malicious,DownloadFile,132
+3,108,"""','""",1882,0.05726,14,malicious,DownloadFile,132
+4,82,'\n',198,0.042788,14,malicious,DownloadFile,132
+5,88,'.Web',6609,0.034155,14,malicious,DownloadFile,132
+6,124,'`\n',4077,0.032705,14,malicious,DownloadFile,132
+7,89,'Client',3032,0.027576,14,malicious,DownloadFile,132
+8,0,'<|begin_of_text|>',128000,0.026877,14,malicious,DownloadFile,132
+9,1,'<|start_header_id|>',128006,0.026826,14,malicious,DownloadFile,132
+10,92,'File',1738,0.020028,14,malicious,DownloadFile,132
+11,130,'<|end_header_id|>',128007,0.017637,14,malicious,DownloadFile,132
+12,86,' System',744,0.017412,14,malicious,DownloadFile,132
+13,101,'/wp',31846,0.016448,14,malicious,DownloadFile,132
+14,100,'.za',86232,0.016415,14,malicious,DownloadFile,132
+0,338,"' ""$'",5312,0.039873,14,benign,DownloadFile,383
+1,99,'Get',1991,0.037976,14,benign,DownloadFile,383
+2,336,' /',611,0.028823,14,benign,DownloadFile,383
+3,371,'Management',23030,0.027981,14,benign,DownloadFile,383
+4,40,' as',439,0.0262,14,benign,DownloadFile,383
+5,330,'()\n\n',2892,0.023306,14,benign,DownloadFile,383
+6,375,'`\n',4077,0.020336,14,benign,DownloadFile,383
+7,362,"'""\n'",702,0.017568,14,benign,DownloadFile,383
+8,275,'()\n',746,0.017196,14,benign,DownloadFile,383
+9,82,'\n',198,0.015883,14,benign,DownloadFile,383
+10,367,'-P',9483,0.015665,14,benign,DownloadFile,383
+11,308,'.Web',6609,0.015376,14,benign,DownloadFile,383
+12,166,'.com',916,0.014363,14,benign,DownloadFile,383
+13,251,'Request',1939,0.014245,14,benign,DownloadFile,383
+14,324,'Filename',21422,0.014169,14,benign,DownloadFile,383
+0,40,' as',439,0.07171,15,malicious,DownloadFile,138
+1,128,"'"")\n'",1158,0.065341,15,malicious,DownloadFile,138
+2,106,"""',""",518,0.056512,15,malicious,DownloadFile,138
+3,115,"'"");'",5146,0.056388,15,malicious,DownloadFile,138
+4,82,'\n',198,0.045029,15,malicious,DownloadFile,138
+5,130,'`\n',4077,0.034196,15,malicious,DownloadFile,138
+6,88,'.Web',6609,0.032595,15,malicious,DownloadFile,138
+7,89,'Client',3032,0.03003,15,malicious,DownloadFile,138
+8,1,'<|start_header_id|>',128006,0.028367,15,malicious,DownloadFile,138
+9,0,'<|begin_of_text|>',128000,0.028261,15,malicious,DownloadFile,138
+10,127,'.exe',19963,0.021519,15,malicious,DownloadFile,138
+11,136,'<|end_header_id|>',128007,0.018426,15,malicious,DownloadFile,138
+12,92,'File',1738,0.017871,15,malicious,DownloadFile,138
+13,80,'powers',78404,0.015281,15,malicious,DownloadFile,138
+14,86,' System',744,0.015154,15,malicious,DownloadFile,138
+0,338,"' ""$'",5312,0.039873,15,benign,DownloadFile,383
+1,99,'Get',1991,0.037976,15,benign,DownloadFile,383
+2,336,' /',611,0.028823,15,benign,DownloadFile,383
+3,371,'Management',23030,0.027981,15,benign,DownloadFile,383
+4,40,' as',439,0.0262,15,benign,DownloadFile,383
+5,330,'()\n\n',2892,0.023306,15,benign,DownloadFile,383
+6,375,'`\n',4077,0.020336,15,benign,DownloadFile,383
+7,362,"'""\n'",702,0.017568,15,benign,DownloadFile,383
+8,275,'()\n',746,0.017196,15,benign,DownloadFile,383
+9,82,'\n',198,0.015883,15,benign,DownloadFile,383
+10,367,'-P',9483,0.015665,15,benign,DownloadFile,383
+11,308,'.Web',6609,0.015376,15,benign,DownloadFile,383
+12,166,'.com',916,0.014363,15,benign,DownloadFile,383
+13,251,'Request',1939,0.014245,15,benign,DownloadFile,383
+14,324,'Filename',21422,0.014169,15,benign,DownloadFile,383
+0,40,' as',439,0.073727,16,malicious,DownloadFile,137
+1,127,"'"")\n'",1158,0.066018,16,malicious,DownloadFile,137
+2,105,"""',""",518,0.057127,16,malicious,DownloadFile,137
+3,114,"'"");'",5146,0.057014,16,malicious,DownloadFile,137
+4,82,'\n',198,0.044315,16,malicious,DownloadFile,137
+5,129,'`\n',4077,0.034554,16,malicious,DownloadFile,137
+6,88,'.Web',6609,0.033327,16,malicious,DownloadFile,137
+7,89,'Client',3032,0.030211,16,malicious,DownloadFile,137
+8,1,'<|start_header_id|>',128006,0.028697,16,malicious,DownloadFile,137
+9,0,'<|begin_of_text|>',128000,0.028672,16,malicious,DownloadFile,137
+10,135,'<|end_header_id|>',128007,0.018623,16,malicious,DownloadFile,137
+11,92,'File',1738,0.018528,16,malicious,DownloadFile,137
+12,80,'powers',78404,0.016776,16,malicious,DownloadFile,137
+13,86,' System',744,0.015724,16,malicious,DownloadFile,137
+14,118,"' (""'",3573,0.014797,16,malicious,DownloadFile,137
+0,338,"' ""$'",5312,0.039873,16,benign,DownloadFile,383
+1,99,'Get',1991,0.037976,16,benign,DownloadFile,383
+2,336,' /',611,0.028823,16,benign,DownloadFile,383
+3,371,'Management',23030,0.027981,16,benign,DownloadFile,383
+4,40,' as',439,0.0262,16,benign,DownloadFile,383
+5,330,'()\n\n',2892,0.023306,16,benign,DownloadFile,383
+6,375,'`\n',4077,0.020336,16,benign,DownloadFile,383
+7,362,"'""\n'",702,0.017568,16,benign,DownloadFile,383
+8,275,'()\n',746,0.017196,16,benign,DownloadFile,383
+9,82,'\n',198,0.015883,16,benign,DownloadFile,383
+10,367,'-P',9483,0.015665,16,benign,DownloadFile,383
+11,308,'.Web',6609,0.015376,16,benign,DownloadFile,383
+12,166,'.com',916,0.014363,16,benign,DownloadFile,383
+13,251,'Request',1939,0.014245,16,benign,DownloadFile,383
+14,324,'Filename',21422,0.014169,16,benign,DownloadFile,383
+0,40,' as',439,0.079755,17,malicious,DownloadFile,140
+1,130,"'"")\n'",1158,0.068551,17,malicious,DownloadFile,140
+2,116,"'"");'",5146,0.062706,17,malicious,DownloadFile,140
+3,106,"""',""",518,0.054274,17,malicious,DownloadFile,140
+4,82,'\n',198,0.044249,17,malicious,DownloadFile,140
+5,132,'`\n',4077,0.035857,17,malicious,DownloadFile,140
+6,1,'<|start_header_id|>',128006,0.029461,17,malicious,DownloadFile,140
+7,0,'<|begin_of_text|>',128000,0.029258,17,malicious,DownloadFile,140
+8,88,'.Web',6609,0.029022,17,malicious,DownloadFile,140
+9,89,'Client',3032,0.027621,17,malicious,DownloadFile,140
+10,138,'<|end_header_id|>',128007,0.019323,17,malicious,DownloadFile,140
+11,99,'/i',16843,0.018896,17,malicious,DownloadFile,140
+12,92,'File',1738,0.018036,17,malicious,DownloadFile,140
+13,84,'-',12,0.017352,17,malicious,DownloadFile,140
+14,86,' System',744,0.016651,17,malicious,DownloadFile,140
+0,338,"' ""$'",5312,0.039873,17,benign,DownloadFile,383
+1,99,'Get',1991,0.037976,17,benign,DownloadFile,383
+2,336,' /',611,0.028823,17,benign,DownloadFile,383
+3,371,'Management',23030,0.027981,17,benign,DownloadFile,383
+4,40,' as',439,0.0262,17,benign,DownloadFile,383
+5,330,'()\n\n',2892,0.023306,17,benign,DownloadFile,383
+6,375,'`\n',4077,0.020336,17,benign,DownloadFile,383
+7,362,"'""\n'",702,0.017568,17,benign,DownloadFile,383
+8,275,'()\n',746,0.017196,17,benign,DownloadFile,383
+9,82,'\n',198,0.015883,17,benign,DownloadFile,383
+10,367,'-P',9483,0.015665,17,benign,DownloadFile,383
+11,308,'.Web',6609,0.015376,17,benign,DownloadFile,383
+12,166,'.com',916,0.014363,17,benign,DownloadFile,383
+13,251,'Request',1939,0.014245,17,benign,DownloadFile,383
+14,324,'Filename',21422,0.014169,17,benign,DownloadFile,383
+0,40,' as',439,0.074279,18,malicious,DownloadFile,138
+1,128,"'"")\n'",1158,0.067683,18,malicious,DownloadFile,138
+2,106,"""',""",518,0.058537,18,malicious,DownloadFile,138
+3,115,"'"");'",5146,0.058408,18,malicious,DownloadFile,138
+4,82,'\n',198,0.046643,18,malicious,DownloadFile,138
+5,130,'`\n',4077,0.035421,18,malicious,DownloadFile,138
+6,88,'.Web',6609,0.033763,18,malicious,DownloadFile,138
+7,89,'Client',3032,0.031106,18,malicious,DownloadFile,138
+8,1,'<|start_header_id|>',128006,0.029383,18,malicious,DownloadFile,138
+9,0,'<|begin_of_text|>',128000,0.029274,18,malicious,DownloadFile,138
+10,136,'<|end_header_id|>',128007,0.019086,18,malicious,DownloadFile,138
+11,92,'File',1738,0.018512,18,malicious,DownloadFile,138
+12,80,'powers',78404,0.015828,18,malicious,DownloadFile,138
+13,86,' System',744,0.015697,18,malicious,DownloadFile,138
+14,45,' /',611,0.015586,18,malicious,DownloadFile,138
+0,338,"' ""$'",5312,0.039873,18,benign,DownloadFile,383
+1,99,'Get',1991,0.037976,18,benign,DownloadFile,383
+2,336,' /',611,0.028823,18,benign,DownloadFile,383
+3,371,'Management',23030,0.027981,18,benign,DownloadFile,383
+4,40,' as',439,0.0262,18,benign,DownloadFile,383
+5,330,'()\n\n',2892,0.023306,18,benign,DownloadFile,383
+6,375,'`\n',4077,0.020336,18,benign,DownloadFile,383
+7,362,"'""\n'",702,0.017568,18,benign,DownloadFile,383
+8,275,'()\n',746,0.017196,18,benign,DownloadFile,383
+9,82,'\n',198,0.015883,18,benign,DownloadFile,383
+10,367,'-P',9483,0.015665,18,benign,DownloadFile,383
+11,308,'.Web',6609,0.015376,18,benign,DownloadFile,383
+12,166,'.com',916,0.014363,18,benign,DownloadFile,383
+13,251,'Request',1939,0.014245,18,benign,DownloadFile,383
+14,324,'Filename',21422,0.014169,18,benign,DownloadFile,383
+0,40,' as',439,0.079816,19,malicious,DownloadFile,140
+1,130,"'"")\n'",1158,0.068603,19,malicious,DownloadFile,140
+2,116,"'"");'",5146,0.062754,19,malicious,DownloadFile,140
+3,106,"""',""",518,0.054315,19,malicious,DownloadFile,140
+4,82,'\n',198,0.044283,19,malicious,DownloadFile,140
+5,132,'`\n',4077,0.035884,19,malicious,DownloadFile,140
+6,1,'<|start_header_id|>',128006,0.029484,19,malicious,DownloadFile,140
+7,0,'<|begin_of_text|>',128000,0.02928,19,malicious,DownloadFile,140
+8,88,'.Web',6609,0.029044,19,malicious,DownloadFile,140
+9,89,'Client',3032,0.027643,19,malicious,DownloadFile,140
+10,138,'<|end_header_id|>',128007,0.019338,19,malicious,DownloadFile,140
+11,99,'/b',3554,0.01891,19,malicious,DownloadFile,140
+12,92,'File',1738,0.01805,19,malicious,DownloadFile,140
+13,84,'-',12,0.017365,19,malicious,DownloadFile,140
+14,86,' System',744,0.016663,19,malicious,DownloadFile,140
+0,338,"' ""$'",5312,0.039873,19,benign,DownloadFile,383
+1,99,'Get',1991,0.037976,19,benign,DownloadFile,383
+2,336,' /',611,0.028823,19,benign,DownloadFile,383
+3,371,'Management',23030,0.027981,19,benign,DownloadFile,383
+4,40,' as',439,0.0262,19,benign,DownloadFile,383
+5,330,'()\n\n',2892,0.023306,19,benign,DownloadFile,383
+6,375,'`\n',4077,0.020336,19,benign,DownloadFile,383
+7,362,"'""\n'",702,0.017568,19,benign,DownloadFile,383
+8,275,'()\n',746,0.017196,19,benign,DownloadFile,383
+9,82,'\n',198,0.015883,19,benign,DownloadFile,383
+10,367,'-P',9483,0.015665,19,benign,DownloadFile,383
+11,308,'.Web',6609,0.015376,19,benign,DownloadFile,383
+12,166,'.com',916,0.014363,19,benign,DownloadFile,383
+13,251,'Request',1939,0.014245,19,benign,DownloadFile,383
+14,324,'Filename',21422,0.014169,19,benign,DownloadFile,383
+0,40,' as',439,0.07934,20,malicious,DownloadFile,140
+1,130,"'"")\n'",1158,0.068194,20,malicious,DownloadFile,140
+2,116,"'"");'",5146,0.06238,20,malicious,DownloadFile,140
+3,106,"""',""",518,0.053991,20,malicious,DownloadFile,140
+4,82,'\n',198,0.044019,20,malicious,DownloadFile,140
+5,132,'`\n',4077,0.03567,20,malicious,DownloadFile,140
+6,1,'<|start_header_id|>',128006,0.029308,20,malicious,DownloadFile,140
+7,0,'<|begin_of_text|>',128000,0.029105,20,malicious,DownloadFile,140
+8,88,'.Web',6609,0.028871,20,malicious,DownloadFile,140
+9,89,'Client',3032,0.027478,20,malicious,DownloadFile,140
+10,138,'<|end_header_id|>',128007,0.019222,20,malicious,DownloadFile,140
+11,99,'/p',4420,0.018798,20,malicious,DownloadFile,140
+12,92,'File',1738,0.017942,20,malicious,DownloadFile,140
+13,84,'-',12,0.017261,20,malicious,DownloadFile,140
+14,86,' System',744,0.016564,20,malicious,DownloadFile,140
+0,338,"' ""$'",5312,0.039873,20,benign,DownloadFile,383
+1,99,'Get',1991,0.037976,20,benign,DownloadFile,383
+2,336,' /',611,0.028823,20,benign,DownloadFile,383
+3,371,'Management',23030,0.027981,20,benign,DownloadFile,383
+4,40,' as',439,0.0262,20,benign,DownloadFile,383
+5,330,'()\n\n',2892,0.023306,20,benign,DownloadFile,383
+6,375,'`\n',4077,0.020336,20,benign,DownloadFile,383
+7,362,"'""\n'",702,0.017568,20,benign,DownloadFile,383
+8,275,'()\n',746,0.017196,20,benign,DownloadFile,383
+9,82,'\n',198,0.015883,20,benign,DownloadFile,383
+10,367,'-P',9483,0.015665,20,benign,DownloadFile,383
+11,308,'.Web',6609,0.015376,20,benign,DownloadFile,383
+12,166,'.com',916,0.014363,20,benign,DownloadFile,383
+13,251,'Request',1939,0.014245,20,benign,DownloadFile,383
+14,324,'Filename',21422,0.014169,20,benign,DownloadFile,383

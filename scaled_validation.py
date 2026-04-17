@@ -245,7 +245,19 @@ def load_dataset(
     return pd.DataFrame(rows), summary
 
 
-_CLASSIFIER_SYSTEM = (
+_CLASSIFIER_PROMPT_PREFIX = (
+    "You are a security classifier. Label the given PowerShell as:\n"
+    "ALLOW = benign / administrative / normal usage\n"
+    "BLOCK = malicious (downloading, execution, evasion, credential theft, etc.)\n\n"
+    "Return ONLY one word: ALLOW or BLOCK.\n\n"
+    "PowerShell:\n"
+    "```powershell\n"
+)
+_CLASSIFIER_PROMPT_SUFFIX = "\n```\nAnswer:"
+
+# Intent-focused variant used with --system-prompt-variant=full.
+# Adds explicit carve-outs for Base64/IEX/downloads in legitimate tooling.
+_CLASSIFIER_INTENT_PREFIX = (
     "You are an expert security analyst classifying PowerShell scripts.\n"
     "Classify the PRIMARY INTENT of the script.\n\n"
     "ALLOW = the script's main purpose is administrative, developmental, or legitimate utility work, "
@@ -256,37 +268,32 @@ _CLASSIFIER_SYSTEM = (
     "obfuscation to evade security tools, or exploitation of vulnerabilities.\n\n"
     "Key rule: Base64 encoding, Invoke-Expression, and web downloads are ALLOW when used as part of "
     "legitimate administrative or development tooling. Only BLOCK when combined with clearly malicious intent.\n\n"
-    "Return ONLY one word: ALLOW or BLOCK."
-)
-
-_CLASSIFIER_USER_TEMPLATE = (
+    "Return ONLY one word: ALLOW or BLOCK.\n\n"
     "PowerShell:\n"
     "```powershell\n"
-    "{ps_script}\n"
-    "```\n"
-    "Answer:"
 )
 
-
-# Set at startup by --use-chat-template flag; used by make_prompt globally
+# Set at startup by --use-chat-template / --system-prompt-variant flags; used by make_prompt globally
 _chat_tokenizer = None
 _USE_CHAT_TEMPLATE = False
+_SYSTEM_PROMPT_VARIANT = "raw"  # "raw" | "full"
 
 
 def make_prompt(ps_script: str) -> str:
+    prefix = _CLASSIFIER_INTENT_PREFIX if _SYSTEM_PROMPT_VARIANT == "full" else _CLASSIFIER_PROMPT_PREFIX
+    prompt = prefix + ps_script + _CLASSIFIER_PROMPT_SUFFIX
     if _chat_tokenizer is not None:
         return _chat_tokenizer.apply_chat_template(
-            make_chat_messages(ps_script),
+            make_chat_messages(prompt),
             tokenize=False,
             add_generation_prompt=True,
         )
-    return _CLASSIFIER_SYSTEM + "\n\n" + _CLASSIFIER_USER_TEMPLATE.format(ps_script=ps_script)
+    return prompt
 
 
-def make_chat_messages(ps_script: str) -> list:
+def make_chat_messages(prompt: str) -> list:
     return [
-        {"role": "system", "content": _CLASSIFIER_SYSTEM},
-        {"role": "user", "content": _CLASSIFIER_USER_TEMPLATE.format(ps_script=ps_script)},
+        {"role": "user", "content": prompt},
     ]
 
 
@@ -387,6 +394,35 @@ def compute_attention_scores(
 
     result = pd.DataFrame(rows)
     return result.sort_values("attention_delta", ascending=False).head(topk).reset_index(drop=True)
+
+
+def get_top_attended_tokens(
+    cache,
+    tokenizer,
+    prompt: str,
+    layer: int,
+    head: int,
+    topk: int = 10,
+    query_pos: int = -1,
+) -> List[Dict[str, object]]:
+    """Return the top-K tokens most attended to by a specific head at query_pos."""
+    pattern = cache[f"blocks.{layer}.attn.hook_pattern"][0]  # [heads, seq, seq]
+    attn_row = pattern[head, query_pos, :].detach().cpu()  # [seq]
+    topk_vals, topk_idxs = torch.topk(attn_row, k=min(topk, attn_row.shape[0]))
+    encoded = tokenizer(prompt, add_special_tokens=False, return_offsets_mapping=True)
+    token_ids = encoded["input_ids"]
+    rows = []
+    for rank, (idx, val) in enumerate(zip(topk_idxs.tolist(), topk_vals.tolist())):
+        token_id = token_ids[idx] if idx < len(token_ids) else None
+        token_str = tokenizer.decode([token_id]) if token_id is not None else ""
+        rows.append({
+            "rank": rank,
+            "token_pos": idx,
+            "token_str": repr(token_str),
+            "token_id": token_id,
+            "attention_weight": round(val, 6),
+        })
+    return rows
 
 
 def require_transformer_lens() -> None:
@@ -3851,6 +3887,8 @@ def cmd_batch_discover_heads(args: argparse.Namespace) -> int:
 
     pair_rows: List[Dict[str, object]] = []
     head_rows: List[Dict[str, object]] = []
+    target_head_rows: List[Dict[str, object]] = []
+    target_layer, target_head_idx = args.target_head if args.target_head else (None, None)
 
     for fallback_idx, (benign_row, malicious_row) in enumerate(pairs, start=1):
         pair_idx = resolve_pair_idx(benign_row, malicious_row, fallback_idx=fallback_idx)
@@ -3876,6 +3914,23 @@ def cmd_batch_discover_heads(args: argparse.Namespace) -> int:
         head_scores["malicious_filename"] = malicious_row["filename"]
         head_scores["pair_indicator"] = benign_row.get("pair_indicator", malicious_row.get("pair_indicator"))
         head_rows.extend(head_scores.to_dict(orient="records"))
+
+        if target_layer is not None:
+            for script_label, prompt, cache in [
+                ("malicious", malicious_prompt, malicious_cache),
+                ("benign", benign_prompt, benign_cache),
+            ]:
+                top_tokens = get_top_attended_tokens(
+                    cache, tokenizer, prompt,
+                    layer=target_layer, head=target_head_idx,
+                    topk=args.target_head_topk,
+                )
+                for row in top_tokens:
+                    row["pair_idx"] = pair_idx
+                    row["script_label"] = script_label
+                    row["pair_indicator"] = benign_row.get("pair_indicator", malicious_row.get("pair_indicator"))
+                    row["prompt_len_tokens"] = len(tokenizer(prompt, add_special_tokens=False)["input_ids"])
+                    target_head_rows.append(row)
 
         pair_rows.append(
             {
@@ -3919,16 +3974,24 @@ def cmd_batch_discover_heads(args: argparse.Namespace) -> int:
     pair_df.to_csv(pairs_path, index=False)
     head_df.to_csv(per_pair_path, index=False)
     agg_df.to_csv(summary_path, index=False)
+
+    target_head_csv_path = None
+    if target_head_rows:
+        target_head_csv_path = output_prefix.with_name(output_prefix.name + "_attn_targets.csv")
+        pd.DataFrame(target_head_rows).to_csv(target_head_csv_path, index=False)
+
     write_json(
         metadata_path,
         {
             "pairs_csv": str(pairs_path),
             "per_pair_csv": str(per_pair_path),
             "summary_csv": str(summary_path),
+            "target_head_csv": str(target_head_csv_path) if target_head_csv_path else None,
             "num_pairs": len(pairs),
             "first_n_layers": args.first_n_layers,
             "layer_filter": layer_filter,
             "topk": args.topk,
+            "target_head": list(args.target_head) if args.target_head else None,
             "device": device,
             "template_name": args.template_name,
         },
@@ -6391,7 +6454,21 @@ def build_parser() -> argparse.ArgumentParser:
         "--use-chat-template",
         action="store_true",
         default=False,
-        help="Wrap all prompts with tokenizer.apply_chat_template (required for instruct models like Llama-3.1).",
+        help=(
+            "Wrap the raw Foundation-Sec-style classifier prompt with tokenizer.apply_chat_template. "
+            "Optional for instruct models; this changes the evaluation condition relative to the "
+            "Foundation-Sec baseline."
+        ),
+    )
+    parser.add_argument(
+        "--system-prompt-variant",
+        choices=["raw", "full"],
+        default="raw",
+        help=(
+            "Prompt variant. 'raw' = minimal rule-based classifier (Foundation-Sec default). "
+            "'full' = intent-focused prompt with explicit Base64/IEX/download carve-outs for "
+            "Llama-3.1-8B-Instruct compatibility."
+        ),
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
@@ -6690,6 +6767,14 @@ def build_parser() -> argparse.ArgumentParser:
     batch_discover_parser.add_argument("--layer-end", type=int, default=None)
     batch_discover_parser.add_argument("--topk", type=int, default=5)
     batch_discover_parser.add_argument("--allow-zero-indicator-malicious", action="store_true")
+    batch_discover_parser.add_argument(
+        "--target-head",
+        type=lambda s: tuple(int(x) for x in s.split(".")),
+        default=None,
+        metavar="LAYER.HEAD",
+        help="If set, dump top attended tokens for this head per pair to *_attn_targets.csv.",
+    )
+    batch_discover_parser.add_argument("--target-head-topk", type=int, default=10)
     batch_discover_parser.add_argument(
         "--output-prefix",
         type=Path,
@@ -7073,11 +7158,12 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
-    global _USE_CHAT_TEMPLATE
+    global _USE_CHAT_TEMPLATE, _SYSTEM_PROMPT_VARIANT
     parser = build_parser()
     args = parser.parse_args(argv)
     if args.use_chat_template:
         _USE_CHAT_TEMPLATE = True
+    _SYSTEM_PROMPT_VARIANT = args.system_prompt_variant
     return int(args.func(args))
 
 

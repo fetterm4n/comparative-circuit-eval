@@ -1,0 +1,37 @@
+{
+  "ablation_per_pair_csv": "artifacts/foundation_sec/fs_path_patching_top5_n74_ablation_per_pair.csv",
+  "ablation_summary_csv": "artifacts/foundation_sec/fs_path_patching_top5_n74_ablation_summary.csv",
+  "device": "cuda",
+  "first_n_layers": 32,
+  "heads": [
+    {
+      "head": 11,
+      "layer": 0
+    },
+    {
+      "head": 15,
+      "layer": 12
+    },
+    {
+      "head": 5,
+      "layer": 12
+    },
+    {
+      "head": 4,
+      "layer": 12
+    },
+    {
+      "head": 2,
+      "layer": 12
+    },
+    {
+      "head": 28,
+      "layer": 12
+    }
+  ],
+  "num_pairs": 74,
+  "patch_per_pair_csv": "artifacts/foundation_sec/fs_path_patching_top5_n74_patch_per_pair.csv",
+  "patch_summary_csv": "artifacts/foundation_sec/fs_path_patching_top5_n74_patch_summary.csv",
+  "reload_model_per_pair": false,
+  "template_name": "meta-llama/Llama-3.1-8B-Instruct"
+}
