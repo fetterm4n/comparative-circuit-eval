@@ -1,0 +1,13 @@
+{
+  "combined": true,
+  "components": null,
+  "device": "cuda",
+  "first_n_layers": 32,
+  "heads": "0.11,12.28,12.5,12.4",
+  "num_pairs": 74,
+  "per_pair_csv": "artifacts/llama3/llama3_path_patching_minimal_combo_n74_per_pair.csv",
+  "resid_kind": "pre",
+  "residuals": null,
+  "summary_csv": "artifacts/llama3/llama3_path_patching_minimal_combo_n74_summary.csv",
+  "template_name": "meta-llama/Llama-3.1-8B-Instruct"
+}

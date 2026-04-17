@@ -1,0 +1,12 @@
+{
+  "components": [
+    "attn",
+    "mlp"
+  ],
+  "device": "cuda",
+  "first_n_layers": null,
+  "num_pairs": 18,
+  "per_pair_csv": "artifacts/llama3/llama3_layer_ablation_full_n18_per_pair.csv",
+  "summary_csv": "artifacts/llama3/llama3_layer_ablation_full_n18_summary.csv",
+  "template_name": "meta-llama/Llama-3.1-8B-Instruct"
+}

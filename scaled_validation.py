@@ -245,18 +245,49 @@ def load_dataset(
     return pd.DataFrame(rows), summary
 
 
+_CLASSIFIER_SYSTEM = (
+    "You are an expert security analyst classifying PowerShell scripts.\n"
+    "Classify the PRIMARY INTENT of the script.\n\n"
+    "ALLOW = the script's main purpose is administrative, developmental, or legitimate utility work, "
+    "even if it incidentally uses encoding (Base64), downloads from known sources, dynamic execution, "
+    "compression, or credential APIs as part of normal tooling.\n"
+    "BLOCK = the script's PRIMARY purpose is malicious: downloading and executing unknown payloads, "
+    "credential theft from live systems, persistence via registry/scheduled tasks, lateral movement, "
+    "obfuscation to evade security tools, or exploitation of vulnerabilities.\n\n"
+    "Key rule: Base64 encoding, Invoke-Expression, and web downloads are ALLOW when used as part of "
+    "legitimate administrative or development tooling. Only BLOCK when combined with clearly malicious intent.\n\n"
+    "Return ONLY one word: ALLOW or BLOCK."
+)
+
+_CLASSIFIER_USER_TEMPLATE = (
+    "PowerShell:\n"
+    "```powershell\n"
+    "{ps_script}\n"
+    "```\n"
+    "Answer:"
+)
+
+
+# Set at startup by --use-chat-template flag; used by make_prompt globally
+_chat_tokenizer = None
+_USE_CHAT_TEMPLATE = False
+
+
 def make_prompt(ps_script: str) -> str:
-    return (
-        "You are a security classifier. Label the given PowerShell as:\n"
-        "ALLOW = benign / administrative / normal usage\n"
-        "BLOCK = malicious (downloading, execution, evasion, credential theft, etc.)\n\n"
-        "Return ONLY one word: ALLOW or BLOCK.\n\n"
-        "PowerShell:\n"
-        "```powershell\n"
-        f"{ps_script}\n"
-        "```\n"
-        "Answer:"
-    )
+    if _chat_tokenizer is not None:
+        return _chat_tokenizer.apply_chat_template(
+            make_chat_messages(ps_script),
+            tokenize=False,
+            add_generation_prompt=True,
+        )
+    return _CLASSIFIER_SYSTEM + "\n\n" + _CLASSIFIER_USER_TEMPLATE.format(ps_script=ps_script)
+
+
+def make_chat_messages(ps_script: str) -> list:
+    return [
+        {"role": "system", "content": _CLASSIFIER_SYSTEM},
+        {"role": "user", "content": _CLASSIFIER_USER_TEMPLATE.format(ps_script=ps_script)},
+    ]
 
 
 def attach_prompts(df: pd.DataFrame) -> pd.DataFrame:
@@ -2434,6 +2465,7 @@ def load_hf_model_and_tokenizer(
     device: Optional[str] = None,
     torch_dtype: Optional[str] = None,
 ):
+    global _chat_tokenizer
     model_source, local_files_only = resolve_model_source(model_name)
     tokenizer = AutoTokenizer.from_pretrained(
         model_source,
@@ -2444,6 +2476,8 @@ def load_hf_model_and_tokenizer(
     tokenizer.padding_side = "left"
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
+    if _USE_CHAT_TEMPLATE:
+        _chat_tokenizer = tokenizer
 
     resolved_device = device or ("mps" if torch.backends.mps.is_available() else "cpu")
     resolved_dtype = resolve_torch_dtype(torch_dtype)
@@ -2668,8 +2702,8 @@ def evaluate_prompts(
                     "predicted_token": "BLOCK" if predicted_label == "malicious" else "ALLOW",
                     "logit_diff": logit_diff,
                     "correct": predicted_label == sample["label"],
-                    "used_char_len": int(sample["used_char_len"]),
-                    "was_truncated": bool(sample["was_truncated"]),
+                    "used_char_len": int(sample["used_char_len"]) if "used_char_len" in sample.index else None,
+                    "was_truncated": bool(sample["was_truncated"]) if "was_truncated" in sample.index else None,
                 }
             )
     return pd.DataFrame(rows)
@@ -6353,6 +6387,12 @@ def cmd_batch_trace_direction_under_intervention(args: argparse.Namespace) -> in
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--use-chat-template",
+        action="store_true",
+        default=False,
+        help="Wrap all prompts with tokenizer.apply_chat_template (required for instruct models like Llama-3.1).",
+    )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     dataset_summary_parser = subparsers.add_parser(
@@ -7033,8 +7073,11 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
+    global _USE_CHAT_TEMPLATE
     parser = build_parser()
     args = parser.parse_args(argv)
+    if args.use_chat_template:
+        _USE_CHAT_TEMPLATE = True
     return int(args.func(args))
 
 

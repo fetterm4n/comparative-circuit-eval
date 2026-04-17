@@ -89,7 +89,7 @@ def find_project_root() -> Path:
 
 
 PROJECT_ROOT = find_project_root()
-ARTIFACTS = PROJECT_ROOT / "artifacts"
+ARTIFACTS = PROJECT_ROOT / "artifacts" / "foundation_sec"
 print("Project root:", PROJECT_ROOT)
 print("Artifacts dir:", ARTIFACTS)
 
@@ -288,7 +288,7 @@ DISCOVERY_NOTEBOOK = [
         # Example only. Uncomment to run a small discovery command locally.
         #
         # !python ../scaled_validation.py batch-discover-heads \\
-        #     --manifest ../artifacts/circuit_val_pair_manifest_t3000_valid_causal18_short.csv \\
+        #     --manifest ../artifacts/foundation_sec/circuit_val_pair_manifest_t3000_valid_causal18_short.csv \\
         #     --device cpu \\
         #     --torch-dtype float32 \\
         #     --num-pairs 2 \\
@@ -498,7 +498,7 @@ VALIDATION_NOTEBOOK = [
         # Example only. Uncomment to rerun a small validation command.
         #
         # !python ../scaled_validation.py batch-head-group-ablation \\
-        #     --manifest ../artifacts/circuit_val_pair_manifest_t3000_combo_cap20_valid_h100.csv \\
+        #     --manifest ../artifacts/foundation_sec/circuit_val_pair_manifest_t3000_combo_cap20_valid_h100.csv \\
         #     --heads 12.15,12.5,12.4,12.28 \\
         #     --device cpu \\
         #     --torch-dtype float32 \\
@@ -791,8 +791,8 @@ EVASION_NOTEBOOK = [
         # Example only. Uncomment to rerun the final downstream probe.
         #
         # !python ../scaled_validation.py batch-residual-direction-intervention \\
-        #     --manifest ../artifacts/evasion_pair_manifest_invoke_webrequest_variant_v2.csv \\
-        #     --basis-path ../artifacts/evasion_invoke_webrequest_variant_v2_resid_pre31_contrastive_h100_basis.pt \\
+        #     --manifest ../artifacts/foundation_sec/evasion_pair_manifest_invoke_webrequest_variant_v2.csv \\
+        #     --basis-path ../artifacts/foundation_sec/evasion_invoke_webrequest_variant_v2_resid_pre31_contrastive_h100_basis.pt \\
         #     --basis-label mean_delta \\
         #     --heads 12.15,12.5,12.4,12.28 \\
         #     --mode ablate \\

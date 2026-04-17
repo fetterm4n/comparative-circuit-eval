@@ -1,0 +1,11 @@
+{
+  "device": "cuda",
+  "first_n_layers": 4,
+  "layer_filter": null,
+  "num_pairs": 18,
+  "pairs_csv": "artifacts/llama3/llama3_discovery_attn_l4_n18_pairs.csv",
+  "per_pair_csv": "artifacts/llama3/llama3_discovery_attn_l4_n18_per_pair.csv",
+  "summary_csv": "artifacts/llama3/llama3_discovery_attn_l4_n18_summary.csv",
+  "template_name": "meta-llama/Llama-3.1-8B-Instruct",
+  "topk": 5
+}

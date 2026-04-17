@@ -1,0 +1,19 @@
+{
+  "basis_label": "mean_delta",
+  "basis_path": "artifacts/llama3/llama3_contrastive_resid_pre13_n18_basis.pt",
+  "device": "cuda",
+  "layers": [
+    10,
+    11,
+    12,
+    13,
+    14,
+    15
+  ],
+  "num_pairs": 18,
+  "per_pair_csv": "artifacts/llama3/llama3_trace_resid_pre13_n18_per_pair.csv",
+  "summary_csv": "artifacts/llama3/llama3_trace_resid_pre13_n18_summary.csv",
+  "template_name": "meta-llama/Llama-3.1-8B-Instruct",
+  "trace_target_layer": 13,
+  "trace_target_resid_kind": "pre"
+}

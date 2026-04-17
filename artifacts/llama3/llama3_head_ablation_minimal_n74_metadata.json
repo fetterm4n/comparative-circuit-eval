@@ -1,0 +1,26 @@
+{
+  "device": "cuda",
+  "first_n_layers": 32,
+  "heads": [
+    {
+      "head": 11,
+      "layer": 0
+    },
+    {
+      "head": 28,
+      "layer": 12
+    },
+    {
+      "head": 5,
+      "layer": 12
+    },
+    {
+      "head": 4,
+      "layer": 12
+    }
+  ],
+  "num_pairs": 74,
+  "per_pair_csv": "artifacts/llama3/llama3_head_ablation_minimal_n74_per_pair.csv",
+  "summary_csv": "artifacts/llama3/llama3_head_ablation_minimal_n74_summary.csv",
+  "template_name": "meta-llama/Llama-3.1-8B-Instruct"
+}
