@@ -245,19 +245,18 @@ def load_dataset(
     return pd.DataFrame(rows), summary
 
 
-_CLASSIFIER_PROMPT_PREFIX = (
+_CLASSIFIER_PROMPT_SYSTEM = (
     "You are a security classifier. Label the given PowerShell as:\n"
     "ALLOW = benign / administrative / normal usage\n"
     "BLOCK = malicious (downloading, execution, evasion, credential theft, etc.)\n\n"
-    "Return ONLY one word: ALLOW or BLOCK.\n\n"
-    "PowerShell:\n"
-    "```powershell\n"
+    "Return ONLY one word: ALLOW or BLOCK."
 )
+_CLASSIFIER_PROMPT_PREFIX = _CLASSIFIER_PROMPT_SYSTEM + "\n\nPowerShell:\n```powershell\n"
 _CLASSIFIER_PROMPT_SUFFIX = "\n```\nAnswer:"
 
 # Intent-focused variant used with --system-prompt-variant=full.
 # Adds explicit carve-outs for Base64/IEX/downloads in legitimate tooling.
-_CLASSIFIER_INTENT_PREFIX = (
+_CLASSIFIER_INTENT_SYSTEM = (
     "You are an expert security analyst classifying PowerShell scripts.\n"
     "Classify the PRIMARY INTENT of the script.\n\n"
     "ALLOW = the script's main purpose is administrative, developmental, or legitimate utility work, "
@@ -268,32 +267,56 @@ _CLASSIFIER_INTENT_PREFIX = (
     "obfuscation to evade security tools, or exploitation of vulnerabilities.\n\n"
     "Key rule: Base64 encoding, Invoke-Expression, and web downloads are ALLOW when used as part of "
     "legitimate administrative or development tooling. Only BLOCK when combined with clearly malicious intent.\n\n"
-    "Return ONLY one word: ALLOW or BLOCK.\n\n"
-    "PowerShell:\n"
-    "```powershell\n"
+    "Return ONLY one word: ALLOW or BLOCK."
 )
+_CLASSIFIER_INTENT_PREFIX = _CLASSIFIER_INTENT_SYSTEM + "\n\nPowerShell:\n```powershell\n"
+
+# Adversarial-framing variant used with --system-prompt-variant=adversarial.
+# Same ALLOW/BLOCK definitions as raw; adds a single sentence redirecting focus
+# from individual constructs to overall purpose. Reaches ~95% accuracy on Llama-3.1.
+_CLASSIFIER_ADVERSARIAL_SYSTEM = (
+    "You are a security classifier. Label the given PowerShell as:\n"
+    "ALLOW = benign / administrative / normal usage\n"
+    "BLOCK = malicious (downloading, execution, evasion, credential theft, etc.)\n\n"
+    "Legitimate admin scripts routinely use Base64, web requests, compression, "
+    "and credential APIs. Classify based on overall purpose, not individual constructs.\n\n"
+    "Return ONLY one word: ALLOW or BLOCK."
+)
+_CLASSIFIER_ADVERSARIAL_PREFIX = _CLASSIFIER_ADVERSARIAL_SYSTEM + "\n\nPowerShell:\n```powershell\n"
 
 # Set at startup by --use-chat-template / --system-prompt-variant flags; used by make_prompt globally
 _chat_tokenizer = None
 _USE_CHAT_TEMPLATE = False
-_SYSTEM_PROMPT_VARIANT = "raw"  # "raw" | "full"
+_SYSTEM_PROMPT_VARIANT = "raw"  # "raw" | "full" | "adversarial"
 
 
 def make_prompt(ps_script: str) -> str:
-    prefix = _CLASSIFIER_INTENT_PREFIX if _SYSTEM_PROMPT_VARIANT == "full" else _CLASSIFIER_PROMPT_PREFIX
+    if _SYSTEM_PROMPT_VARIANT == "full":
+        prefix = _CLASSIFIER_INTENT_PREFIX
+    elif _SYSTEM_PROMPT_VARIANT == "adversarial":
+        prefix = _CLASSIFIER_ADVERSARIAL_PREFIX
+    else:
+        prefix = _CLASSIFIER_PROMPT_PREFIX
     prompt = prefix + ps_script + _CLASSIFIER_PROMPT_SUFFIX
     if _chat_tokenizer is not None:
         return _chat_tokenizer.apply_chat_template(
-            make_chat_messages(prompt),
+            make_chat_messages(ps_script),
             tokenize=False,
             add_generation_prompt=True,
         )
     return prompt
 
 
-def make_chat_messages(prompt: str) -> list:
+def make_chat_messages(ps_script: str) -> list:
+    if _SYSTEM_PROMPT_VARIANT == "full":
+        system = _CLASSIFIER_INTENT_SYSTEM
+    elif _SYSTEM_PROMPT_VARIANT == "adversarial":
+        system = _CLASSIFIER_ADVERSARIAL_SYSTEM
+    else:
+        system = _CLASSIFIER_PROMPT_SYSTEM
     return [
-        {"role": "user", "content": prompt},
+        {"role": "system", "content": system},
+        {"role": "user", "content": "PowerShell:\n```powershell\n" + ps_script + "\n```\nAnswer:"},
     ]
 
 
@@ -6462,7 +6485,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--system-prompt-variant",
-        choices=["raw", "full"],
+        choices=["raw", "full", "adversarial"],
         default="raw",
         help=(
             "Prompt variant. 'raw' = minimal rule-based classifier (Foundation-Sec default). "
