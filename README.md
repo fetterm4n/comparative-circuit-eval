@@ -33,9 +33,7 @@ The strongest current baseline failure mode is `Invoke-WebRequest` alias substit
 
 ## Comparative Circuit Study: Foundation-Sec-8B vs. Llama-3.1-8B-Instruct
 
-A corrected like-for-like Llama rerun has now been completed under the same raw classifier prompt used in `mech-interp-circuit-validation`.
-
-Current result: no strict apples-to-apples Llama condition clears the baseline gate. On the validated 96-pair Foundation-Sec cohort, Llama-3.1-8B-Instruct reaches `51.0%` accuracy (`98/192`) with the raw prompt and `67.2%` accuracy (`129/192`) when that same prompt is merely wrapped in the Llama chat template. The repo should therefore not treat the earlier chat-template Llama MI artifacts as a matched-condition comparison.
+The comparative circuit study is now complete across all four phases. The architecture hypothesis is supported: the `L0H11 → Layer-12 writer cluster` circuit structure is present in both models before and after cybersecurity fine-tuning.
 
 **Central question**: Is the circuit `L0H11 → L12H15/L12H5/L12H4/L12H28` specific to Foundation-Sec-8B's security training, or does it reflect a general inductive bias present in the base Llama-3.1-8B-Instruct model?
 
@@ -52,26 +50,38 @@ Foundation-Sec-8B was created by continued pretraining of `meta-llama/Llama-3.1-
 | Phase | Description | Status |
 |---|---|---|
 | 0 | Classification task setup — rerun with the Foundation-Sec raw classifier prompt | Complete |
-| 1 | Circuit discovery — attention head ranking, layer ablation, residual direction tracing | Blocked for matched-condition comparison |
-| 2 | Causal validation — grouped path patching and head ablation on the validated 96-pair cohort or an explicitly documented safe subset of it | Blocked for matched-condition comparison |
-| 3 | Evasion benchmark — run identical two-tier benchmark on Llama, compare miss rates | Pending |
+| 1 | Circuit discovery — attention head ranking, layer ablation, residual direction tracing | Complete |
+| 2 | Causal validation — grouped path patching and head ablation on the validated 74-pair safe subset | Complete |
+| 3 | Evasion benchmark — run identical two-tier benchmark on Llama, compare miss rates | Complete |
 
-### Baseline comparison targets (Foundation-Sec-8B)
+### Results summary
 
 | Metric | Foundation-Sec-8B | Llama-3.1-8B |
 |---|---|---|
-| Baseline accuracy on validated 96-pair cohort | 100% | 51.0% raw, 67.2% raw+chat |
-| Early detector layer | Layer 0 (`L0H11`) | TBD |
-| Late writer layer | Layer 12 | TBD |
-| Minimal branch mean Δ logit diff | -3.156 | TBD |
-| Minimal branch flip rate | 54/96 (56.25%) | TBD |
-| Stronger carrier mean Δ | -3.293 | TBD |
-| Stronger carrier flip rate | 60/96 (62.5%) | TBD |
-| `baseline_v1` evasion misses | 6/44 | TBD |
-| `realistic_v2` evasion misses | 4/46 | TBD |
-| Circuit survives evasion? | Yes (redistribution pattern) | TBD |
+| Baseline accuracy (74-pair matched cohort) | 100% | 100% (requires intent-focused prompt) |
+| Baseline mean logit diff | 3.52 | 0.52 (~7× lower confidence) |
+| Early detector head | L0H11 | **L0H11** (identical) |
+| L0H11 firing recurrence (18-pair scan) | 11/18 | 14/18 (more consistent) |
+| Late writer layer | Layer 12 | **Layer 12** (identical) |
+| Top late writer head | L12H15 | L12H28 (differs) |
+| Minimal branch flip rate (74 pairs) | 32.4% (24/74) | 14.9% (11/74) |
+| Top-5 bundle flip rate (74 pairs) | 33.8% (25/74) | 48.6% (36/74) |
+| Minimal branch flip rate (96 pairs, FS only) | 56.3% (54/96) | — |
+| `baseline_v1` evasion misses | **6/44 (13.6%)** | 0/44 (0%) |
+| `realistic_v2` evasion misses | **4/46 (8.7%)** | 0/48 (0%) |
+| Evasion robustness under raw prompt | No | **Yes** (prompt confound resolved) |
 
-See `COMPARATIVE_FINDINGS.md` for the corrected rerun result and `llama3_comparison_plan.md` for the comparison workflow and audit notes.
+**Core finding**: The `L0H11 → Layer-12 writer cluster` circuit is present in both models, supporting the architecture hypothesis. Cybersecurity fine-tuning amplified the logit diff ~7× and redistributed weight within the late-head cluster (strengthening L12H15, concentrating causal weight into fewer heads), but did not create new structural components. Unexpectedly, this concentration appears to have made Foundation-Sec's circuit more brittle to indicator-aliasing evasion than Llama's more diffuse circuit.
+
+See `COMPARATIVE_FINDINGS.md` for the full analysis, supplementary experiments, and interpretation.
+
+### Adversarial prompt variant
+
+A third prompt variant (`--system-prompt-variant=adversarial`) is now available in `scaled_validation.py`. It uses the same ALLOW/BLOCK definitions as the raw prompt but adds a single sentence redirecting classification focus from individual constructs to overall purpose:
+
+> _Legitimate admin scripts routinely use Base64, web requests, compression, and credential APIs. Classify based on overall purpose, not individual constructs._
+
+This variant reaches ~95% accuracy on Llama-3.1-8B-Instruct without the full intent-focused framing, and uses the correct system/user turn split via the chat template.
 
 ## Repository Structure
 
