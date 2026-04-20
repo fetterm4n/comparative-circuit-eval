@@ -68,7 +68,7 @@ Foundation-Sec-8B was created by continued pretraining of `meta-llama/Llama-3.1-
 | Top-5 bundle flip rate (74 pairs) | 33.8% (25/74) | 48.6% (36/74) |
 | Minimal branch flip rate (96 pairs, FS only) | 56.3% (54/96) | — |
 | `baseline_v1` evasion misses | **6/44 (13.6%)** | 0/44 (0%) |
-| `realistic_v2` evasion misses | **4/46 (8.7%)** | 0/48 (0%) |
+| `realistic_v2` evasion misses | **4/46 (8.7%)** | 0/46 (0%) |
 | Evasion robustness under raw prompt | No | **Yes** (prompt confound resolved) |
 
 **Core finding**: The `L0H11 → Layer-12 writer cluster` circuit is present in both models, supporting the architecture hypothesis. Cybersecurity fine-tuning amplified the logit diff ~7× and redistributed weight within the late-head cluster (strengthening L12H15, concentrating causal weight into fewer heads), but did not create new structural components. Unexpectedly, this concentration appears to have made Foundation-Sec's circuit more brittle to indicator-aliasing evasion than Llama's more diffuse circuit.
