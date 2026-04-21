@@ -1,6 +1,6 @@
 # mech-interp-circuit
 
-This repository contains the code, datasets, notebooks, and generated artifacts supporting _From Detection to Evasion: Mechanistic Circuit Evaluation of Malicious Code Classification in LLMs_, by Ryan Fetterman.
+This repository contains the code, datasets, notebooks, and generated artifacts supporting _Inherited Circuits, Fine-Tuned Semantics: Mechanistic Evaluation of PowerShell Classification and Evasion in Security LLMs_, by Ryan Fetterman.
 
 ## Summary
 
