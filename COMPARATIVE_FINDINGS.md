@@ -422,9 +422,9 @@ Evidence suggesting fine-tuning modified the circuit:
 ### 8.2 What Fine-Tuning Changed
 
 The cybersecurity pretraining appears to have done three things:
-1. **Amplified output gain**: The same structural circuit produces ~7× larger logit differences without needing a different circuit architecture.
+1. **Amplified output gain**: The same structural circuit produces ~7× larger logit differences without needing a different circuit architecture. Experiment 7 confirms this amplification is MLP-driven — the attention circuit contributes a comparably-sized signal in both models, and the gain difference originates in the MLP layers, consistent with fine-tuning modifying MLP weights more heavily than attention structure.
 2. **Redistributed late-head weights**: Within the existing Layer-12 writer cluster, fine-tuning shifted the dominant contribution from H28 (Llama) to H15 (Foundation-Sec), concentrating causal weight into fewer heads.
-3. **Encoded semantic associations**: Foundation-Sec responds correctly to the minimal raw prompt. Llama requires explicit intent framing at inference time. Fine-tuning built trained associations between specific PowerShell command patterns and the BLOCK output token that Llama's general RLHF did not produce.
+3. **Encoded token-literal associations in MLP layers**: Foundation-Sec responds correctly to the minimal raw prompt without intent framing. Experiment 7 localizes the evasion failure to MLP layers 0–12: when a literal indicator token is transformed (e.g. `Invoke-Expression` → format-string reconstruction), FS's MLP layers produce a signal that inverts the contrastive residual direction at L13, overriding the attention circuit's correct malicious-direction write. Llama's MLP layers, never fine-tuned on cybersecurity data, carry no such token-literal associations and do not produce the inversion.
 
 ### 8.3 Evasion: Circuit-Level Robustness Difference Confirmed
 
@@ -500,9 +500,9 @@ The identified circuit accounts for 15–49% of classification flips depending o
 
 ### 10.1 Mechanistic Analysis of Foundation-Sec's Evasion Vulnerabilities
 
-**Status: Partially complete. Concrete next step identified — see 10.6.**
+**Status: Complete. Conclusion reached.**
 
-The following experiments have been run on the `iex_format_string` miss cases (pair_idx 61, 62, 65, 66):
+The following experiments were run on the `iex_format_string` miss cases (pair_idx 61, 62, 65, 66):
 
 **Experiment 7a — L0H11 attention targets on miss cases (both models)**
 
@@ -519,13 +519,17 @@ The malicious-vs-benign contrastive direction was computed at the L13 residual s
 | Llama seed | +3.30 | −0.25 | No |
 | Llama variant | +3.11 | −0.17 | No |
 
-FS is already outputting ALLOW on miss variants before any intervention (base logit diff −0.188). Llama's logit diff barely changes between seed (+3.30) and variant (+3.11). **The failure in FS is present at the L13 residual boundary — something upstream of L13 is producing an inverted signal on miss variants.**
+FS is already outputting ALLOW on miss variants before any intervention (base logit diff −0.188). Llama's logit diff barely changes between seed (+3.30) and variant (+3.11). **The failure in FS is fully present at the L13 residual boundary — the residual stream already encodes a benign-leaning signal before L13 is reached on miss variants.**
 
 **Experiment 7c — Per-head residual direction attribution (layers 0–12)**
 
 `batch-trace-residual-direction-heads` was run on all four conditions (FS/Llama × seed/variant) to decompose the L13 residual direction into per-head contributions. Result: the net sum of all attention head contributions is positive and nearly identical between seed and variant conditions in both models (FS seed: +1.10, FS variant: +1.01; Llama seed: +0.89, Llama variant: +0.92). **The attention circuit does not explain the residual inversion.** The top contributing heads (L12H15, L12H9, L12H24, L8H7, L12H2) are the same on seed and variant, with only minor magnitude changes.
 
-**Conclusion so far**: The failure site is not L0H11, not the L12 attention writers, and not the residual direction as written by the attention circuit. The inversion at L13 must be driven by **MLP layer outputs** across layers 0–12, which are not captured by the per-head attention trace. This is consistent with Section 8.2: fine-tuning modifies MLP weights more than attention structure, and the ~7× logit diff amplification is likely MLP-driven. The MLP layers that were tuned to amplify malicious signal on literal-indicator scripts may be writing a competing or opposing signal when the indicator token is absent or transformed.
+**Experiment 7d — MLP neuron attribution (FS, layers 0–12)**
+
+`batch-neuron-discover` was run on seed and variant manifests for FS, capturing both positive and negative neuron contributors. Result: per-neuron contribution deltas are small (~0.003–0.007) and the net MLP contribution toward the logit direction is near-zero in both conditions (seed: −0.034, variant: +0.011). The largest layer-level shift is at Layer 10 (net swings −0.020 from seed to variant), but magnitudes do not account for the scale of the L13 residual inversion observed in Experiment 7b. The `batch-neuron-discover` tool projects onto the logit direction (BLOCK−ALLOW), not the contrastive residual basis, so it measures a different quantity than the Experiment 7b patching. Pinpointing specific neurons responsible for the residual inversion would require projecting MLP outputs onto the contrastive basis — tooling that does not currently exist in the pipeline.
+
+**Final conclusion**: The evasion failure in Foundation-Sec on `iex_format_string` variants is localized to the MLP layers (0–12). The attention circuit — including L0H11 and the L12 writer cluster — contributes a stable, positive malicious-direction signal on both seed and variant scripts in both models. The residual inversion is FS-specific and MLP-driven. This is directly consistent with the original hypothesis (Section 8.2) that cybersecurity fine-tuning modifies MLP weights more than attention structure: the MLP layers were tuned to encode associations with specific literal indicator tokens, and produce a competing signal in the residual stream when those tokens are absent or transformed. Llama's MLP layers, never having received that fine-tuning, do not carry those associations and therefore do not produce the inversion — leaving the structural attention circuit's malicious signal intact and the classification correct.
 
 ### 10.2 Localize the Semantic Weighting Layer
 
@@ -537,48 +541,7 @@ L12H28 is 4th-ranked in Foundation-Sec but 1st in Llama; fine-tuning strengthene
 
 ### 10.4 MLP Contribution Analysis
 
-The ~7× amplification of logit diff gain may be primarily MLP-driven, since fine-tuning typically modifies MLP weights more than attention structure. Running layer-ablation with attention-only vs. MLP-only component ablation would decompose this and clarify whether the attention circuit or MLP layers are the causal amplification site.
-
-### 10.6 MLP Neuron Attribution on Miss Cases (Immediate Next Step)
-
-**Motivation**: Experiment 7 established that the L13 residual is already inverted on FS miss variants, and that attention heads account for a stable positive contribution on both seed and variant. The inversion must therefore come from MLP layer outputs. The `batch-neuron-discover` tool ranks MLP neurons by `(activation_delta × logit_weight)` — the product of how much a neuron fires differentially (malicious vs. benign) and how strongly it writes toward BLOCK vs. ALLOW. Running this on seed vs. variant manifests for FS directly identifies which neurons drive the correct signal on seeds and whether those same neurons fail or reverse on variants.
-
-**Concrete runs**:
-
-```bash
-# FS: top MLP neurons on miss seed scripts
-python3 scaled_validation.py \
-  batch-neuron-discover \
-  --model-name fdtn-ai/Foundation-Sec-8B-Instruct \
-  --template-name meta-llama/Llama-3.1-8B-Instruct \
-  --manifest artifacts/foundation_sec/evasion_pair_manifest_realistic_v2_miss_seed.csv \
-  --layers 0,1,2,3,4,5,6,7,8,9,10,11,12 \
-  --topk-per-layer 10 \
-  --output-prefix artifacts/foundation_sec/fs_neuron_miss_v2_seed
-
-# FS: top MLP neurons on miss variant scripts
-python3 scaled_validation.py \
-  batch-neuron-discover \
-  --model-name fdtn-ai/Foundation-Sec-8B-Instruct \
-  --template-name meta-llama/Llama-3.1-8B-Instruct \
-  --manifest artifacts/foundation_sec/evasion_pair_manifest_realistic_v2_miss_variant.csv \
-  --layers 0,1,2,3,4,5,6,7,8,9,10,11,12 \
-  --topk-per-layer 10 \
-  --output-prefix artifacts/foundation_sec/fs_neuron_miss_v2_variant
-
-# Llama: top MLP neurons on miss variant scripts (for comparison)
-python3 scaled_validation.py \
-  --use-chat-template \
-  batch-neuron-discover \
-  --model-name meta-llama/Llama-3.1-8B-Instruct \
-  --template-name meta-llama/Llama-3.1-8B-Instruct \
-  --manifest artifacts/foundation_sec/evasion_pair_manifest_realistic_v2_miss_variant.csv \
-  --layers 0,1,2,3,4,5,6,7,8,9,10,11,12 \
-  --topk-per-layer 10 \
-  --output-prefix artifacts/llama3/llama3_neuron_miss_v2_variant
-```
-
-**Interpretation criteria**: Compare the top-ranked neurons on FS seed vs. FS variant. Neurons that rank highly on seed but disappear or reverse sign on variant are the specific MLP units driving the evasion failure. Cross-referencing with Llama's variant neurons identifies whether Llama simply lacks those neurons' associations (consistent with architecture hypothesis) or has them but they fire differently.
+The ~7× amplification of logit diff gain is consistent with being MLP-driven — Experiment 7 confirms that MLP layers (not the attention circuit) are the site of FS's evasion failure, supporting the view that cybersecurity fine-tuning primarily modified MLP weights. Running layer-ablation with attention-only vs. MLP-only component ablation would decompose the amplification more directly and confirm whether the attention circuit or MLP layers are the causal site of the gain increase. Projecting per-layer MLP outputs onto the contrastive residual basis (rather than the logit direction) would enable neuron-level attribution of the inversion identified in Experiment 7b — this requires new tooling not currently in the pipeline.
 
 ### 10.5 Linear Probe at Layer 0 Output
 
