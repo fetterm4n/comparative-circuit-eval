@@ -510,20 +510,22 @@ L0H11 attention target dumps were run on the `realistic_v2` miss-case seed and v
 
 **Experiment 7b — Contrastive residual direction at L13 (both models)**
 
-The malicious-vs-benign contrastive direction was computed at the L13 residual stream boundary from miss-case seed pairs for both models. Patching the L13 residual with the seed's contrastive direction:
+The malicious-vs-benign contrastive direction was computed at the L13 residual stream boundary from miss-case seed pairs. FS was run under its native raw prompt; Llama was run under the adversarial prompt (`--system-prompt-variant adversarial --use-chat-template`), which is the equal-footing condition where Llama genuinely discriminates malicious from benign. Patching the L13 residual with the seed's contrastive direction:
 
-| Condition | Base logit diff | Patch delta | Flip |
-|---|---|---|---|
-| FS seed | +0.125 | −0.45 | Yes (already marginal) |
-| FS variant | −0.188 | −0.22 | Yes (already wrong side of 0) |
-| Llama seed | +3.30 | −0.25 | No |
-| Llama variant | +3.11 | −0.17 | No |
+| Condition | Prompt | Base logit diff | Patch delta | Flip |
+|---|---|---|---|---|
+| FS seed | raw | +0.125 | −0.45 | Yes (already marginal) |
+| FS variant | raw | −0.188 | −0.22 | Yes (already wrong side of 0) |
+| Llama seed | adversarial | +1.461 | −0.427 | No |
+| Llama variant | adversarial | +1.695 | −0.388 | No |
 
-FS is already outputting ALLOW on miss variants before any intervention (base logit diff −0.188). Llama's logit diff barely changes between seed (+3.30) and variant (+3.11). **The failure in FS is fully present at the L13 residual boundary — the residual stream already encodes a benign-leaning signal before L13 is reached on miss variants.**
+FS is already outputting ALLOW on miss variants before any intervention (base logit diff −0.188). Llama's logit diff is positive and actually slightly *higher* on the variant (+1.695) than the seed (+1.461) — it remains confident-BLOCK on both conditions with no inversion. **The failure in FS is fully present at the L13 residual boundary and is FS-specific: there is no analogous inversion in Llama on the same scripts under a valid discriminating prompt.**
+
+Note: Exp 7b was also run originally under the raw prompt for Llama (seed +3.30, variant +3.11, flip=0 on both). The raw-prompt result is directionally consistent but inflated by an unconditional BLOCK bias; the adversarial-prompt figures are the methodologically clean comparison.
 
 **Experiment 7c — Per-head residual direction attribution (layers 0–12)**
 
-`batch-trace-residual-direction-heads` was run on all four conditions (FS/Llama × seed/variant) to decompose the L13 residual direction into per-head contributions. Result: the net sum of all attention head contributions is positive and nearly identical between seed and variant conditions in both models (FS seed: +1.10, FS variant: +1.01; Llama seed: +0.89, Llama variant: +0.92). **The attention circuit does not explain the residual inversion.** The top contributing heads (L12H15, L12H9, L12H24, L8H7, L12H2) are the same on seed and variant, with only minor magnitude changes.
+`batch-trace-residual-direction-heads` was run on all four conditions (FS/Llama × seed/variant), with Llama under the adversarial prompt. Net sum of all attention head contributions to the malicious direction: FS seed +1.10, FS variant +1.01; Llama seed +0.69, Llama variant +0.66. All four are positive and stable — seed-to-variant delta is −0.09 for FS and −0.03 for Llama. **The attention circuit does not explain the residual inversion in FS.** The per-head contribution pattern is stable across seed and variant for both models; the inversion must originate in the MLP layers.
 
 **Experiment 7d — MLP neuron attribution (FS, layers 0–12)**
 

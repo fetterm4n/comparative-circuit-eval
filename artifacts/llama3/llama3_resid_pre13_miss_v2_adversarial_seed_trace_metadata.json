@@ -1,0 +1,26 @@
+{
+  "basis_label": "mean_delta",
+  "basis_path": "artifacts/llama3/llama3_resid_pre13_miss_v2_adversarial_seed_basis.pt",
+  "device": "cpu",
+  "layers": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+  ],
+  "num_pairs": 3,
+  "per_pair_csv": "artifacts/llama3/llama3_resid_pre13_miss_v2_adversarial_seed_trace_per_pair.csv",
+  "summary_csv": "artifacts/llama3/llama3_resid_pre13_miss_v2_adversarial_seed_trace_summary.csv",
+  "template_name": "meta-llama/Llama-3.1-8B-Instruct",
+  "trace_target_layer": 13,
+  "trace_target_resid_kind": "pre"
+}

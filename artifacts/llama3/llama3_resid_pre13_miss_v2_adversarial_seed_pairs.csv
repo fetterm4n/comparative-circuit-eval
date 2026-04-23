@@ -1,0 +1,4 @@
+pair_idx,pair_indicator,benign_filename,malicious_filename,delta_norm
+61,Invoke-Expression,1767.ps1,2019.ps1,1.8525390625
+62,Invoke-Expression,583.ps1,2019.ps1,1.8369140625
+65,Invoke-Expression,489.ps1,2019.ps1,1.87890625
