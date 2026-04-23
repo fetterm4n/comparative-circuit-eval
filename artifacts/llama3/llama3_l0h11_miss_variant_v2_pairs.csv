@@ -1,0 +1,5 @@
+pair_idx,pair_indicator,benign_filename,benign_manifest_rank,benign_used_char_len,malicious_filename,malicious_manifest_rank,malicious_used_char_len,indicator_positions,indicator_count
+61,Invoke-Expression,1767.ps1,,1224,2019__seed_d4aff830a1c9__invoke_expression_format_string.ps1,,1195,"[127, 128, 129, 130]",2
+62,Invoke-Expression,583.ps1,,1109,2019__seed_8308722f08a5__invoke_expression_format_string.ps1,,1195,"[127, 128, 129, 130]",2
+65,Invoke-Expression,489.ps1,,1040,2019__seed_a182289ca98a__invoke_expression_format_string.ps1,,1195,"[127, 128, 129, 130]",2
+66,Invoke-Expression,485.ps1,,1023,2019__seed_4916dd4c361c__invoke_expression_format_string.ps1,,1195,"[127, 128, 129, 130]",2

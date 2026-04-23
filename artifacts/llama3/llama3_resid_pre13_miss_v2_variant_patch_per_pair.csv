@@ -1,0 +1,10 @@
+patch_label,layer,resid_kind,subspace_dim,base_logit_diff,patched_logit_diff,delta_logit_diff,effect_pct,basis_label,basis_mode,pair_idx,pair_indicator,benign_filename,malicious_filename,flip_to_benign
+contrastive_pre13_mean_delta,13,pre,1,3.109375,2.9375,-0.171875,-5.527638190954774,mean_delta,single,61,Invoke-Expression,1767.ps1,2019__seed_d4aff830a1c9__invoke_expression_format_string.ps1,False
+contrastive_pre13_logit_readout,13,pre,1,3.109375,3.109375,0.0,0.0,logit_readout,single,61,Invoke-Expression,1767.ps1,2019__seed_d4aff830a1c9__invoke_expression_format_string.ps1,False
+contrastive_pre13_all,13,pre,2,3.109375,2.921875,-0.1875,-6.030150753768844,mean_delta+logit_readout,all,61,Invoke-Expression,1767.ps1,2019__seed_d4aff830a1c9__invoke_expression_format_string.ps1,False
+contrastive_pre13_mean_delta,13,pre,1,3.109375,2.9375,-0.171875,-5.527638190954774,mean_delta,single,62,Invoke-Expression,583.ps1,2019__seed_8308722f08a5__invoke_expression_format_string.ps1,False
+contrastive_pre13_logit_readout,13,pre,1,3.109375,3.09375,-0.015625,-0.5025125628140703,logit_readout,single,62,Invoke-Expression,583.ps1,2019__seed_8308722f08a5__invoke_expression_format_string.ps1,False
+contrastive_pre13_all,13,pre,2,3.109375,2.921875,-0.1875,-6.030150753768844,mean_delta+logit_readout,all,62,Invoke-Expression,583.ps1,2019__seed_8308722f08a5__invoke_expression_format_string.ps1,False
+contrastive_pre13_mean_delta,13,pre,1,3.109375,2.9375,-0.171875,-5.527638190954774,mean_delta,single,65,Invoke-Expression,489.ps1,2019__seed_a182289ca98a__invoke_expression_format_string.ps1,False
+contrastive_pre13_logit_readout,13,pre,1,3.109375,3.109375,0.0,0.0,logit_readout,single,65,Invoke-Expression,489.ps1,2019__seed_a182289ca98a__invoke_expression_format_string.ps1,False
+contrastive_pre13_all,13,pre,2,3.109375,2.9375,-0.171875,-5.527638190954774,mean_delta+logit_readout,all,65,Invoke-Expression,489.ps1,2019__seed_a182289ca98a__invoke_expression_format_string.ps1,False

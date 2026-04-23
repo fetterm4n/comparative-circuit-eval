@@ -1,0 +1,5 @@
+pair_idx,pair_indicator,benign_filename,benign_manifest_rank,benign_used_char_len,malicious_filename,malicious_manifest_rank,malicious_used_char_len,indicator_positions,indicator_count
+61,Invoke-Expression,1767.ps1,,1224,2019.ps1,,1173,"[83, 84, 85, 116, 117, 118, 119]",2
+62,Invoke-Expression,583.ps1,,1109,2019.ps1,,1173,"[83, 84, 85, 116, 117, 118, 119]",2
+65,Invoke-Expression,489.ps1,,1040,2019.ps1,,1173,"[83, 84, 85, 116, 117, 118, 119]",2
+66,Invoke-Expression,485.ps1,,1023,2019.ps1,,1173,"[83, 84, 85, 116, 117, 118, 119]",2

@@ -395,7 +395,7 @@ Llama classifies all 46 realistic_v2 variants correctly under both prompt condit
 | `provisional_v1` miss rate — raw | 6/48 (12.5%) | 0/48 (0%) | Cross-model comparison |
 | `provisional_v1` miss rate — adversarial | 10/48 (20.8%) | 0/48 (0%) | |
 | `realistic_v2` miss rate — raw | 4/46 (8.7%) | **0/46 (0%)** | Exp 6 |
-| `realistic_v2` miss rate — adversarial | 16/46 (34.8%) | — | Llama adversarial not run on v2 |
+| `realistic_v2` miss rate — adversarial | 16/46 (34.8%) | **0/46 (0%)** | Exp 6 |
 | Evasion robust under raw prompt | No | **Yes** | Confirmed Exp 4 |
 | Evasion robust under adversarial prompt | No | **Yes** | Confirmed Exp 5 |
 | Prompt-sensitive failure surface | **Yes** | No | Adversarial reshapes FS miss pattern |
@@ -498,9 +498,34 @@ The identified circuit accounts for 15–49% of classification flips depending o
 
 ## 10. Recommendations for Continuing Research
 
-### 10.1 Mechanistic Analysis of Foundation-Sec's Evasion Vulnerabilities (Highest Priority)
+### 10.1 Mechanistic Analysis of Foundation-Sec's Evasion Vulnerabilities
 
-The evasion comparison is resolved behaviorally. The next step is understanding *why* mechanistically. Run circuit probes (head ablation + L0H11 attention targets) on Foundation-Sec's miss cases for `invoke_webrequest_alias` and `invoke_expression_format_string` to determine whether the circuit is intact (redistribution) or degraded (L0H11 stops firing) under those evasion variants. Compare with Llama on the same variants to see whether Llama's L0H11 still fires where Foundation-Sec's does not.
+**Status: Partially complete. Concrete next step identified — see 10.6.**
+
+The following experiments have been run on the `iex_format_string` miss cases (pair_idx 61, 62, 65, 66):
+
+**Experiment 7a — L0H11 attention targets on miss cases (both models)**
+
+L0H11 attention target dumps were run on the `realistic_v2` miss-case seed and variant manifests for both FS and Llama. Result: L0H11 fires with a positive attention delta on the miss-case scripts in both models, on both the seed and the `iex_format_string` variant. Top attended tokens are nearly identical across seed and variant conditions for both models (`ToEnd`, `` `\n ``, `))`, `]`, `ASCII`, `.Encoding`). The obfuscation does not change what L0H11 attends to or suppress its firing. **The early detector is not the failure site.**
+
+**Experiment 7b — Contrastive residual direction at L13 (both models)**
+
+The malicious-vs-benign contrastive direction was computed at the L13 residual stream boundary from miss-case seed pairs for both models. Patching the L13 residual with the seed's contrastive direction:
+
+| Condition | Base logit diff | Patch delta | Flip |
+|---|---|---|---|
+| FS seed | +0.125 | −0.45 | Yes (already marginal) |
+| FS variant | −0.188 | −0.22 | Yes (already wrong side of 0) |
+| Llama seed | +3.30 | −0.25 | No |
+| Llama variant | +3.11 | −0.17 | No |
+
+FS is already outputting ALLOW on miss variants before any intervention (base logit diff −0.188). Llama's logit diff barely changes between seed (+3.30) and variant (+3.11). **The failure in FS is present at the L13 residual boundary — something upstream of L13 is producing an inverted signal on miss variants.**
+
+**Experiment 7c — Per-head residual direction attribution (layers 0–12)**
+
+`batch-trace-residual-direction-heads` was run on all four conditions (FS/Llama × seed/variant) to decompose the L13 residual direction into per-head contributions. Result: the net sum of all attention head contributions is positive and nearly identical between seed and variant conditions in both models (FS seed: +1.10, FS variant: +1.01; Llama seed: +0.89, Llama variant: +0.92). **The attention circuit does not explain the residual inversion.** The top contributing heads (L12H15, L12H9, L12H24, L8H7, L12H2) are the same on seed and variant, with only minor magnitude changes.
+
+**Conclusion so far**: The failure site is not L0H11, not the L12 attention writers, and not the residual direction as written by the attention circuit. The inversion at L13 must be driven by **MLP layer outputs** across layers 0–12, which are not captured by the per-head attention trace. This is consistent with Section 8.2: fine-tuning modifies MLP weights more than attention structure, and the ~7× logit diff amplification is likely MLP-driven. The MLP layers that were tuned to amplify malicious signal on literal-indicator scripts may be writing a competing or opposing signal when the indicator token is absent or transformed.
 
 ### 10.2 Localize the Semantic Weighting Layer
 
@@ -513,6 +538,47 @@ L12H28 is 4th-ranked in Foundation-Sec but 1st in Llama; fine-tuning strengthene
 ### 10.4 MLP Contribution Analysis
 
 The ~7× amplification of logit diff gain may be primarily MLP-driven, since fine-tuning typically modifies MLP weights more than attention structure. Running layer-ablation with attention-only vs. MLP-only component ablation would decompose this and clarify whether the attention circuit or MLP layers are the causal amplification site.
+
+### 10.6 MLP Neuron Attribution on Miss Cases (Immediate Next Step)
+
+**Motivation**: Experiment 7 established that the L13 residual is already inverted on FS miss variants, and that attention heads account for a stable positive contribution on both seed and variant. The inversion must therefore come from MLP layer outputs. The `batch-neuron-discover` tool ranks MLP neurons by `(activation_delta × logit_weight)` — the product of how much a neuron fires differentially (malicious vs. benign) and how strongly it writes toward BLOCK vs. ALLOW. Running this on seed vs. variant manifests for FS directly identifies which neurons drive the correct signal on seeds and whether those same neurons fail or reverse on variants.
+
+**Concrete runs**:
+
+```bash
+# FS: top MLP neurons on miss seed scripts
+python3 scaled_validation.py \
+  batch-neuron-discover \
+  --model-name fdtn-ai/Foundation-Sec-8B-Instruct \
+  --template-name meta-llama/Llama-3.1-8B-Instruct \
+  --manifest artifacts/foundation_sec/evasion_pair_manifest_realistic_v2_miss_seed.csv \
+  --layers 0,1,2,3,4,5,6,7,8,9,10,11,12 \
+  --topk-per-layer 10 \
+  --output-prefix artifacts/foundation_sec/fs_neuron_miss_v2_seed
+
+# FS: top MLP neurons on miss variant scripts
+python3 scaled_validation.py \
+  batch-neuron-discover \
+  --model-name fdtn-ai/Foundation-Sec-8B-Instruct \
+  --template-name meta-llama/Llama-3.1-8B-Instruct \
+  --manifest artifacts/foundation_sec/evasion_pair_manifest_realistic_v2_miss_variant.csv \
+  --layers 0,1,2,3,4,5,6,7,8,9,10,11,12 \
+  --topk-per-layer 10 \
+  --output-prefix artifacts/foundation_sec/fs_neuron_miss_v2_variant
+
+# Llama: top MLP neurons on miss variant scripts (for comparison)
+python3 scaled_validation.py \
+  --use-chat-template \
+  batch-neuron-discover \
+  --model-name meta-llama/Llama-3.1-8B-Instruct \
+  --template-name meta-llama/Llama-3.1-8B-Instruct \
+  --manifest artifacts/foundation_sec/evasion_pair_manifest_realistic_v2_miss_variant.csv \
+  --layers 0,1,2,3,4,5,6,7,8,9,10,11,12 \
+  --topk-per-layer 10 \
+  --output-prefix artifacts/llama3/llama3_neuron_miss_v2_variant
+```
+
+**Interpretation criteria**: Compare the top-ranked neurons on FS seed vs. FS variant. Neurons that rank highly on seed but disappear or reverse sign on variant are the specific MLP units driving the evasion failure. Cross-referencing with Llama's variant neurons identifies whether Llama simply lacks those neurons' associations (consistent with architecture hypothesis) or has them but they fire differently.
 
 ### 10.5 Linear Probe at Layer 0 Output
 
@@ -548,7 +614,7 @@ Given that L0H11 attends to syntactic delimiter tokens rather than literal indic
 
 **`provisional_v1`**: The primary evasion benchmark. 48 variants across 10 techniques covering aliasing, execution-indirection obfuscation, and string-splitting. Used for all cross-model comparisons.
 
-**`realistic_v2`**: A separate evasion benchmark covering 11 advanced obfuscation techniques (backtick insertion, base64, format strings, subexpression splicing, zero-width strip) with no technique overlap with `provisional_v1`. Foundation-Sec only. Not directly comparable to `provisional_v1`.
+**`realistic_v2`**: A separate evasion benchmark covering 11 advanced obfuscation techniques (backtick insertion, base64, format strings, subexpression splicing, zero-width strip) with no technique overlap with `provisional_v1`. Both models tested (Experiment 6). Not directly comparable to `provisional_v1`.
 
 **Raw prompt**: The minimal rule-based classifier system prompt. Foundation-Sec's default. Does not include intent framing or construct carve-outs.
 

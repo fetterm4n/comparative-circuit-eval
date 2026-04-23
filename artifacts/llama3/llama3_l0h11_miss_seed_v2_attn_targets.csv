@@ -1,0 +1,121 @@
+rank,token_pos,token_str,token_id,attention_weight,pair_idx,script_label,pair_indicator,prompt_len_tokens
+0,826,'ToEnd',67673,0.074238,61,malicious,Invoke-Expression,837
+1,829,'`\n',4077,0.041706,61,malicious,Invoke-Expression,837
+2,35,' as',439,0.035596,61,malicious,Invoke-Expression,837
+3,821,']',60,0.033504,61,malicious,Invoke-Expression,837
+4,823,'ASCII',57550,0.030709,61,malicious,Invoke-Expression,837
+5,824,')).',4682,0.028951,61,malicious,Invoke-Expression,837
+6,835,'<|end_header_id|>',128007,0.022494,61,malicious,Invoke-Expression,837
+7,820,'.Encoding',59864,0.02127,61,malicious,Invoke-Expression,837
+8,814,'Dec',5005,0.020047,61,malicious,Invoke-Expression,837
+9,812,']',60,0.019295,61,malicious,Invoke-Expression,837
+10,1,'<|start_header_id|>',128006,0.013657,61,malicious,Invoke-Expression,837
+11,0,'<|begin_of_text|>',128000,0.013534,61,malicious,Invoke-Expression,837
+12,827,'();\n',545,0.013069,61,malicious,Invoke-Expression,837
+13,831,':',25,0.013011,61,malicious,Invoke-Expression,837
+14,497,'F',37,0.012268,61,malicious,Invoke-Expression,837
+0,385,'Expression',9790,0.040039,61,benign,Invoke-Expression,435
+1,35,' as',439,0.026072,61,benign,Invoke-Expression,435
+2,134,'Admin',7358,0.024395,61,benign,Invoke-Expression,435
+3,358,""" '$""",8412,0.022506,61,benign,Invoke-Expression,435
+4,427,'`\n',4077,0.020552,61,benign,Invoke-Expression,435
+5,384,'.Invoke',33884,0.020039,61,benign,Invoke-Expression,435
+6,148,'.Internal',33679,0.019704,61,benign,Invoke-Expression,435
+7,340,' -',482,0.01872,61,benign,Invoke-Expression,435
+8,305,']',60,0.018625,61,benign,Invoke-Expression,435
+9,352,'-',12,0.01769,61,benign,Invoke-Expression,435
+10,179,'.Internal',33679,0.017595,61,benign,Invoke-Expression,435
+11,178,'.Automation',98217,0.016758,61,benign,Invoke-Expression,435
+12,147,'.Automation',98217,0.016108,61,benign,Invoke-Expression,435
+13,381,'.Power',55186,0.014706,61,benign,Invoke-Expression,435
+14,119,"' ""'",330,0.014473,61,benign,Invoke-Expression,435
+0,826,'ToEnd',67673,0.074238,62,malicious,Invoke-Expression,837
+1,829,'`\n',4077,0.041706,62,malicious,Invoke-Expression,837
+2,35,' as',439,0.035596,62,malicious,Invoke-Expression,837
+3,821,']',60,0.033504,62,malicious,Invoke-Expression,837
+4,823,'ASCII',57550,0.030709,62,malicious,Invoke-Expression,837
+5,824,')).',4682,0.028951,62,malicious,Invoke-Expression,837
+6,835,'<|end_header_id|>',128007,0.022494,62,malicious,Invoke-Expression,837
+7,820,'.Encoding',59864,0.02127,62,malicious,Invoke-Expression,837
+8,814,'Dec',5005,0.020047,62,malicious,Invoke-Expression,837
+9,812,']',60,0.019295,62,malicious,Invoke-Expression,837
+10,1,'<|start_header_id|>',128006,0.013657,62,malicious,Invoke-Expression,837
+11,0,'<|begin_of_text|>',128000,0.013534,62,malicious,Invoke-Expression,837
+12,827,'();\n',545,0.013069,62,malicious,Invoke-Expression,837
+13,831,':',25,0.013011,62,malicious,Invoke-Expression,837
+14,497,'F',37,0.012268,62,malicious,Invoke-Expression,837
+0,35,' as',439,0.034963,62,benign,Invoke-Expression,380
+1,211,' -',482,0.031551,62,benign,Invoke-Expression,380
+2,372,'`\n',4077,0.024262,62,benign,Invoke-Expression,380
+3,348,'-',12,0.023968,62,benign,Invoke-Expression,380
+4,276,'($',703,0.021942,62,benign,Invoke-Expression,380
+5,326,'-',12,0.019592,62,benign,Invoke-Expression,380
+6,292,'\n',198,0.017719,62,benign,Invoke-Expression,380
+7,82,'\n',198,0.017238,62,benign,Invoke-Expression,380
+8,307,'-',12,0.01615,62,benign,Invoke-Expression,380
+9,97,'=$',3266,0.016004,62,benign,Invoke-Expression,380
+10,85,' Connect',13313,0.015468,62,benign,Invoke-Expression,380
+11,350,"' ""'",330,0.015001,62,benign,Invoke-Expression,380
+12,266,' -',482,0.014074,62,benign,Invoke-Expression,380
+13,365,"'""\n'",702,0.013371,62,benign,Invoke-Expression,380
+14,358,'File',1738,0.013159,62,benign,Invoke-Expression,380
+0,826,'ToEnd',67673,0.074238,65,malicious,Invoke-Expression,837
+1,829,'`\n',4077,0.041706,65,malicious,Invoke-Expression,837
+2,35,' as',439,0.035596,65,malicious,Invoke-Expression,837
+3,821,']',60,0.033504,65,malicious,Invoke-Expression,837
+4,823,'ASCII',57550,0.030709,65,malicious,Invoke-Expression,837
+5,824,')).',4682,0.028951,65,malicious,Invoke-Expression,837
+6,835,'<|end_header_id|>',128007,0.022494,65,malicious,Invoke-Expression,837
+7,820,'.Encoding',59864,0.02127,65,malicious,Invoke-Expression,837
+8,814,'Dec',5005,0.020047,65,malicious,Invoke-Expression,837
+9,812,']',60,0.019295,65,malicious,Invoke-Expression,837
+10,1,'<|start_header_id|>',128006,0.013657,65,malicious,Invoke-Expression,837
+11,0,'<|begin_of_text|>',128000,0.013534,65,malicious,Invoke-Expression,837
+12,827,'();\n',545,0.013069,65,malicious,Invoke-Expression,837
+13,831,':',25,0.013011,65,malicious,Invoke-Expression,837
+14,497,'F',37,0.012268,65,malicious,Invoke-Expression,837
+0,112,']\n',933,0.085661,65,benign,Invoke-Expression,345
+1,35,' as',439,0.032635,65,benign,Invoke-Expression,345
+2,321,'       ',286,0.029934,65,benign,Invoke-Expression,345
+3,329,' =',284,0.029559,65,benign,Invoke-Expression,345
+4,275,"'(""\\""'",40015,0.027979,65,benign,Invoke-Expression,345
+5,337,'`\n',4077,0.023747,65,benign,Invoke-Expression,345
+6,254,"'(""\\'",5026,0.022247,65,benign,Invoke-Expression,345
+7,264,"'(""\\""'",40015,0.022014,65,benign,Invoke-Expression,345
+8,149,'-',12,0.018585,65,benign,Invoke-Expression,345
+9,82,'\n',198,0.017407,65,benign,Invoke-Expression,345
+10,164,"'(""\\""'",40015,0.015963,65,benign,Invoke-Expression,345
+11,227,'.Session',21331,0.014169,65,benign,Invoke-Expression,345
+12,84,' Get',2175,0.01339,65,benign,Invoke-Expression,345
+13,332,'    \n',1084,0.013107,65,benign,Invoke-Expression,345
+14,231,'Un',1844,0.012967,65,benign,Invoke-Expression,345
+0,826,'ToEnd',67673,0.074238,66,malicious,Invoke-Expression,837
+1,829,'`\n',4077,0.041706,66,malicious,Invoke-Expression,837
+2,35,' as',439,0.035596,66,malicious,Invoke-Expression,837
+3,821,']',60,0.033504,66,malicious,Invoke-Expression,837
+4,823,'ASCII',57550,0.030709,66,malicious,Invoke-Expression,837
+5,824,')).',4682,0.028951,66,malicious,Invoke-Expression,837
+6,835,'<|end_header_id|>',128007,0.022494,66,malicious,Invoke-Expression,837
+7,820,'.Encoding',59864,0.02127,66,malicious,Invoke-Expression,837
+8,814,'Dec',5005,0.020047,66,malicious,Invoke-Expression,837
+9,812,']',60,0.019295,66,malicious,Invoke-Expression,837
+10,1,'<|start_header_id|>',128006,0.013657,66,malicious,Invoke-Expression,837
+11,0,'<|begin_of_text|>',128000,0.013534,66,malicious,Invoke-Expression,837
+12,827,'();\n',545,0.013069,66,malicious,Invoke-Expression,837
+13,831,':',25,0.013011,66,malicious,Invoke-Expression,837
+14,497,'F',37,0.012268,66,malicious,Invoke-Expression,837
+0,112,']\n',933,0.071289,66,benign,Invoke-Expression,351
+1,151,']\n',933,0.069223,66,benign,Invoke-Expression,351
+2,131,']\n',933,0.06023,66,benign,Invoke-Expression,351
+3,35,' as',439,0.03058,66,benign,Invoke-Expression,351
+4,343,'`\n',4077,0.020839,66,benign,Invoke-Expression,351
+5,323,'-',12,0.020231,66,benign,Invoke-Expression,351
+6,285,'($',703,0.018372,66,benign,Invoke-Expression,351
+7,268,'-',12,0.01792,66,benign,Invoke-Expression,351
+8,82,'\n',198,0.013601,66,benign,Invoke-Expression,351
+9,314,'Name',678,0.013599,66,benign,Invoke-Expression,351
+10,291,'-',12,0.013556,66,benign,Invoke-Expression,351
+11,194,'.',13,0.013181,66,benign,Invoke-Expression,351
+12,332,'null',2994,0.012757,66,benign,Invoke-Expression,351
+13,325,"' ""`'",37073,0.012696,66,benign,Invoke-Expression,351
+14,225,'-',12,0.012518,66,benign,Invoke-Expression,351

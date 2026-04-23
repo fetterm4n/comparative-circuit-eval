@@ -1,0 +1,16 @@
+{
+  "device": "cpu",
+  "first_n_layers": 1,
+  "layer_filter": null,
+  "num_pairs": 4,
+  "pairs_csv": "artifacts/foundation_sec/fs_resid_miss_v2_discover_pairs.csv",
+  "per_pair_csv": "artifacts/foundation_sec/fs_resid_miss_v2_discover_per_pair.csv",
+  "summary_csv": "artifacts/foundation_sec/fs_resid_miss_v2_discover_summary.csv",
+  "target_head": [
+    0,
+    11
+  ],
+  "target_head_csv": "artifacts/foundation_sec/fs_resid_miss_v2_discover_attn_targets.csv",
+  "template_name": "meta-llama/Llama-3.1-8B-Instruct",
+  "topk": 5
+}

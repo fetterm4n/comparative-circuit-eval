@@ -1,0 +1,14 @@
+{
+  "basis_labels": [
+    "mean_delta",
+    "logit_readout"
+  ],
+  "basis_path": "artifacts/foundation_sec/fs_resid_pre13_miss_v2_seed_basis.pt",
+  "device": "cpu",
+  "layer": 13,
+  "num_pairs": 3,
+  "per_pair_csv": "artifacts/foundation_sec/fs_resid_pre13_miss_v2_variant_patch_per_pair.csv",
+  "resid_kind": "pre",
+  "summary_csv": "artifacts/foundation_sec/fs_resid_pre13_miss_v2_variant_patch_summary.csv",
+  "template_name": "meta-llama/Llama-3.1-8B-Instruct"
+}
