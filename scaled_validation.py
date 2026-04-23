@@ -77,6 +77,7 @@ SUSPICIOUS_PATTERNS: List[str] = [
     r"DownloadString",
     r"DownloadFile",
     r"Invoke-WebRequest",
+    r"\biwr\b",
     r"Net\.WebClient",
     r"-EncodedCommand",
     r"Start-Process",
@@ -90,6 +91,7 @@ PATTERN_DISPLAY_NAMES: Dict[str, str] = {
     r"DownloadString": "DownloadString",
     r"DownloadFile": "DownloadFile",
     r"Invoke-WebRequest": "Invoke-WebRequest",
+    r"\biwr\b": "iwr",
     r"Net\.WebClient": "Net.WebClient",
     r"-EncodedCommand": "-EncodedCommand",
     r"Start-Process": "Start-Process",
@@ -3976,16 +3978,19 @@ def cmd_batch_discover_heads(args: argparse.Namespace) -> int:
 
     pair_df = pd.DataFrame(pair_rows)
     head_df = pd.DataFrame(head_rows)
-    agg_df = (
-        head_df.groupby(["layer", "head"], as_index=False)
-        .agg(
-            pair_count=("pair_idx", "nunique"),
-            mean_attention_delta=("attention_delta", "mean"),
-            max_attention_delta=("attention_delta", "max"),
+    if head_df.empty:
+        agg_df = pd.DataFrame(columns=["layer", "head", "pair_count", "mean_attention_delta", "max_attention_delta"])
+    else:
+        agg_df = (
+            head_df.groupby(["layer", "head"], as_index=False)
+            .agg(
+                pair_count=("pair_idx", "nunique"),
+                mean_attention_delta=("attention_delta", "mean"),
+                max_attention_delta=("attention_delta", "max"),
+            )
+            .sort_values(["pair_count", "mean_attention_delta"], ascending=[False, False])
+            .reset_index(drop=True)
         )
-        .sort_values(["pair_count", "mean_attention_delta"], ascending=[False, False])
-        .reset_index(drop=True)
-    )
 
     output_prefix = Path(args.output_prefix or (DEFAULT_ARTIFACT_DIR / "batch_attention_l4"))
     output_prefix.parent.mkdir(parents=True, exist_ok=True)

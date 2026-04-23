@@ -1,0 +1,121 @@
+rank,token_pos,token_str,token_id,attention_weight,pair_idx,script_label,pair_indicator,prompt_len_tokens
+0,76,'\n',198,0.158068,86,malicious,Invoke-WebRequest,81
+1,66,' -',482,0.108551,86,malicious,Invoke-WebRequest,81
+2,56,' -',482,0.076366,86,malicious,Invoke-WebRequest,81
+3,52,'\n',198,0.068487,86,malicious,Invoke-WebRequest,81
+4,10,' as',439,0.052716,86,malicious,Invoke-WebRequest,81
+5,78,'`\n',4077,0.050145,86,malicious,Invoke-WebRequest,81
+6,0,'You',2675,0.04823,86,malicious,Invoke-WebRequest,81
+7,54,'-',12,0.044768,86,malicious,Invoke-WebRequest,81
+8,69,' c',272,0.028005,86,malicious,Invoke-WebRequest,81
+9,61,'.pl',8022,0.023632,86,malicious,Invoke-WebRequest,81
+10,79,'Answer',16533,0.021496,86,malicious,Invoke-WebRequest,81
+11,74,'me',2727,0.018625,86,malicious,Invoke-WebRequest,81
+12,80,':',25,0.01739,86,malicious,Invoke-WebRequest,81
+13,48,':\n',512,0.017087,86,malicious,Invoke-WebRequest,81
+14,72,'\\',59,0.015901,86,malicious,Invoke-WebRequest,81
+0,115,'{\n',517,0.070717,86,benign,Invoke-WebRequest,223
+1,220,'`\n',4077,0.044341,86,benign,Invoke-WebRequest,223
+2,218,'\n',198,0.042785,86,benign,Invoke-WebRequest,223
+3,205,' |',765,0.033463,86,benign,Invoke-WebRequest,223
+4,193,'To',1271,0.033331,86,benign,Invoke-WebRequest,223
+5,217,'.json',4421,0.023646,86,benign,Invoke-WebRequest,223
+6,215,'Root',8605,0.022716,86,benign,Invoke-WebRequest,223
+7,178,'From',3915,0.022519,86,benign,Invoke-WebRequest,223
+8,164,' |',765,0.022065,86,benign,Invoke-WebRequest,223
+9,138,'-',12,0.021382,86,benign,Invoke-WebRequest,223
+10,131,"'"",\n'",761,0.019071,86,benign,Invoke-WebRequest,223
+11,221,'Answer',16533,0.019,86,benign,Invoke-WebRequest,223
+12,163,'.Windows',1970,0.018688,86,benign,Invoke-WebRequest,223
+13,10,' as',439,0.018,86,benign,Invoke-WebRequest,223
+14,209,' -',482,0.017349,86,benign,Invoke-WebRequest,223
+0,76,'\n',198,0.158068,87,malicious,Invoke-WebRequest,81
+1,66,' -',482,0.108551,87,malicious,Invoke-WebRequest,81
+2,56,' -',482,0.076366,87,malicious,Invoke-WebRequest,81
+3,52,'\n',198,0.068487,87,malicious,Invoke-WebRequest,81
+4,10,' as',439,0.052716,87,malicious,Invoke-WebRequest,81
+5,78,'`\n',4077,0.050145,87,malicious,Invoke-WebRequest,81
+6,0,'You',2675,0.04823,87,malicious,Invoke-WebRequest,81
+7,54,'-',12,0.044768,87,malicious,Invoke-WebRequest,81
+8,69,' c',272,0.028005,87,malicious,Invoke-WebRequest,81
+9,61,'.pl',8022,0.023632,87,malicious,Invoke-WebRequest,81
+10,79,'Answer',16533,0.021496,87,malicious,Invoke-WebRequest,81
+11,74,'me',2727,0.018625,87,malicious,Invoke-WebRequest,81
+12,80,':',25,0.01739,87,malicious,Invoke-WebRequest,81
+13,48,':\n',512,0.017087,87,malicious,Invoke-WebRequest,81
+14,72,'\\',59,0.015901,87,malicious,Invoke-WebRequest,81
+0,201,'Destination',34705,0.063858,87,benign,Invoke-WebRequest,216
+1,180,'Destination',34705,0.046116,87,benign,Invoke-WebRequest,216
+2,170,'Url',2934,0.039891,87,benign,Invoke-WebRequest,216
+3,183,"' ""'",330,0.037617,87,benign,Invoke-WebRequest,216
+4,164,' $',400,0.036314,87,benign,Invoke-WebRequest,216
+5,213,'`\n',4077,0.035812,87,benign,Invoke-WebRequest,216
+6,147,'Destination',34705,0.035069,87,benign,Invoke-WebRequest,216
+7,197,'Core',5501,0.024055,87,benign,Invoke-WebRequest,216
+8,122,'Url',2934,0.022095,87,benign,Invoke-WebRequest,216
+9,188,' with',449,0.018363,87,benign,Invoke-WebRequest,216
+10,162,'-',12,0.018125,87,benign,Invoke-WebRequest,216
+11,209,'EXIT',50588,0.016386,87,benign,Invoke-WebRequest,216
+12,176,'Core',5501,0.016207,87,benign,Invoke-WebRequest,216
+13,159,'1',16,0.015831,87,benign,Invoke-WebRequest,216
+14,214,'Answer',16533,0.015369,87,benign,Invoke-WebRequest,216
+0,76,'\n',198,0.158068,88,malicious,Invoke-WebRequest,81
+1,66,' -',482,0.108551,88,malicious,Invoke-WebRequest,81
+2,56,' -',482,0.076366,88,malicious,Invoke-WebRequest,81
+3,52,'\n',198,0.068487,88,malicious,Invoke-WebRequest,81
+4,10,' as',439,0.052716,88,malicious,Invoke-WebRequest,81
+5,78,'`\n',4077,0.050145,88,malicious,Invoke-WebRequest,81
+6,0,'You',2675,0.04823,88,malicious,Invoke-WebRequest,81
+7,54,'-',12,0.044768,88,malicious,Invoke-WebRequest,81
+8,69,' c',272,0.028005,88,malicious,Invoke-WebRequest,81
+9,61,'.pl',8022,0.023632,88,malicious,Invoke-WebRequest,81
+10,79,'Answer',16533,0.021496,88,malicious,Invoke-WebRequest,81
+11,74,'me',2727,0.018625,88,malicious,Invoke-WebRequest,81
+12,80,':',25,0.01739,88,malicious,Invoke-WebRequest,81
+13,48,':\n',512,0.017087,88,malicious,Invoke-WebRequest,81
+14,72,'\\',59,0.015901,88,malicious,Invoke-WebRequest,81
+0,212,'Destination',34705,0.07066,88,benign,Invoke-WebRequest,226
+1,180,'Destination',34705,0.040772,88,benign,Invoke-WebRequest,226
+2,223,'`\n',4077,0.036642,88,benign,Invoke-WebRequest,226
+3,170,'Url',2934,0.035053,88,benign,Invoke-WebRequest,226
+4,204,'-',12,0.034812,88,benign,Invoke-WebRequest,226
+5,164,' $',400,0.03452,88,benign,Invoke-WebRequest,226
+6,183,"' ""'",330,0.029073,88,benign,Invoke-WebRequest,226
+7,147,'Destination',34705,0.024316,88,benign,Invoke-WebRequest,226
+8,208,'Core',5501,0.024286,88,benign,Invoke-WebRequest,226
+9,122,'Url',2934,0.021932,88,benign,Invoke-WebRequest,226
+10,162,'-',12,0.020299,88,benign,Invoke-WebRequest,226
+11,188,' with',449,0.017059,88,benign,Invoke-WebRequest,226
+12,219,'EXIT',50588,0.016731,88,benign,Invoke-WebRequest,226
+13,224,'Answer',16533,0.015697,88,benign,Invoke-WebRequest,226
+14,221,'\n',198,0.015457,88,benign,Invoke-WebRequest,226
+0,76,'\n',198,0.158068,89,malicious,Invoke-WebRequest,81
+1,66,' -',482,0.108551,89,malicious,Invoke-WebRequest,81
+2,56,' -',482,0.076366,89,malicious,Invoke-WebRequest,81
+3,52,'\n',198,0.068487,89,malicious,Invoke-WebRequest,81
+4,10,' as',439,0.052716,89,malicious,Invoke-WebRequest,81
+5,78,'`\n',4077,0.050145,89,malicious,Invoke-WebRequest,81
+6,0,'You',2675,0.04823,89,malicious,Invoke-WebRequest,81
+7,54,'-',12,0.044768,89,malicious,Invoke-WebRequest,81
+8,69,' c',272,0.028005,89,malicious,Invoke-WebRequest,81
+9,61,'.pl',8022,0.023632,89,malicious,Invoke-WebRequest,81
+10,79,'Answer',16533,0.021496,89,malicious,Invoke-WebRequest,81
+11,74,'me',2727,0.018625,89,malicious,Invoke-WebRequest,81
+12,80,':',25,0.01739,89,malicious,Invoke-WebRequest,81
+13,48,':\n',512,0.017087,89,malicious,Invoke-WebRequest,81
+14,72,'\\',59,0.015901,89,malicious,Invoke-WebRequest,81
+0,247,'we',906,0.080001,89,benign,Invoke-WebRequest,258
+1,244,'.s',516,0.056632,89,benign,Invoke-WebRequest,258
+2,201,' -',482,0.037503,89,benign,Invoke-WebRequest,258
+3,249,'.net',5181,0.036298,89,benign,Invoke-WebRequest,258
+4,251,'/d',3529,0.036021,89,benign,Invoke-WebRequest,258
+5,213,'we',906,0.035304,89,benign,Invoke-WebRequest,258
+6,255,'`\n',4077,0.034836,89,benign,Invoke-WebRequest,258
+7,224,'\n\n\n',1432,0.028609,89,benign,Invoke-WebRequest,258
+8,212,'.azure',71340,0.027882,89,benign,Invoke-WebRequest,258
+9,250,'/api',10729,0.025515,89,benign,Invoke-WebRequest,258
+10,197,'\n\n\n',1432,0.023353,89,benign,Invoke-WebRequest,258
+11,199,'-',12,0.021398,89,benign,Invoke-WebRequest,258
+12,193,' -',482,0.019463,89,benign,Invoke-WebRequest,258
+13,190,' $',400,0.019101,89,benign,Invoke-WebRequest,258
+14,215,'.net',5181,0.015977,89,benign,Invoke-WebRequest,258

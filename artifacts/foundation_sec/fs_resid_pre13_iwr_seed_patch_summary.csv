@@ -1,0 +1,4 @@
+patch_label,pair_count,mean_delta,max_delta,min_delta,flip_rate,mean_base_logit_diff
+contrastive_pre13_mean_delta,3,-0.4322916666666667,-0.421875,-0.4375,1.0,-0.6875
+contrastive_pre13_all,3,-0.4270833333333333,-0.421875,-0.4375,1.0,-0.6875
+contrastive_pre13_logit_readout,3,0.0,0.0,0.0,1.0,-0.6875

@@ -1,0 +1,5 @@
+pair_idx,pair_indicator,benign_filename,benign_manifest_rank,benign_used_char_len,malicious_filename,malicious_manifest_rank,malicious_used_char_len,indicator_positions,indicator_count
+86,Invoke-WebRequest,3784.ps1,,592,1362.ps1,,80,"[53, 54, 55]",1
+87,Invoke-WebRequest,4058.ps1,,654,1362.ps1,,80,"[53, 54, 55]",1
+88,Invoke-WebRequest,3104.ps1,,706,1362.ps1,,80,"[53, 54, 55]",1
+89,Invoke-WebRequest,896.ps1,,839,1362.ps1,,80,"[53, 54, 55]",1

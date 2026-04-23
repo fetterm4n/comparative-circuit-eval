@@ -1,0 +1,10 @@
+patch_label,layer,resid_kind,subspace_dim,base_logit_diff,patched_logit_diff,delta_logit_diff,effect_pct,basis_label,basis_mode,pair_idx,pair_indicator,benign_filename,malicious_filename,flip_to_benign
+contrastive_pre13_mean_delta,13,pre,1,-0.6875,-1.125,-0.4375,-63.63636363636363,mean_delta,single,86,Invoke-WebRequest,3784.ps1,1362.ps1,True
+contrastive_pre13_logit_readout,13,pre,1,-0.6875,-0.6875,0.0,0.0,logit_readout,single,86,Invoke-WebRequest,3784.ps1,1362.ps1,True
+contrastive_pre13_all,13,pre,2,-0.6875,-1.125,-0.4375,-63.63636363636363,mean_delta+logit_readout,all,86,Invoke-WebRequest,3784.ps1,1362.ps1,True
+contrastive_pre13_mean_delta,13,pre,1,-0.6875,-1.125,-0.4375,-63.63636363636363,mean_delta,single,87,Invoke-WebRequest,4058.ps1,1362.ps1,True
+contrastive_pre13_logit_readout,13,pre,1,-0.6875,-0.6875,0.0,0.0,logit_readout,single,87,Invoke-WebRequest,4058.ps1,1362.ps1,True
+contrastive_pre13_all,13,pre,2,-0.6875,-1.109375,-0.421875,-61.36363636363637,mean_delta+logit_readout,all,87,Invoke-WebRequest,4058.ps1,1362.ps1,True
+contrastive_pre13_mean_delta,13,pre,1,-0.6875,-1.109375,-0.421875,-61.36363636363637,mean_delta,single,88,Invoke-WebRequest,3104.ps1,1362.ps1,True
+contrastive_pre13_logit_readout,13,pre,1,-0.6875,-0.6875,0.0,0.0,logit_readout,single,88,Invoke-WebRequest,3104.ps1,1362.ps1,True
+contrastive_pre13_all,13,pre,2,-0.6875,-1.109375,-0.421875,-61.36363636363637,mean_delta+logit_readout,all,88,Invoke-WebRequest,3104.ps1,1362.ps1,True
