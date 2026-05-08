@@ -6476,6 +6476,182 @@ def cmd_batch_trace_direction_under_intervention(args: argparse.Namespace) -> in
     return 0
 
 
+def cmd_batch_indicator_sensitivity(args: argparse.Namespace) -> int:
+    """For each malicious script, measure how much indicator-token mean-ablation shifts resid_pre13.
+
+    Two forward passes per script:
+      1. Clean: normal forward, capture resid_pre13 at last token.
+      2. Ablated: indicator token embeddings replaced with mean embedding; capture resid_pre13.
+
+    Sensitivity = L2(clean_resid - ablated_resid). Aggregated per family.
+    """
+    require_transformer_lens()
+
+    manifest = pd.read_csv(args.manifest)
+    pairs = select_explicit_pairs(manifest)
+    if not pairs:
+        raise RuntimeError("No explicit pairs found in manifest.")
+
+    hf_model, tokenizer, device = load_hf_model_and_tokenizer(
+        args.model_name,
+        device=args.device,
+        torch_dtype=args.torch_dtype,
+    )
+    model = build_hooked_transformer(
+        hf_model,
+        tokenizer,
+        device=device,
+        torch_dtype=args.torch_dtype,
+        template_name=args.template_name,
+        first_n_layers=None,
+        use_attn_result=False,
+    )
+    model.eval()
+
+    allow_token_id = tokenizer.encode(" ALLOW", add_special_tokens=False)[0]
+    block_token_id = tokenizer.encode(" BLOCK", add_special_tokens=False)[0]
+
+    # Pre-compute mean embedding across vocabulary for mean ablation
+    with torch.no_grad():
+        mean_embed = model.W_E.mean(dim=0).detach().clone()  # [d_model]
+
+    resid_hook_name = build_residual_hook_name(args.layer, "pre")
+
+    rows: List[Dict[str, object]] = []
+    for fallback_idx, (benign_row, malicious_row) in enumerate(pairs, start=1):
+        pair_idx = resolve_pair_idx(benign_row, malicious_row, fallback_idx=fallback_idx)
+        pair_indicator = benign_row.get("pair_indicator", malicious_row.get("pair_indicator", ""))
+        malicious_prompt = make_prompt(malicious_row["content"])
+        malicious_tokens = model.to_tokens(malicious_prompt)
+
+        # Find indicator token positions in the full tokenized prompt
+        indicator_positions = get_indicator_tokens(malicious_prompt, tokenizer)
+
+        with torch.inference_mode():
+            base_logits, base_cache = model.run_with_cache(
+                malicious_tokens, return_type="logits",
+            )
+        base_logit_diff = logit_diff_from_logits(base_logits, allow_token_id, block_token_id)
+        base_resid = base_cache[resid_hook_name][0, -1, :].detach().clone().cpu()
+        del base_cache
+
+        if not indicator_positions:
+            # No indicators found — record zero sensitivity
+            rows.append({
+                "pair_idx": pair_idx,
+                "pair_indicator": pair_indicator,
+                "malicious_filename": malicious_row["filename"],
+                "n_indicator_tokens": 0,
+                "base_logit_diff": float(base_logit_diff),
+                "ablated_logit_diff": float(base_logit_diff),
+                "logit_diff_delta": 0.0,
+                "resid_l2_sensitivity": 0.0,
+                "resid_cosine_similarity": 1.0,
+            })
+            del malicious_tokens
+            maybe_clear_device_cache(device)
+            continue
+
+        indicator_set = set(indicator_positions)
+        seq_len = malicious_tokens.shape[1]
+        mean_embed_device = mean_embed.to(device)
+
+        ablated_resid_store: List[torch.Tensor] = []
+
+        def embed_ablate_fn(embed_out, hook):
+            patched = embed_out.clone()
+            for pos in indicator_set:
+                if 0 <= pos < seq_len:
+                    patched[0, pos, :] = mean_embed_device
+            return patched
+
+        def resid_capture_fn(resid_out, hook):
+            ablated_resid_store.append(resid_out[0, -1, :].detach().clone().cpu())
+            return resid_out
+
+        with torch.inference_mode():
+            ablated_logits = model.run_with_hooks(
+                malicious_tokens,
+                return_type="logits",
+                fwd_hooks=[
+                    ("hook_embed", embed_ablate_fn),
+                    (resid_hook_name, resid_capture_fn),
+                ],
+            )
+        ablated_logit_diff = logit_diff_from_logits(ablated_logits, allow_token_id, block_token_id)
+        ablated_resid = ablated_resid_store[0]
+
+        diff = base_resid - ablated_resid
+        l2_sensitivity = float(diff.norm().item())
+        cosine_sim = float(
+            torch.nn.functional.cosine_similarity(base_resid.unsqueeze(0), ablated_resid.unsqueeze(0)).item()
+        )
+
+        rows.append({
+            "pair_idx": pair_idx,
+            "pair_indicator": pair_indicator,
+            "malicious_filename": malicious_row["filename"],
+            "n_indicator_tokens": len(indicator_positions),
+            "base_logit_diff": float(base_logit_diff),
+            "ablated_logit_diff": float(ablated_logit_diff),
+            "logit_diff_delta": float(ablated_logit_diff - base_logit_diff),
+            "resid_l2_sensitivity": l2_sensitivity,
+            "resid_cosine_similarity": cosine_sim,
+        })
+
+        del malicious_tokens
+        maybe_clear_device_cache(device)
+
+    per_pair_df = pd.DataFrame(rows)
+
+    family_df = (
+        per_pair_df.groupby("pair_indicator")
+        .agg(
+            n=("pair_idx", "count"),
+            mean_l2_sensitivity=("resid_l2_sensitivity", "mean"),
+            mean_logit_diff_delta=("logit_diff_delta", "mean"),
+            mean_base_logit_diff=("base_logit_diff", "mean"),
+            mean_n_indicator_tokens=("n_indicator_tokens", "mean"),
+        )
+        .reset_index()
+        .sort_values("mean_l2_sensitivity", ascending=False)
+    )
+
+    output_prefix = Path(args.output_prefix or (DEFAULT_ARTIFACT_DIR / "indicator_sensitivity"))
+    output_prefix.parent.mkdir(parents=True, exist_ok=True)
+    per_pair_path = output_prefix.with_name(output_prefix.name + "_per_pair.csv")
+    family_path = output_prefix.with_name(output_prefix.name + "_family.csv")
+    metadata_path = output_prefix.with_name(output_prefix.name + "_metadata.json")
+
+    per_pair_df.to_csv(per_pair_path, index=False)
+    family_df.to_csv(family_path, index=False)
+    write_json(
+        metadata_path,
+        {
+            "model_name": args.model_name,
+            "layer": args.layer,
+            "num_pairs": len(pairs),
+            "device": device,
+            "template_name": args.template_name,
+            "per_pair_csv": str(per_pair_path),
+            "family_csv": str(family_path),
+        },
+    )
+
+    print(
+        json.dumps(
+            {
+                "metadata": str(metadata_path),
+                "num_pairs": len(pairs),
+                "family_summary": family_df.to_dict(orient="records"),
+            },
+            indent=2,
+            sort_keys=True,
+        )
+    )
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -7181,6 +7357,20 @@ def build_parser() -> argparse.ArgumentParser:
         default=DEFAULT_ARTIFACT_DIR / "direction_trace_under_intervention",
     )
     batch_trace_direction_under_intervention_parser.set_defaults(func=cmd_batch_trace_direction_under_intervention)
+
+    # batch-indicator-sensitivity
+    indicator_sensitivity_parser = subparsers.add_parser(
+        "batch-indicator-sensitivity",
+        help="Measure how much indicator-token mean-ablation shifts resid_pre at a given layer.",
+    )
+    indicator_sensitivity_parser.add_argument("--manifest", type=Path, default=DEFAULT_ARTIFACT_DIR / "analysis_manifest.csv")
+    indicator_sensitivity_parser.add_argument("--model-name", default=DEFAULT_MODEL_NAME)
+    indicator_sensitivity_parser.add_argument("--template-name", default="meta-llama/Llama-3.1-8B-Instruct")
+    indicator_sensitivity_parser.add_argument("--device", default="cuda")
+    indicator_sensitivity_parser.add_argument("--torch-dtype", choices=["float16", "bfloat16", "float32"], default="float16")
+    indicator_sensitivity_parser.add_argument("--layer", type=int, default=13, help="Layer index for resid_pre capture (default: 13 = resid_pre13).")
+    indicator_sensitivity_parser.add_argument("--output-prefix", default=None)
+    indicator_sensitivity_parser.set_defaults(func=cmd_batch_indicator_sensitivity)
 
     return parser
 

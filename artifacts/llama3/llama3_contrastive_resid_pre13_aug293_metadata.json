@@ -1,0 +1,18 @@
+{
+  "basis_labels": [
+    "mean_delta",
+    "logit_readout"
+  ],
+  "basis_path": "artifacts/llama3/llama3_contrastive_resid_pre13_aug293_basis.pt",
+  "device": "cuda",
+  "diagnostics": {
+    "logit_dir_norm": 1.1032631397247314,
+    "mean_delta_logit_dir_cosine": 0.022328395396471024,
+    "mean_delta_norm": 2.146153211593628
+  },
+  "layer": 13,
+  "num_pairs": 206,
+  "pairs_csv": "artifacts/llama3/llama3_contrastive_resid_pre13_aug293_pairs.csv",
+  "resid_kind": "pre",
+  "template_name": "meta-llama/Llama-3.1-8B-Instruct"
+}

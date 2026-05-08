@@ -1,0 +1,9 @@
+{
+  "device": "cuda",
+  "family_csv": "artifacts/foundation_sec/indicator_sensitivity_fs_aug293_family.csv",
+  "layer": 13,
+  "model_name": "fdtn-ai/Foundation-Sec-8B-Instruct",
+  "num_pairs": 293,
+  "per_pair_csv": "artifacts/foundation_sec/indicator_sensitivity_fs_aug293_per_pair.csv",
+  "template_name": "meta-llama/Llama-3.1-8B-Instruct"
+}
