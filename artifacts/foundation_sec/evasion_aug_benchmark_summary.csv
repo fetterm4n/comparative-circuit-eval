@@ -1,0 +1,4 @@
+family,variants_tested,evasion_successes,evasion_rate,mean_logit_diff_delta
+execution_indirection,45,1,0.022222222222222223,0.6501736111111112
+keyword_hiding,21,1,0.047619047619047616,-0.39732142857142855
+string_construction,19,0,0.0,-1.4124177631578947

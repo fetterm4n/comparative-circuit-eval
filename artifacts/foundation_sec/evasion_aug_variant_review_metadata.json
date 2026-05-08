@@ -1,0 +1,15 @@
+{
+  "review_counts": {
+    "needs_review": 93
+  },
+  "review_csv": "artifacts/foundation_sec/evasion_aug_variant_review.csv",
+  "runtime_availability": {
+    "pwsh_7": null,
+    "windows_powershell_5_1": null
+  },
+  "seed_manifest_csv": "artifacts/foundation_sec/evasion_aug_seed_manifest.csv",
+  "tree_sitter_powershell_available": true,
+  "updated_manifest_csv": "artifacts/foundation_sec/evasion_aug_variant_manifest_reviewed.csv",
+  "variant_count": 93,
+  "variant_manifest_csv": "artifacts/foundation_sec/evasion_aug_variant_manifest.csv"
+}
