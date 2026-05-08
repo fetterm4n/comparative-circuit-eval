@@ -1,0 +1,374 @@
+\documentclass{article}
+
+\PassOptionsToPackage{numbers,square,sort&compress}{natbib}
+\usepackage[preprint]{neurips_2024}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{microtype}
+\usepackage{amsmath, amssymb}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{hyperref}
+\usepackage{url}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue,
+  citecolor=blue,
+  urlcolor=blue,
+  pdftitle={Inherited Circuits, Fine-Tuned Semantics: Mechanistic Evaluation of PowerShell Classification and Evasion in Security LLMs}
+}
+
+\titlespacing*{\section}{0pt}{1.0ex plus 0.2ex minus 0.1ex}{0.45ex}
+\titlespacing*{\subsection}{0pt}{0.8ex plus 0.2ex minus 0.1ex}{0.35ex}
+\setlength{\textfloatsep}{0.8em plus 0.3em minus 0.2em}
+\setlength{\floatsep}{0.7em plus 0.3em minus 0.2em}
+\setlength{\intextsep}{0.8em plus 0.3em minus 0.2em}
+\setlength{\abovecaptionskip}{0.35em}
+\setlength{\belowcaptionskip}{0.2em}
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.8}
+\renewcommand{\textfraction}{0.07}
+\renewcommand{\floatpagefraction}{0.75}
+\setcounter{topnumber}{4}
+\setcounter{bottomnumber}{3}
+\setcounter{totalnumber}{5}
+
+\title{Inherited Circuits, Fine-Tuned Semantics: Mechanistic Evaluation of PowerShell Classification and Evasion in Security LLMs}
+\author{%
+  Ryan Fetterman \\
+  Cisco\\
+   \texttt{rfetterm@cisco.com}
+}
+\date{}
+
+\begin{document}
+\raggedbottom
+
+\maketitle
+\begin{abstract}
+Large language models (LLMs) are increasingly being used for critical, security-relevant classification tasks, yet their internal decision-making is not well understood. We study malicious PowerShell classification in Foundation-Sec-8B-Instruct, identify and validate the main internal route behind its decisions, and compare it with its Llama-3.1-8B-Instruct predecessor to ask whether cybersecurity fine-tuning creates a new route or reshapes an inherited one. On a 96-pair within-family matched cohort for Foundation-Sec, causal patching tests support a minimal direct branch from an early attention head (\texttt{L0H11}, meaning Layer 0 Head 11) into a late Layer-12 head bundle (\texttt{L12H15/L12H5/L12H4}), while a broader late-stage bundle (\texttt{L12H15/L12H5/L12H4/L12H28}) provides an even stronger explanation of the model's output. The minimal branch accounts for about \(90\%\) of the model's average malicious decision margin and flips \(54/96\) predictions; the stronger late bundle accounts for about \(93\%\) and flips \(60/96\). A matched Llama analysis finds the same \texttt{L0H11} early detector and the same Layer-12 integration stage, but with late-head emphasis shifted toward \texttt{L12H28/L12H5/L12H4/L12H13}. This supports an inheritance-and-reshaping account: fine-tuning amplified and concentrated an existing structural circuit rather than creating it from scratch. We then evaluate this route under a two-tier syntax-preserving evasion benchmark. Foundation-Sec shows technique-specific misses across both tiers, while Llama has no misses on either tier in a controlled prompt comparison. Follow-up experiments show that these evasion successes do not erase the model’s internal malicious evidence; instead, the same evidence remains present, but later feed-forward computation can reverse how that evidence affects the final decision. A frozen reference probe at the causally important \texttt{resid\_pre13} activation site then detects family-specific fine-tuning drift on clean canonical inputs: the largest probe suppressions occur in the same capability families that later produce evasion misses, while representational direction is preserved. Overall, these results support a concrete mechanistic robustness claim: security fine-tuning can preserve an inherited structural circuit while adding semantic weighting that strengthens nominal classification behavior, but can also create new evasion brittleness.
+\end{abstract}
+
+\textbf{Keywords:} mechanistic interpretability, large language models, malware detection, PowerShell, evasion, attribution, causal intervention
+
+\section{Introduction}
+Large language models are now used in cybersecurity workflows, including code triage, malware analysis, and policy-based blocking. Despite strong empirical performance, it is often unclear what internal computations produce a malicious-versus-benign classification and how these computations fail under adversarial or obfuscated input. This gap is especially important in security settings, where downstream users may over trust a model's confidence without understanding whether the model is tracking robust malicious behavior or merely brittle surface indicators. More broadly, recent mechanistic work has emphasized the value of moving from coarse behavior descriptions to explicit circuit-level explanations of model behavior \citep{cammarata2020thread,elhage2021mathematical,wang2023interpretability}.
+
+This work investigates the mechanistic structure in a malicious PowerShell classification context. The motivating hypothesis is that early model components detect suspicious strings or behaviors, while later components transform this evidence into the final decision. The comparative question is whether that route is a Foundation-Sec-specific product of security fine-tuning or an inherited Llama circuit whose weights and downstream semantics were changed by fine-tuning. We do not aim to claim a fully decomposed circuit. Instead, we identify a compact, intervention-supported route that is specific enough to test under controlled matched examples, under cross-model comparison, and under conservative evasion, in the spirit of recent circuit and attribution-graph analyses \citep{ameisen2025attributiongraphs,lindsey2025biology,conmy2023automated}.
+
+The paper is organized around four claims. First, Foundation-Sec contains an early detection stage, with \texttt{L0H11} as the clearest entry point into the validated route. Second, causal interventions on a 96-pair within-family matched cohort support a minimal direct late route \texttt{L0H11 $\rightarrow$ L12H15/L12H5/L12H4} and a stronger late-stage bundle \texttt{L12H15/L12H5/L12H4/L12H28}. Third, Llama shares the same \texttt{L0H11}-to-Layer-12 structure but uses a more diffuse Layer-12 bundle, suggesting that the route is inherited and then reweighted by fine-tuning. Fourth, the strongest current evasion result is not loss of the route itself: in the best-localized case, later feed-forward computation changes the sign of the surviving malicious signal before the final readout.
+
+\begin{itemize}[leftmargin=1.5em,itemsep=0.15em,topsep=0.15em,parsep=0pt,partopsep=0pt]
+  \item We construct and evaluate an overlap-controlled malicious PowerShell validation cohort in which benign and malicious scripts share suspicious indicator strings.
+  \item We validate a circuit claim on the 96-pair within-family matched cohort, identifying a clean minimal direct branch and a stronger late-stage bundle through causal patching and grouped ablation.
+  \item We use Llama-3.1-8B-Instruct as an architectural control and show that \texttt{L0H11} and the Layer-12 integration stage are inherited rather than Foundation-Sec-specific.
+  \item We show that security fine-tuning concentrates and semantically weights this inherited route, improving raw-prompt usability and classification accuracy, while introducing specific evasion brittleness.
+  \item We show that the strongest current successful-evasion slices are better explained by later computation reversing the signal than by simple route deletion.
+  \item We develop a two-tier evasion benchmark for syntax-preserving PowerShell obfuscation that is specifically designed using paired samples and targeted transformation to enable mechanistic security analysis. The \texttt{direct\_v1} tier covers conservative rewrites such as alias substitution, call-operator indirection, token splitting, and literal reconstruction, while \texttt{reconstructive\_v2} adds stronger character-level and string-reconstruction patterns such as back ticks, format strings, ASCII or Base-64 recovery, invisible Unicode normalization, alternate quoting, and sub-expressions.
+\end{itemize}
+
+\begin{table}[!htbp]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{0.95}
+\caption{Claim ladder for the current study. This table separates what is treated as discovery context from what is treated as the main validated claim.}
+\label{tab:claim-ladder}
+\begin{tabular}{@{}p{0.11\linewidth}p{0.4\linewidth}p{0.47\linewidth}@{}}
+\toprule
+Claim level & Main statement & Role in this draft \\
+\midrule
+Discovery & Early Layer 0 detector family, especially \texttt{L0H11} and \texttt{L0H9} & Initial localization result motivating the narrower validated route, but not final evidence by itself \\
+Validation & \texttt{L0H11 $\rightarrow$ L12H15/L12H5/L12H4} & Cleanest minimal direct branch on the 96-pair cohort \\
+Validation & \texttt{L12H15/L12H5/L12H4/L12H28} & Stronger late-stage bundle on the 96-pair cohort \\
+Refinement & \texttt{L12H2} helps some grouped ablations but weakens the main patching comparison & Auxiliary family-sensitive helper rather than part of the stable sufficiency core \\
+Comparison & Llama shares \texttt{L0H11} and Layer 12 but shifts late dominance toward \texttt{L12H28} & Evidence that fine-tuning reshapes an inherited circuit rather than creating the structural route \\
+Evasion & \texttt{invoke\_webrequest\_alias} and \texttt{invoke\_expression\_format\_string} preserve late malicious evidence but reverse its downstream effect & Mechanistic reading of the current benchmark failures; supports signal reversal rather than deletion \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Prior Work}
+Previous work on mechanistic interpretability provides the main template for this study. Early circuit work argued that neural networks can often be understood in terms of reusable features and the pathways that connect them \citep{cammarata2020thread}. Transformer-specific follow-up then formalized residual-stream communication and path-based decomposition \citep{elhage2021mathematical}, identified induction heads as a concrete algorithmic circuit for the completion of the in-context pattern \citep{olsson2022induction}, and showed that medium-scale language behavior can be partially decomposed into head-level circuits under causal intervention \citep{wang2023interpretability}. More recent work has also pushed toward more automated circuit discovery, which is directly relevant to the discovery-versus-validation split used here \citep{conmy2023automated}.
+
+The model lineage matters for interpretation. Foundation-Sec-8B was introduced as a cybersecurity-focused derivative of the Llama 3.1 8B base architecture, obtained through continued pretraining on a curated cybersecurity corpus rather than training from scratch \citep{kassianik2025foundationsecbase}. Foundation-Sec-8B-Instruct then extends that base model with instruction tuning and human-preference alignment for chat-style cybersecurity use \citep{weerawardhena2025foundationsecinstruct}. This choice is relevant because the model was previously evaluated to perform favorably in PowerShell classification, with a reported \(+16\%\) precision gain over the baseline in a threat-hunting workflow  \citep{fetterman2025foundationsecpowershell}. It also creates a natural mechanistic control: if Foundation-Sec and Llama share the same circuit skeleton, then the cybersecurity fine-tuning should be interpreted as amplifying, reweighting, or adding semantic use of an inherited circuit rather than inventing a new one. Recent circuit analyses of fine-tuning similarly find that circuit nodes can remain highly similar before and after fine-tuning while the edge structure and functional weighting change \citep{wang2025finetuningcircuits}.
+
+Adjacent robustness and security research motivate the evasion side of the paper. In malware detection and related security pipelines, detectors that perform well on nominal data can still fail under functionality-preserving adversarial modifications, and improving robustness often requires explicitly modeling the attack surface rather than assuming that high baseline accuracy implies stability \citep{lucas2023adversarial,mukherjee2023evading}. Our setting differs in that the detector is an LLM operating over PowerShell scripts, and the goal is mechanistic rather than purely behavioral. But the central concern is the same: if the model relies on brittle surface indicators, then conservative rewrites may change the decision without removing the underlying malicious behavior.
+
+\section{Background}
+This paper uses standard transformer notation. A label such as \texttt{L12H15} means \emph{Layer 12, Attention Head 15}. Attention heads read information from earlier tokens and write their output into a shared running state often called the \emph{residual stream}. When we say a head or layer ``carries malicious evidence,'' we mean that its contribution to this shared state pushes the model toward a malicious rather than benign classification. The model also contains \emph{MLP} blocks, the feed-forward sublayers that sit alongside attention in each transformer layer. In this paper, \texttt{resid\_pre13} simply names the shared activation state immediately before Layer 13.
+
+We use the term \emph{circuit} in a narrow sense: a small set of model components whose activations causally matter for the classification decision under study. A \emph{route} is one specific path through that circuit. A \emph{late-stage bundle} is the group of late heads that transports the strongest malicious-versus-benign evidence near the output. A label such as \texttt{L0H11 $\rightarrow$ L12H15/L12H5/L12H4} should therefore be read as a shorthand summary of the route, not as the claim that these are the only relevant components in the full model.
+
+Our main intervention tools are also simple in intent. \emph{Grouped path patching} asks whether copying activations from a malicious example into a candidate route is enough to recreate the malicious classification signal; in other words, it is primarily a sufficiency test. \emph{Grouped head ablation} asks whether removing a candidate group weakens the decision signal; it is primarily a necessity test. When we say a route is \emph{validated}, we mean that it survives these causal intervention checks on the matched cohort. When we say \emph{signal inversion}, we mean that the model still forms malicious evidence internally, but later computation changes the sign or use of that evidence before the final readout. Figures \ref{fig:route-comparison} and \ref{fig:shared-skeleton-reweighted-heads} provide the most direct visual summaries of these components and how they differ across the two models.
+
+\section{Problem Setting}
+The task is binary malicious-code classification for PowerShell scripts. The key mechanistic difficulty is that many suspicious strings are not uniquely malicious: benign administrative scripts can contain tokens such as \texttt{IEX}, \texttt{FromBase64String}, \texttt{DownloadString}, \texttt{Invoke-WebRequest}, or \texttt{-EncodedCommand}. We therefore use matched benign and malicious examples sharing suspicious indicators, so that the interpretability problem is not trivially solved by superficial token presence alone.
+
+\section{Dataset and Evaluation Cohorts}
+\subsection{Source Dataset}
+The source corpus contains 2{,}556 labeled PowerShell scripts, derived from prior work\citep{FANG202130}. The class balance after filtering is approximately even. A substantial long tail of long scripts motivated  a 12,000-character pre-processing cap when building the analysis manifests and construction of the matched cohorts, so benign and malicious scripts were paired and selected under explicit length control rather than letting the very longest scripts dominate the mechanistic runs. The main evidentiary basis for this draft is a 96-pair within-family matched cohort in which benign and malicious scripts share suspicious indicators while remaining length-controlled enough for the intervention pipeline. 
+
+\section{Methods}
+\subsection{Discovery}
+The goal of the discovery phase is to identify a small number of candidate components that repeatedly carry malicious-versus-benign evidence before we run the stronger causal tests in the validated route analysis below. Concretely, we first inspect \emph{attention recurrence}: whether the same early and late heads repeatedly attend to suspicious command spans, URLs, or execution sites across matched examples. We then use reduced-layer head interventions and coarse full-model layer ablation to ask a localization question: if a candidate head or layer band is removed, does the malicious judgment weaken enough to justify carrying that component forward into the validated route search? This is methodologically closest to earlier circuit-discovery work that treats attention patterns, residual-stream communication, and coarse intervention effects as a way to narrow the search space before making a sharper causal claim \citep{cammarata2020thread,elhage2021mathematical,conmy2023automated,ameisen2025attributiongraphs}.
+
+Two discovery tools are especially important for the present paper. First, \emph{residual-direction patching} defines a task-aligned direction from matched benign-versus-malicious examples and then asks whether replacing activations at a given site moves the model along that malicious direction. Intuitively, this tests whether a location in the network is carrying classification-relevant evidence rather than only showing generic activation magnitude. Second, \emph{head-write tracing} breaks the contribution at that site into the individual head outputs that push in that direction, which lets us identify a small set of dominant heads instead of treating an entire layer as monolithic. These discovery analyses do not by themselves establish a validated circuit, but they are the reason the final claim can be stated narrowly as an \texttt{L0H11}-to-Layer-12 route rather than as a vague statement about ``early'' and ``late'' computation. This use of residual directions, head-level intervention, and candidate-route narrowing follows the general logic of recent transformer-circuit studies, especially work on induction-style circuits, IOI-style causal localization, and automated circuit search \citep{olsson2022induction,wang2023interpretability,conmy2023automated}.
+
+\subsection{Validation}
+The final claim is based on grouped interventions on the 96-pair cohort:
+\begin{itemize}[leftmargin=1.5em,itemsep=0.2em,topsep=0pt,parsep=0pt,partopsep=0pt]
+  \item \textbf{Grouped path patching} is used primarily as a sufficiency test.
+  \item \textbf{Grouped head ablation} is used primarily as a necessity test.
+\end{itemize}
+
+In simple terms, a \emph{sufficiency} test asks whether a candidate route is enough to recreate the relevant behavior when its activations are patched in from a malicious example. A \emph{necessity} test asks whether the behavior weakens when that route is removed or disabled. These are related but not identical questions: a route can be sufficient without being strictly necessary if the model has backup pathways, and it can be necessary in a narrow setting without being the cleanest transportable route for patching.
+
+Throughout the paper, \emph{mean intervention effect} refers to the average shift produced by an intervention on the model's malicious-versus-benign decision score. A more negative mean effect therefore indicates a stronger push toward the malicious judgment under the intervention. \emph{Flip rate} reports how often that intervention is strong enough to change the model's final predicted label. 
+
+\subsection{Evasion}
+We evaluate syntax-preserving obfuscation techniques and then, for the strongest misses, compare each original malicious script with its rewritten variant using the same circuit probes. Candidate variants are generated only from malicious seed scripts that the model initially classifies correctly, so the evasion benchmark measures failures relative to seeds that already pass the baseline classifier. Throughout this section, \texttt{evasion} means behavioral evasion of classification, that is, a malicious variant that the model now predicts benign. The central mechanistic question is whether successful evasion removes the validated malicious-evidence route or instead preserves that route while later computation changes how that evidence is used. In the best-localized current case, this change appears at the Layer 13 boundary: feed-forward computation before that boundary introduces a competing signal that reverses the effect of the surviving late-stage bundle.
+
+The implemented benchmark is two-tiered. \texttt{direct\_v1} relies on alias substitution, call-operator indirection, token splitting, and literal or method-name reconstruction. \texttt{reconstructive\_v2} stresses the classifier with character-level and command-reconstruction patterns that are often seen in obfuscated PowerShell, including backticks, format strings, ASCII or Base64 recovery, invisible Unicode normalization, and alternate quoting or subexpressions. The benchmark schema defines five broad evasion families; this draft instantiates the \texttt{keyword\_hiding}, \texttt{string\_construction}, and \texttt{execution\_indirection} families.
+
+\begin{table}[!htbp]
+\centering
+\caption{Two-tier evasion benchmark structure. The \texttt{direct\_v1} tier applies direct syntax-preserving rewrites to visible command, token, and method forms, while \texttt{reconstructive\_v2} uses composed expressions that reconstruct suspicious commands or strings at runtime. Variants are accepted only after parse and invariant checks for valid PowerShell syntax.}
+\label{tab:evasion-methods}
+\begin{tabular}{p{0.03\linewidth}p{0.18\linewidth}p{0.44\linewidth}p{0.3\linewidth}}
+\toprule
+Tier & Family & Representative rewrite & Current role \\
+\midrule
+\texttt{v1}& \texttt{keyword hiding}& \texttt{Invoke-WebRequest ...} $\rightarrow$ \texttt{iwr ...} & Direct rewrite of visible command tokens.\\
+\texttt{v1}& \texttt{execution indirection}& \texttt{iex \$x} $\rightarrow$ \texttt{\& ([scriptblock]::Create(\$x))} & Preserve execution while replacing direct invocation with call-operator indirection. \\
+\texttt{v1}& \texttt{string construction}& \texttt{DownloadString(...)} $\rightarrow$ \texttt{PSObject.Methods ['Download'+'String'].Invoke(...)}& Direct method-name reconstruction without changing payload behavior.\\
+\texttt{v2}& \texttt{keyword hiding}& \texttt{Invoke-Expression} $\rightarrow$ \texttt{\&(('{0}{1}' -f 'Invoke-','Expression'))} & Runtime command reconstruction through format strings or related expressions.\\
+\texttt{v2}& \texttt{string construction}& \texttt{Invoke-WebRequest} $\rightarrow$ Base64/ASCII, subexpression, or zero-width-normalized reconstruction & Runtime recovery of suspicious strings or command forms.\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The implemented benchmark pipeline is more specific than a generic ``obfuscation sweep.'' It first builds a malicious seed manifest restricted to baseline-correct malicious scripts. It then applies only a fixed set of allowed rewrites from the requested preset (\texttt{direct\_v1} or \texttt{reconstructive\_v2}), and each rewrite is used only on scripts where it makes sense. For example, a rewrite that hides \texttt{Invoke-WebRequest} is only applied to seeds that actually contain that command, and a rewrite intended for cross-runtime PowerShell is only used when the target script fits that runtime setting. Each generated variant is then reviewed with static parsing, using the PowerShell parser when the required runtime is available and a \texttt{tree-sitter} fallback otherwise, together with explicit invariant checks to ensure underlying behavior is not changed. The current invariant checks require preservation of URL sets, executable or path-like literals, and \texttt{-EncodedCommand} equivalence where relevant, and they also enforce technique-specific argument-preservation checks such as preserved request arguments or preserved process-launch arguments. The malicious seed / variant pairing is what makes the mechanistic experiments interpretable, we measure the same circuit on the same script content under two conditions (literal token present vs. absent) and attribute any difference in the residual stream directly to the token transformation.
+
+\section{Evaluation \& Results}
+\subsection{Results at a Glance}
+\begin{itemize}[leftmargin=1.5em,itemsep=0.2em,topsep=0pt,parsep=0pt,partopsep=0pt]
+  \item \textbf{Main validated route:} On the 96-pair cohort, the cleanest minimal direct branch is \texttt{L0H11 $\rightarrow$ L12H15/L12H5/L12H4}, supported by causal patching and grouped ablation.
+  \item \textbf{Stronger late-stage bundle:} The broader late head bundle \texttt{L12H15/L12H5/L12H4/L12H28} is the strongest overall route in the main 96-pair comparison.
+  \item \textbf{\texttt{L12H2} is auxiliary, not core:} Removing \texttt{H2} improves the main patching result, but including \texttt{H2} still helps grouped ablation for several families. This is why we treat it as an auxiliary helper rather than part of the stable sufficiency core.
+  \item \textbf{Foundation-Sec inherits the circuit skeleton:} Llama-3.1-8B-Instruct shares the \texttt{L0H11} early detector and Layer-12 integration stage, but its best route is more diffuse and centered on \texttt{L12H28/L12H5/L12H4/L12H13}.
+  \item \textbf{Family-level variation is real:} The best route is not identical across all indicator families. Some families prefer the minimal branch, some prefer the fuller top-five bundle, and several are strongest under the \texttt{H2}-free carrier.
+  \item \textbf{Strongest current successful-evasion results:} Under both \texttt{invoke\_webrequest\_alias} and the new \texttt{invoke\_expression\_format\_string} slice, the late malicious-evidence bundle still appears earlier in the late stage; in the better-localized \texttt{Invoke-WebRequest} case, the failure is best described as later feed-forward computation reversing that evidence rather than deleting the route.
+  \item \textbf{Broader evasion coverage:} Foundation-Sec has \(6/44\) misses on \texttt{direct\_v1} and \(4/46\) misses on \texttt{reconstructive\_v2}. In the controlled raw-prompt comparison, Llama has \(0/44\) misses on \texttt{direct\_v1} and \(0/46\) misses on \texttt{reconstructive\_v2}.
+  \item \textbf{Bottom line:} The current evidence supports a mechanistic story in which fine-tuning preserves an inherited structural route but adds semantic weighting that can reverse the malicious-evidence signal before final readout.
+\end{itemize}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.92\linewidth]{artifacts/02_layer_head_comparison_matrix.png}
+\caption{Layer-head comparison between Foundation-Sec and Llama-3.1. Both models share the same early \texttt{L0H11} detector and a Layer-12 integration stage, but fine-tuning shifts the late-head weighting: Foundation-Sec emphasizes \texttt{L12H15}, while Llama is dominated by \texttt{L12H28} and uses a more diffuse late bundle. Darker cells indicate stronger evidence that a head belongs to the reported route.}
+\label{fig:mechanistic-summary}
+\end{figure}
+
+\subsection{Circuit Results}
+\subsubsection{Validated Late Route}
+On the 96-pair cohort, causal patching supports a minimal direct branch:
+\[
+\texttt{L0H11} \rightarrow \texttt{L12H15/L12H5/L12H4}
+\]
+The mean patching effect is approximately \(-3.156\), which means that the intervention reduces the model's average malicious-versus-benign decision margin from about \(3.52\) to about \(0.37\). In other words, it removes roughly \(90\%\) of the average malicious decision margin and flips the final prediction on \(54/96\) pairs (\(0.5625\)).
+
+The stronger late-stage bundle is:
+\[
+\texttt{L12H15/L12H5/L12H4/L12H28}
+\]
+Its mean patching effect is approximately \(-3.293\), which reduces the same average malicious-versus-benign decision margin from about \(3.52\) to about \(0.23\). In other words, it removes roughly \(93\%\) of the average malicious decision margin and flips the final prediction on \(60/96\) pairs (\(0.625\)).
+
+The role of \texttt{L12H2} is more nuanced. Removing \texttt{H2} improves the main path-patching result, while the full top-five bundle remains slightly stronger under grouped ablation. Our current interpretation is therefore that \texttt{L12H2} is an auxiliary family-sensitive helper, not part of the most stable sufficiency core.
+
+\subsubsection{Interpretation of Early and Late Stages}
+The results support an early Layer 0 detector family, especially \texttt{L0H11} and \texttt{L0H9}. However, the final validated claim in this draft does not rest on a broad early-head story. Instead, it uses \texttt{L0H11} as the clearest entry point into the validated late route. The stronger late-stage evidence localizes to attention around Layers 12--13 and to feed-forward computation before the Layer 13 boundary that becomes especially important in the successful-evasion setting.
+
+\subsubsection{Family-Level Variation}
+The 96-pair cohort also reveals a useful family-level pattern. The best patch route is not identical across all indicator families. The minimal branch is strongest for \texttt{DownloadFile}, the fuller top-five late bundle is strongest for \texttt{FromBase64String} and \texttt{Invoke-Expression}, and the \texttt{H2}-free carrier (late Layer-12 head bundle with L12H2 removed) is strongest for \texttt{-EncodedCommand}, \texttt{DownloadString}, \texttt{IEX}, and \texttt{Invoke-WebRequest}. This pattern supports the current interpretation that \texttt{H2} is not part of the most stable sufficiency core.
+
+At the same time, grouped ablation suggests that \texttt{H2} still helps on some families, especially \texttt{-EncodedCommand}, \texttt{DownloadFile}, \texttt{DownloadString}, and \texttt{Invoke-WebRequest}. By contrast, \texttt{FromBase64String} and \texttt{Invoke-Expression} are close to neutral under this comparison. The family-level picture therefore reinforces the write-up distinction between a stable late-stage bundle and a narrower auxiliary helper.
+
+\begin{table}[!htbp]
+\centering
+\caption{Family-by-family patching results across the four main late-route variants on the 96-pair cohort. Each route cell reports \texttt{mean $\Delta$ / flip rate}, where a more negative \texttt{mean $\Delta$} indicates a stronger shift toward the malicious judgment under patching. Route abbreviations are: Minimal = \texttt{L0H11 $\rightarrow$ L12H15/L12H5/L12H4}, Top-5 = \texttt{L12H15/L12H5/L12H4/L12H2/L12H28}, H2-free = \texttt{L12H15/L12H5/L12H4/L12H28}, and H28-free = \texttt{L12H15/L12H5/L12H4/L12H2}.}
+\label{tab:family-results}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{lccccc}
+\toprule
+Family & Pairs & Minimal & Top-5 & H2-free & H28-free \\
+\midrule
+\texttt{-EncodedCommand} & 2 & \texttt{-2.91 / 0.00} & \texttt{-3.38 / 0.00} & \texttt{-3.38 / 0.00} & \texttt{-2.90 / 0.00} \\
+\texttt{DownloadFile} & 20 & \texttt{-4.81 / 0.45} & \texttt{-4.50 / 0.20} & \texttt{-4.58 / 0.35} & \texttt{-4.11 / 0.15} \\
+\texttt{DownloadString} & 10 & \texttt{-2.89 / 0.70} & \texttt{-3.00 / 0.70} & \texttt{-3.12 / 0.80} & \texttt{-2.64 / 0.60} \\
+\texttt{FromBase64String} & 20 & \texttt{-3.90 / 0.55} & \texttt{-4.23 / 0.60} & \texttt{-4.21 / 0.60} & \texttt{-3.96 / 0.55} \\
+\texttt{IEX} & 6 & \texttt{-1.04 / 1.00} & \texttt{-1.08 / 1.00} & \texttt{-1.19 / 1.00} & \texttt{-0.84 / 1.00} \\
+\texttt{Invoke-Expression} & 20 & \texttt{-1.24 / 0.60} & \texttt{-1.43 / 0.90} & \texttt{-1.41 / 0.90} & \texttt{-1.10 / 0.60} \\
+\texttt{Invoke-WebRequest} & 18 & \texttt{-3.50 / 0.50} & \texttt{-3.72 / 0.50} & \texttt{-3.73 / 0.50} & \texttt{-3.12 / 0.50} \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.92\linewidth]{artifacts/figure_validated_route.png}
+\caption{Conceptual summary of the current validated route. The cleanest minimal branch runs from \texttt{L0H11} into \texttt{L12H15/L12H5/L12H4}, while adding \texttt{L12H28} gives the stronger late-stage bundle. \texttt{L12H2} is shown separately because the current evidence supports it as an auxiliary helper rather than as part of the stable core route.}
+
+\label{fig:route-comparison}
+\end{figure}
+
+\subsection{Comparative Model Analysis}
+Foundation-Sec and Llama-3.1-8B-Instruct share the same 32-layer, 32-head Llama-3.1 architecture, so the comparison can separate structural inheritance from fine-tuning-specific reweighting. The main comparative result is that the same basic circuit skeleton transfers. In Llama, \texttt{L0H11} is again the most recurrent early detector, appearing in \(14/18\) discovery pairs. The strongest late integration layer is again Layer 12, but the dominant head shifts: Foundation-Sec's route is centered on \texttt{L12H15/L12H5/L12H4/L12H28}, while Llama's traced route is centered on \texttt{L12H28/L12H5/L12H4/L12H13}. This is the pattern expected if cybersecurity fine-tuning concentrated and semantically weighted a pre-existing structural circuit rather than creating a new PowerShell circuit from scratch. 
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.92\linewidth]{artifacts/01_shared_skeleton_reweighted_heads.png}
+\caption{Shared circuit skeleton with reweighted late heads. Foundation-Sec and Llama both use the same \texttt{L0H11} early detector and Layer-12 integration stage, but fine-tuning shifts the dominant late-stage bundle from Llama's more diffuse \texttt{L12H28/L12H5/L12H4/L12H13} bundle toward Foundation-Sec's more concentrated \texttt{L12H15/L12H5/L12H4/L12H28} route.}
+\label{fig:shared-skeleton-reweighted-heads}
+\end{figure}
+
+\begin{table}[!htbp]
+\centering
+\small
+\caption{Cross-model circuit comparison. Llama uses the same early detector and late writer layer as Foundation-Sec, but its strongest route is more diffuse and shifts late dominance toward \texttt{L12H28}.}
+\label{tab:model-comparison}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{llll}
+\toprule
+Metric & Foundation-Sec-8B-Instruct & Llama-3.1-8B-Instruct & Interpretation \\
+\midrule
+Early detector & \texttt{L0H11} & \texttt{L0H11} & Shared structural entry point \\
+Late writer layer & Layer 12 & Layer 12 & Shared late integration stage \\
+Top late writer & \texttt{L12H15} & \texttt{L12H28} & Fine-tuning shifts late-head dominance \\
+Llama \texttt{L0H11} recurrence & -- & \(14/18\) discovery pairs & Early detector is not Foundation-Sec-specific \\
+Minimal route patching & \(24/74\) flips on matched subset & \(-4.865\), \(11/74\) flips & Llama route is sufficient but less compact \\
+Stronger route patching & about \(25/74\) flips on matched subset & \(-5.451\), \(18/74\) flips & Same layer, shifted carrier \\
+Diffuse bundle patching & about \(25/74\) flips on matched subset & \(-6.158\), \(36/74\) flips & Llama needs a broader head bundle \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+This comparison changes the interpretation of the Foundation-Sec results. The cleanest account is not that security training created the \texttt{L0H11}-to-Layer-12 circuit. Instead, fine-tuning appears to amplify the output margin, concentrate causal weight into a smaller late-head set, and add semantic associations between full-form PowerShell command names and the final \texttt{BLOCK} decision. This is consistent with fine-tuning work showing node-level circuit persistence alongside edge and weighting changes \citep{wang2025finetuningcircuits}. On the matched 74-pair adversarial-prompt baseline, that semantic weighting corresponds to a \(4.7\)-percentage-point overall accuracy gain over Llama (\(100\%\) vs.\ \(95.3\%\)), driven entirely by a \(9.5\)-point benign-accuracy improvement (\(100\%\) vs.\ \(90.5\%\)) rather than by improved malicious recall. The current evidence therefore supports a mechanistic story in which fine-tuning preserves an inherited structural route but adds semantic weighting that can invert the malicious-evidence signal before final readout. That semantic layer is useful for raw-prompt operation, but the evasion benchmark below shows that it also creates a specific attack surface around aliases and command reconstruction.
+
+\subsection{Evasion Results}
+Foundation-Sec's results separate cleanly by tier. Because the benchmark is conditioned on baseline-correct malicious seeds, these evasion failures should be read as misses on scripts the model initially handled correctly before rewriting. In \texttt{direct\_v1}, Foundation-Sec stays correct on \(38/44\) accepted variants and the misses are concentrated in two techniques rather than spread broadly across the conservative benchmark. The strongest direct-tier failure remains simple alias substitution in the \texttt{Invoke-WebRequest} family: replacing the full command name with \texttt{iwr} yields misses on all four tested variants. The only other positive result in that tier is narrower. Indirect \texttt{DownloadString} method invocation produces misses in two of six variants, and both of those misses come from \texttt{FromBase64String}-linked seeds rather than from the direct \texttt{DownloadString} seeds themselves.
+
+Foundation-Sec classification accuracy is still strong under the second tier. In \texttt{reconstructive\_v2}, it stays correct on \(42/46\) candidates. All four misses come from one keyword-hiding technique, \texttt{invoke\_expression\_format\_string}. The other reconstructive rewrites---including backtick splitting, Base64 or ASCII reconstruction, subexpression strings, and zero-width normalization for \texttt{-EncodedCommand}---remain negative in the current run. Across both implemented tiers together, Foundation-Sec stays correct on \(80/90\) accepted variants, so the observed weaknesses are specific and technique-concentrated rather than benchmark-wide.
+
+\begin{table}[!htbp]
+\centering
+\caption{Foundation-Sec two-tier evasion benchmark status. Most variants satisfy the standard parse and invariant checks from the implemented pipeline.}
+\label{tab:evasion-results}
+\begin{tabular}{lllll}
+\toprule
+Tier & Technique or slice & Family & Pairs & Outcome \\
+\midrule
+\texttt{v1}& \texttt{invoke\_webrequest\_alias} & \texttt{keyword\_hiding} & 4 & $4/4$ misses \\
+\texttt{v1}& \texttt{downloadstring\_psobject\_invoke} & \texttt{string\_construction} & 6 & $2/6$ misses \\
+\texttt{v1}& all other techniques & mixed & 34 & $0/34$ misses \\
+\texttt{v2}& \texttt{invoke\_expression\_format\_string} & \texttt{keyword\_hiding} & 4 & $4/4$ misses \\
+\texttt{v2}& all other techniques & mixed & 42 & $0/42$ misses \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[!htbp]
+\centering
+\caption{Cross-model evasion comparison under the controlled raw-prompt classifier framing. Llama has no misses on either tier, while Foundation-Sec's misses indicate a prompt-sensitive semantic layer added on top of the inherited structural circuit.}
+\label{tab:cross-model-evasion}
+\begin{tabular}{llll}
+\toprule
+Model & Benchmark tier & Variants & Misses \\
+\midrule
+Llama-3.1-8B-Instruct & \texttt{direct\_v1} & 44 & \(0/44\) \\
+Foundation-Sec-8B-Instruct & \texttt{direct\_v1} & 44 & \(6/44\) \\
+Llama-3.1-8B-Instruct & \texttt{reconstructive\_v2} & 46 & \(0/46\) \\
+Foundation-Sec-8B-Instruct & \texttt{reconstructive\_v2} & 46 & \(4/46\) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+The Llama result is stable across the evaluated prompt framings: it produces \(0/44\) misses on \texttt{direct\_v1}, and \(0/46\) misses on \texttt{reconstructive\_v2}. Foundation-Sec's failure surface is more prompt-sensitive. Under the raw prompt, Foundation-Sec's misses clustered around techniques that removed specific literal indicator tokens---\texttt{invoke\_webrequest\_alias} (\(4/4\) misses) and \texttt{downloadstring\_psobject\_invoke} (\(2/6\)). Under the adversarial prompt (``classify based on overall purpose, not individual constructs''), \texttt{invoke\_webrequest\_alias} was fully fixed: the model shifted to a more holistic assessment and recovered the malicious intent through other signals. But a new set of misses simultaneously appeared on \texttt{Invoke-Expression} obfuscation variants: telling the model not to weight individual constructs suppressed exactly the command-name associations that had been correctly detecting obfuscated \texttt{Invoke-Expression} patterns. This supports the semantic-layer interpretation: fine-tuning added useful command-name associations, especially around full-form names such as \texttt{Invoke-Expression} and \texttt{Invoke-WebRequest}, but those associations can be bypassed or reshaped by aliases and command reconstruction. The adversarial-prompt comparison also suggests that the inversion itself is Foundation-Sec-specific rather than a generic Llama property: on the same adversarial scripts, Llama's Layer 13 residual stays positive, consistent with the base model lacking the command-name associations introduced by Foundation-Sec's fine-tuning.
+
+\begin{table}[!htbp]
+\centering
+\caption{Representative side-by-side examples of successful evasion from both benchmark tiers. In \texttt{direct\_v1}, replacing the explicit \texttt{Invoke-WebRequest} token with the alias \texttt{iwr} is sufficient to flip Foundation-Sec's prediction. In \texttt{reconstructive\_v2}, a format-string reconstruction of \texttt{Invoke-Expression} likewise produces a Foundation-Sec miss while preserving the surrounding payload logic.}
+\label{tab:evasion-example}
+\begin{tabular}{p{0.14\linewidth} p{0.14\linewidth} p{0.64\linewidth}}
+\toprule
+Tier & Version & Script fragment \\
+\midrule
+\texttt{v1}& Seed &
+\texttt{Invoke-WebRequest -Uri http://stderr.pl/procdump.exe -OutFile c:\textbackslash temp\textbackslash sendme.exe} \\
+\texttt{v1}& Variant &
+\texttt{iwr -Uri http://stderr.pl/procdump.exe -OutFile c:\textbackslash temp\textbackslash sendme.exe} \\
+\midrule
+\texttt{v2}& Seed &
+\texttt{Invoke-Expression \$(New-Object IO.StreamReader (...)).ReadToEnd();} \\
+\texttt{v2}& Variant &
+\texttt{\&(('{0}{1}' -f 'Invoke-','Expression')) \$(New-Object IO.StreamReader (...)).ReadToEnd();} \\
+\bottomrule
+\end{tabular}
+\end{table}
+The strongest mechanistic result on a Foundation-Sec successful-evasion slice is not that the validated route disappears. Instead, under \texttt{invoke\_webrequest\_alias}, the usual late malicious-evidence bundle remains visible earlier in the late stage: the validated late bundle still fires on the miss variants, but later feed-forward computation before the Layer 13 boundary reverses the direction that reaches later computation. In that slice, the failure is therefore better described as later computation reversing surviving evidence than as route deletion. The \texttt{reconstructive\_v2} miss slice provides an independent replication of the same carrier-survival story, though not yet the same degree of localization for the competing write. On \texttt{invoke\_expression\_format\_string}, early-head ablation still flips \(4/4\) variants, the minimal direct patch route still flips \(4/4\) with mean effect about \(-0.875\), and the fuller late bundle still flips \(4/4\) with mean effect about \(-1.03\), even though removing that late bundle pushes the model in the opposite direction on the evaded variants. In the current interpretation, both slices are therefore better explained by preserved late-bundle activity plus an inversion-producing competing write than by simple route deletion. This framing is consistent with the broader lesson from recent mechanistic studies that behaviorally similar outputs can arise from materially different internal pathways and downstream uses of shared evidence \citep{lindsey2025biology}.
+
+The current evidence does \emph{not} support a generic statement that direct or reconstructive obfuscation automatically defeats these models. In Foundation-Sec \texttt{direct\_v1}, misses occur only in \texttt{invoke\_webrequest\_alias} and the narrower \texttt{downloadstring\_psobject\_invoke} pattern concentrated in \texttt{FromBase64String}-linked seeds. In Foundation-Sec \texttt{reconstructive\_v2}, misses occur only in \texttt{invoke\_expression\_format\_string}; the other backtick, Base64 or ASCII, subexpression, and zero-width-normalization techniques remain robust in the current run. Llama's controlled raw-prompt results, \(0/44\) misses on \texttt{direct\_v1} and \(0/46\) misses on \texttt{reconstructive\_v2}, show that the same architectural circuit can be less brittle when it remains more diffuse and less tied to Foundation-Sec's full-form command-name semantics.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.92\linewidth]{artifacts/figure_evasion_redistribution.png}
+\caption{Conceptual summary of the strongest current successful-evasion interpretation. Under \texttt{invoke\_webrequest\_alias}, the late malicious-evidence bundle is still present, but competing computation before the Layer 13 boundary reverses how that evidence affects later computation, indicating signal reversal rather than simple route deletion.}
+\label{fig:evasion-summary}
+\end{figure}
+
+\subsection{Monitoring Fine-Tuning Drift}
+The comparative and evasion results support a practical operational extension. Foundation-Sec inherits the underlying PowerShell classification route from Llama, but its failures after fine-tuning are not best explained as deletion of that inherited mechanism. Instead, the current evidence points to a narrower change in how later computation uses that inherited signal: the relevant malicious-evidence representation still appears at the causally important \texttt{resid\_pre13} site, while downstream computation can suppress, redirect, or invert its effect for particular semantic families. This makes activation-space monitoring a concrete regression tool for security fine-tunes rather than only a theoretical possibility.
+
+We implement this with a frozen reference probe trained on base-model activations at the validated \texttt{resid\_pre13} site. The probe is trained only on canonical benign and malicious PowerShell examples from Llama and then frozen. Clean canonical examples from the same capability families are then passed through both Llama and Foundation-Sec, and the probe's signed response is compared family by family. This yields a family-level drift score on clean inputs, without requiring explicit evasive variants at monitoring time.
+
+The probe is operationally meaningful rather than only descriptive. In the drift experiment, the probe separates malicious from benign Llama activations cleanly, and its main output score (\texttt{circuit\_proxy} in the artifacts) correlates with intervention-derived circuit importance (\(r \approx 0.73\) against causal ablation deltas on the matched cohort). Applied cross-model at \texttt{resid\_pre13}, it shows a strikingly simple pattern: the family-specific direction is preserved (cosine similarity \(= 1.0\) for every measured family), but the response magnitude is selectively suppressed after fine-tuning. The largest suppressions occur in \texttt{Invoke-WebRequest} (\(-1.65\) mean probe delta), \texttt{DownloadString} (\(-1.57\)), and \texttt{FromBase64String} (\(-1.51\)), while \texttt{DownloadFile} is nearly stable (\(-0.28\)) and \texttt{IEX} slightly increases (\(+0.24\)). This is exactly the pattern expected if fine-tuning preserves the inherited representation direction but compresses its activation strength for particular semantic families.
+
+Those family-level probe suppressions align with the later evasion outcomes. The strongest drops occur in the same capability families that later produce benchmark misses, especially \texttt{Invoke-WebRequest} aliasing and \texttt{DownloadString}-linked indirection, while the families with stable probe responses show no observed misses in the current benchmark. In this sense, the probe gives a pre-red-team ranking signal: it does not tell you the exact evasive transformation in advance, but it does tell you which capability families deserve adversarial attention first.
+
+Operationally, this motivates a concrete monitoring recipe:
+\begin{enumerate}[leftmargin=1.5em,itemsep=0.2em,topsep=0.2em,parsep=0pt]
+  \item Train a reference probe on base-model activations at the validated \texttt{resid\_pre13} site.
+  \item Run clean canonical capability-family examples through both the base and fine-tuned models.
+  \item Measure family-level changes in probe score magnitude and sign.
+  \item Rank families by activation suppression or inversion.
+  \item Prioritize the highest-drift families for adversarial evaluation and red-teaming.
+\end{enumerate}
+
+This workflow does not require prior discovery of specific evasive variants. More broadly, it shows that once a security-relevant circuit has been localized, the same mechanistic site can serve as an activation-space regression target for monitoring representation drift introduced by later fine-tuning.
+
+\section{Future Work}
+Next steps for this line of work can include compiling a broader dataset with benign coverage across indicator families, so that the current 96-pair result can be tested under a more independent validation design. On the robustness side, the evasion benchmark can expand along two fronts: deeper coverage inside the already active \texttt{keyword\_hiding}, \texttt{string\_construction}, and \texttt{execution\_indirection} families, and concrete tests for two currently theoretical families. \texttt{network\_object\_indirection} would hide direct networking surfaces behind equivalent object-construction, method-dispatch, or reflection patterns. \texttt{staged\_payload\_flow} would preserve the same malicious behavior while splitting retrieval, decoding, allocation, and execution across intermediate variables or helper functions.
+
+On the mechanistic side, the main open question is which specific MLP components implement the replicated inversion effect after the validated Layer 12 bundle fires. The current evidence strongly supports grouped routes and residual-direction claims, and a concrete feed-forward inversion effect in the best-localized successful-evasion slice together with a second slice showing the same carrier-survival pattern, but it does not yet provide a full downstream decomposition of the competing write. Future work should therefore focus on identifying the specific MLP components that invert the decision signal before the Layer 13 boundary, especially in the successful-evasion setting, and on determining whether that MLP contribution is best understood as a distributed subnetwork, a feature-level representation, or a small number of still-unlocalized routes. The comparative result also motivates localizing Foundation-Sec's semantic weighting layer directly, especially the components that distinguish full-form \texttt{Invoke-Expression} and \texttt{Invoke-WebRequest} strings from aliases and reconstructed command names, comparing the functional roles of \texttt{L12H15} and \texttt{L12H28} across the two models, and validating the \texttt{resid\_pre13}-based frozen-probe workflow on broader benchmarks and additional fine-tunes.
+
+\section{Conclusion}
+This paper shows that applied mechanistic interpretability can produce a strong security-relevant circuit claim for malicious code classification rather than only a loose qualitative story. To our knowledge, this study is among the first mechanistic circuit analyzes in a cybersecurity LLM application context, combining causal circuit validation, cross-model comparison, and an evasion benchmark for malicious code classification. \citep{choi2020malicious,garciacarrasco2024detecting}
+
+On the main 96-pair Foundation-Sec cohort, the validated route centered on \texttt{L0H11} and the Layer 12 late-stage bundle explains most of the model's malicious decision signal: the minimal branch removes about \(90\%\) of the average malicious decision margin and flips \(54/96\) predictions, while the stronger late-stage bundle removes about \(93\%\) and flips \(60/96\). The Llama comparison shows that this is not a completely new security-trained circuit. Llama shares the same \texttt{L0H11} early detector and Layer-12 integration stage, but uses a more diffuse late bundle centered on \texttt{L12H28}. On the matched 74-pair adversarial-prompt baseline, Foundation-Sec's remaining classification advantage is a \(4.7\)-point overall accuracy gain over Llama, driven entirely by a \(9.5\)-point improvement in benign accuracy rather than by improved malicious recall. In a cybersecurity setting, that is a substantial result: fine-tuning appears to amplify and concentrate an inherited structural circuit rather than inventing the entire route.
+
+The paper also contributes a concrete two-tier evasion benchmark constructed as matched seed/variant pairs. This pairing enables direct comparison between an original malicious script and its rewritten version. Any difference in internal circuit behavior between seed and variant can therefore be tied directly to the token-level transformation, rather than being mixed up with general classification difficulty. Across \(90\) accepted Foundation-Sec variants, Foundation-Sec stays correct on \(80\), and the misses are concentrated in three techniques: \texttt{Invoke-WebRequest} alias hiding, a narrower \texttt{FromBase64String}/\texttt{DownloadString} reconstruction slice, and the \texttt{reconstructive\_v2} failure mode \texttt{invoke\_expression\_format\_string}. In the controlled raw-prompt comparison, Llama has \(0/44\) misses on \texttt{direct\_v1} and \(0/46\) misses on \texttt{reconstructive\_v2}. This contrast supports the fine-tuning tradeoff: Foundation-Sec's semantic weighting improves raw-prompt security behavior, but also creates command-name brittleness. Just as importantly, the strongest Foundation-Sec successful-evasion results do not simply delete the validated malicious-evidence bundle. Instead, the evidence shows that later feed-forward computation can produce misclassification even when the circuit continues to carry a malicious signal earlier in the late stage.
+
+Taken together, these results show that mechanistic interpretability can identify the internal circuitry responsible for security-relevant classification decisions, not merely summarize model behavior after the fact. Once such a mechanism is localized, it can be stress-tested directly: under matched examples, under cross-model comparison, and under syntax-preserving evasion. That makes circuit-level analysis useful both for evaluating models in critical applications and for guiding future model development. The comparative result also shows that security-relevant circuits can persist through fine-tuning, with Foundation-Sec inheriting the core PowerShell classification structure from Llama. At the same time, the evasion benchmark shows that fine-tuning can create a tradeoff: it improves the model for the intended classification task, but can also introduce new brittleness around the particular semantic features the fine-tuned model learns to rely on. This failure mode is best understood as semantic over-specialization rather than ordinary accuracy loss. A natural mitigation is to include behavior-preserving evasive variants during fine-tuning, paired with benign hard negatives and consistency objectives, so the model is rewarded for stable classification across aliases, reconstructed strings, and equivalent execution forms rather than for reliance on specific command literals. More practically, the same mechanistic localization yields an activation-space monitoring workflow: a frozen probe at the validated \texttt{resid\_pre13} site detects family-specific suppression on clean canonical inputs, allowing the most drifted capability families to be prioritized for red-teaming before deployment.
+
+\bibliographystyle{plainnat}
+\IfFileExists{references.bib}{\bibliography{references}}{\bibliography{../references}}
+
+\end{document}
