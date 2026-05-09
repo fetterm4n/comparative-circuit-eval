@@ -346,12 +346,33 @@ The comparative and evasion results support a practical operational extension. F
 \paragraph{Linear probe at the circuit boundary.}
 We fit a linear probe (Ridge regression, 5-fold cross-validation) from the \texttt{resid\_pre13} activation of each malicious script to the per-head contribution of the four core Layer-12 heads measured by the head trace experiment. The probe achieves cross-validated \(r = 0.81\)–\(0.87\) for \texttt{L12H4}, \texttt{L12H5}, \texttt{L12H15}, and \texttt{L12H28} (\(n = 206\), all \(p < 10^{-45}\)). These values confirm that each head's contribution to the contrastive direction is \emph{linearly} encoded in \texttt{resid\_pre13} — a stronger claim than extractability by a flexible model, since it means the information is directly readable as a linear projection of the inherited representation. Applied cross-model, the same linear probe predicts Foundation-Sec's causal circuit dependence (\texttt{delta\_logit\_diff} under top-5 L12 ablation) at \(r = 0.41\) (\(n = 293\), \(p < 10^{-12}\)), establishing the cross-model transfer ceiling: roughly 40\% of per-script circuit importance in Foundation-Sec is linearly predictable from Llama's activation geometry at the same site.
 
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.92\linewidth]{artifacts/figure_linear_probe_r_values.png}
+\caption{Cross-validated linear probe performance (Ridge regression, 5-fold CV). Blue bars show how well Llama's \texttt{resid\_pre13} activation predicts each Layer-12 head's contribution to the contrastive direction (\(r = 0.80\)--\(0.87\), \(n = 206\)). Orange bars show cross-model transfer: the same Llama activations predicting Foundation-Sec's circuit dependence under top-5 ablation (\(r = 0.41\)) and indicator-token L2 sensitivity (\(r = 0.83\)). The high within-model r values confirm each head's contribution is linearly encoded at the circuit boundary; the lower ablation-delta transfer (\(r = 0.41\)) reflects the ceiling imposed by the cross-model fine-tuning gap.}
+\label{fig:probe-r-values}
+\end{figure}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.92\linewidth]{artifacts/figure_probe_scatter_heads.png}
+\caption{Scatter plots of predicted versus actual Layer-12 head contributions for each of the four core heads (\texttt{L12H4}, \texttt{L12H5}, \texttt{L12H15}, \texttt{L12H28}). Each point is one malicious script; the dashed diagonal is the identity line. Colors indicate indicator family. The tight alignment around the diagonal across all four panels confirms that the probe's \(r = 0.80\)--\(0.87\) performance is consistent and not driven by outliers or a single family.}
+\label{fig:probe-scatter}
+\end{figure}
+
 The practical implication is that a single forward pass through the base model, followed by a linear projection, gives a per-script circuit-activity score for the fine-tuned model at low cost. For drift monitoring, the family-level average of this score under Llama versus Foundation-Sec reveals which capability families changed most in how strongly the inherited circuit is engaged after fine-tuning.
 
 \paragraph{Indicator-token sign inversion as an evasion predictor.}
 The linear probe's cross-model transfer is stronger at the family level, where per-script noise averages out. But activation magnitude alone does not predict which families will produce evasion misses. A more targeted signal comes from measuring how indicator-token ablation shifts the final classification output in each model separately. For each malicious script, we replace the indicator token embeddings with the vocabulary mean embedding and measure the resulting change in logit-diff.
 
-For every family in Foundation-Sec, this ablation produces the expected negative delta — removing the indicator tokens reduces malicious confidence — \emph{except} \texttt{Invoke-WebRequest}. In that family, ablating the command-name tokens \emph{increases} average malicious confidence (\(+1.13\) mean logit-diff delta; 73.7\% of scripts show a positive delta). Llama shows the normal negative delta (\(-1.60\)) for the same family. This sign inversion is not observed in any other family.
+For every family in Foundation-Sec, this ablation produces the expected negative delta — removing the indicator tokens reduces malicious confidence — \emph{except} \texttt{Invoke-WebRequest}. In that family, ablating the command-name tokens \emph{increases} average malicious confidence (\(+1.13\) mean logit-diff delta; 73.7\% of scripts show a positive delta). Llama shows the normal negative delta (\(-1.60\)) for the same family. This sign inversion is not observed in any other family. Figure~\ref{fig:ablation-delta} shows the full family-level comparison.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.92\linewidth]{artifacts/figure_ablation_delta_by_family.png}
+\caption{Mean logit-diff delta when indicator tokens are mean-ablated, broken down by indicator family and model. A negative delta means removing the indicator tokens \emph{reduces} malicious confidence (the token was acting as a driver). A positive delta means removing the tokens \emph{increases} malicious confidence (the token was acting as a suppressor). \texttt{Invoke-WebRequest} is the only family where Foundation-Sec (orange) shows a positive delta (\(+1.13\)), while Llama (blue) shows the expected negative delta (\(-1.60\)). This sign inversion uniquely identifies \texttt{Invoke-WebRequest} as the family where alias substitution (\texttt{iwr}) produces consistent classification failures. The DownloadFile Llama bar extends below the axis limit (annotated value: \(-8.0\)); the y-axis is capped at \(-5.5\) to preserve readability of the smaller-delta families.}
+\label{fig:ablation-delta}
+\end{figure}
 
 The mechanistic interpretation is that fine-tuning caused Foundation-Sec to classify \texttt{Invoke-WebRequest} scripts through URL patterns, payload structure, and command arguments rather than through the command-name token itself. After training on enough legitimate \texttt{Invoke-WebRequest} admin scripts, the full command name acts as a mild suppressor at \texttt{resid\_pre13}: the model recognizes ``this could be benign'' from the token alone, while the surrounding payload context carries the actual malicious signal. When the alias \texttt{iwr} is substituted, the token-level suppression disappears along with the payload-context attention path it anchors, producing a miss.
 
