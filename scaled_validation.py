@@ -1110,7 +1110,7 @@ def generate_obfuscations(script: str) -> List[Dict[str, str]]:
 
 
 def replace_command_token(script: str, command: str, replacement: str) -> Optional[str]:
-    pattern = re.compile(rf"(?im)(^|(?<=[\s;()])){re.escape(command)}(?=(?:\s|$))")
+    pattern = re.compile(rf"(?im)(^|(?<=[\s;(){{])){re.escape(command)}(?=(?:\s|$))")
     updated, count = pattern.subn(lambda match: match.group(1) + replacement, script)
     return updated if count > 0 and updated != script else None
 
@@ -1146,8 +1146,34 @@ def replace_method_call_with_psobject_invoke(script: str, method_name: str, spli
 
 
 def replace_command_token_with_alias(script: str, command: str, alias: str) -> Optional[str]:
-    pattern = re.compile(rf"(?im)(^|(?<=[\s;()])){re.escape(command)}(?=(?:\s|$))")
+    pattern = re.compile(rf"(?im)(^|(?<=[\s;(){{])){re.escape(command)}(?=(?:\s|$))")
     updated, count = pattern.subn(lambda match: match.group(1) + alias, script)
+    return updated if count > 0 and updated != script else None
+
+
+def alternating_case(s: str) -> str:
+    result = []
+    upper_turn = True
+    for ch in s:
+        if ch.isalpha():
+            result.append(ch.upper() if upper_turn else ch.lower())
+            upper_turn = not upper_turn
+        else:
+            result.append(ch)
+    return "".join(result)
+
+
+def lowercase_method_name(script: str, method_name: str) -> Optional[str]:
+    lowered = method_name.lower()
+    pattern = re.compile(rf"(?i)\.{re.escape(method_name)}(?=\s*\()")
+    updated, count = pattern.subn(f".{lowered}", script)
+    return updated if count > 0 and updated != script else None
+
+
+def alternating_case_method_name(script: str, method_name: str) -> Optional[str]:
+    alt = alternating_case(method_name)
+    pattern = re.compile(rf"(?i)\.{re.escape(method_name)}(?=\s*\()")
+    updated, count = pattern.subn(f".{alt}", script)
     return updated if count > 0 and updated != script else None
 
 
@@ -1309,6 +1335,38 @@ def apply_evasion_technique(script: str, technique_id: str) -> Optional[str]:
         return replace_method_call_with_psobject_invoke(script, "DownloadString", "Download", "String")
     if technique_id == "downloadfile_psobject_invoke":
         return replace_method_call_with_psobject_invoke(script, "DownloadFile", "Download", "File")
+    if technique_id == "invoke_webrequest_lowercase":
+        return replace_command_token(script, "Invoke-WebRequest", "invoke-webrequest")
+    if technique_id == "invoke_expression_lowercase":
+        return replace_command_token(script, "Invoke-Expression", "invoke-expression")
+    if technique_id == "iex_lowercase":
+        return replace_command_token(script, "IEX", "iex")
+    if technique_id == "downloadstring_lowercase":
+        return lowercase_method_name(script, "DownloadString")
+    if technique_id == "downloadfile_lowercase":
+        return lowercase_method_name(script, "DownloadFile")
+    if technique_id == "downloadfile_base64_ascii":
+        return replace_quoted_literal_with_expression(
+            script,
+            "DownloadFile",
+            base64_ascii_expression("DownloadFile"),
+        )
+    if technique_id == "downloadfile_subexpression_string":
+        return replace_quoted_literal_with_expression(
+            script,
+            "DownloadFile",
+            subexpression_string_expression("DownloadFile"),
+        )
+    if technique_id == "invoke_webrequest_alternating_case":
+        return replace_command_token(script, "Invoke-WebRequest", alternating_case("Invoke-WebRequest"))
+    if technique_id == "invoke_expression_alternating_case":
+        return replace_command_token(script, "Invoke-Expression", alternating_case("Invoke-Expression"))
+    if technique_id == "iex_alternating_case":
+        return replace_command_token(script, "IEX", alternating_case("IEX"))
+    if technique_id == "downloadstring_alternating_case":
+        return alternating_case_method_name(script, "DownloadString")
+    if technique_id == "downloadfile_alternating_case":
+        return alternating_case_method_name(script, "DownloadFile")
     raise ValueError(f"Unsupported evasion technique: {technique_id!r}")
 
 
@@ -1677,6 +1735,162 @@ EVASION_TECHNIQUES: Dict[str, EvasionTechnique] = {
         static_checks=("parse_ok", "string_literal_rewritten", "request_args_preserved", "resolved_string_equivalent", "process_args_preserved"),
         notes="Preserves argument order while replacing the direct method-name literal.",
     ),
+    "invoke_webrequest_lowercase": EvasionTechnique(
+        technique_id="invoke_webrequest_lowercase",
+        family="keyword_hiding",
+        description="Rewrite Invoke-WebRequest command tokens to all-lowercase invoke-webrequest.",
+        runtime_target="cross_runtime",
+        target_indicators=("Invoke-WebRequest",),
+        preconditions=("script contains a standalone Invoke-WebRequest command token",),
+        forbidden_if=("indicator appears only inside strings or comments",),
+        expected_indicator_delta="no_change",
+        semantic_invariants=("request arguments remain identical", "network target remains identical", "PowerShell case-insensitive resolution preserves behavior"),
+        static_checks=("parse_ok", "request_args_preserved"),
+        notes="PowerShell command names are case-insensitive; lowercase form executes identically but tokenizes differently.",
+    ),
+    "invoke_expression_lowercase": EvasionTechnique(
+        technique_id="invoke_expression_lowercase",
+        family="keyword_hiding",
+        description="Rewrite Invoke-Expression command tokens to all-lowercase invoke-expression.",
+        runtime_target="cross_runtime",
+        target_indicators=("Invoke-Expression",),
+        preconditions=("script contains a standalone Invoke-Expression command token",),
+        forbidden_if=("indicator appears only inside strings or comments",),
+        expected_indicator_delta="no_change",
+        semantic_invariants=("command operands remain identical", "execution order remains identical", "PowerShell case-insensitive resolution preserves behavior"),
+        static_checks=("parse_ok",),
+        notes="PowerShell command names are case-insensitive; lowercase form executes identically but tokenizes differently.",
+    ),
+    "iex_lowercase": EvasionTechnique(
+        technique_id="iex_lowercase",
+        family="keyword_hiding",
+        description="Rewrite IEX command tokens to all-lowercase iex.",
+        runtime_target="cross_runtime",
+        target_indicators=("IEX",),
+        preconditions=("script contains a standalone IEX command token",),
+        forbidden_if=("IEX occurs only inside strings or comments",),
+        expected_indicator_delta="no_change",
+        semantic_invariants=("scriptblock or string operand to IEX stays unchanged", "execution remains in-process", "PowerShell case-insensitive resolution preserves behavior"),
+        static_checks=("parse_ok",),
+        notes="PowerShell command names are case-insensitive; lowercase form executes identically but tokenizes differently.",
+    ),
+    "downloadstring_lowercase": EvasionTechnique(
+        technique_id="downloadstring_lowercase",
+        family="keyword_hiding",
+        description="Rewrite direct .DownloadString() method name to all-lowercase .downloadstring().",
+        runtime_target="cross_runtime",
+        target_indicators=("DownloadString",),
+        preconditions=("script contains a direct .DownloadString(...) method call",),
+        forbidden_if=("DownloadString appears only inside strings or already lowercased",),
+        expected_indicator_delta="no_change",
+        semantic_invariants=("download URL arguments remain identical", ".NET method dispatch is case-insensitive in PowerShell"),
+        static_checks=("parse_ok", "request_args_preserved"),
+        notes=".NET method names are case-insensitive in PowerShell; lowercase form executes identically but tokenizes differently.",
+    ),
+    "downloadfile_lowercase": EvasionTechnique(
+        technique_id="downloadfile_lowercase",
+        family="keyword_hiding",
+        description="Rewrite direct .DownloadFile() method name to all-lowercase .downloadfile().",
+        runtime_target="cross_runtime",
+        target_indicators=("DownloadFile",),
+        preconditions=("script contains a direct .DownloadFile(...) method call",),
+        forbidden_if=("DownloadFile appears only inside strings or already lowercased",),
+        expected_indicator_delta="no_change",
+        semantic_invariants=("download URL and output path arguments remain identical", ".NET method dispatch is case-insensitive in PowerShell"),
+        static_checks=("parse_ok", "request_args_preserved", "process_args_preserved"),
+        notes=".NET method names are case-insensitive in PowerShell; lowercase form executes identically but tokenizes differently.",
+    ),
+    "downloadfile_base64_ascii": EvasionTechnique(
+        technique_id="downloadfile_base64_ascii",
+        family="string_construction",
+        description="Rewrite quoted DownloadFile literals into a Base64-to-ASCII reconstruction expression.",
+        runtime_target="cross_runtime",
+        target_indicators=("DownloadFile",),
+        preconditions=("script contains a quoted DownloadFile string literal",),
+        forbidden_if=("indicator is not represented as a quoted literal",),
+        expected_indicator_delta="remove_literal",
+        semantic_invariants=("resolved string value remains identical", "surrounding evaluation semantics remain identical"),
+        static_checks=("parse_ok", "string_literal_rewritten", "resolved_string_equivalent"),
+        notes="Parallel to downloadstring_base64_ascii; covers quoted method-name dispatch patterns.",
+    ),
+    "downloadfile_subexpression_string": EvasionTechnique(
+        technique_id="downloadfile_subexpression_string",
+        family="string_construction",
+        description="Rewrite quoted DownloadFile literals into a double-quoted subexpression string.",
+        runtime_target="cross_runtime",
+        target_indicators=("DownloadFile",),
+        preconditions=("script contains a quoted DownloadFile string literal",),
+        forbidden_if=("indicator is not represented as a quoted literal",),
+        expected_indicator_delta="remove_literal",
+        semantic_invariants=("resolved string value remains identical", "surrounding evaluation semantics remain identical"),
+        static_checks=("parse_ok", "string_literal_rewritten", "resolved_string_equivalent"),
+        notes="Parallel to downloadfile_subexpression_string; covers alternate quoting and subexpressions.",
+    ),
+    "invoke_webrequest_alternating_case": EvasionTechnique(
+        technique_id="invoke_webrequest_alternating_case",
+        family="keyword_hiding",
+        description="Rewrite Invoke-WebRequest command tokens to alternating-case InVoKe-WeBrEqUeSt.",
+        runtime_target="cross_runtime",
+        target_indicators=("Invoke-WebRequest",),
+        preconditions=("script contains a standalone Invoke-WebRequest command token",),
+        forbidden_if=("indicator appears only inside strings or comments",),
+        expected_indicator_delta="no_change",
+        semantic_invariants=("request arguments remain identical", "network target remains identical", "PowerShell case-insensitive resolution preserves behavior"),
+        static_checks=("parse_ok", "request_args_preserved"),
+        notes="Alternating case produces a distinct subword-token sequence from both canonical and lowercase forms while remaining valid PowerShell.",
+    ),
+    "invoke_expression_alternating_case": EvasionTechnique(
+        technique_id="invoke_expression_alternating_case",
+        family="keyword_hiding",
+        description="Rewrite Invoke-Expression command tokens to alternating-case InVoKe-ExPrEsSiOn.",
+        runtime_target="cross_runtime",
+        target_indicators=("Invoke-Expression",),
+        preconditions=("script contains a standalone Invoke-Expression command token",),
+        forbidden_if=("indicator appears only inside strings or comments",),
+        expected_indicator_delta="no_change",
+        semantic_invariants=("command operands remain identical", "execution order remains identical", "PowerShell case-insensitive resolution preserves behavior"),
+        static_checks=("parse_ok",),
+        notes="Alternating case produces a distinct subword-token sequence from both canonical and lowercase forms while remaining valid PowerShell.",
+    ),
+    "iex_alternating_case": EvasionTechnique(
+        technique_id="iex_alternating_case",
+        family="keyword_hiding",
+        description="Rewrite IEX command tokens to alternating-case IeX (three chars, upper-lower-upper).",
+        runtime_target="cross_runtime",
+        target_indicators=("IEX",),
+        preconditions=("script contains a standalone IEX command token",),
+        forbidden_if=("IEX occurs only inside strings or comments",),
+        expected_indicator_delta="no_change",
+        semantic_invariants=("scriptblock or string operand to IEX stays unchanged", "execution remains in-process", "PowerShell case-insensitive resolution preserves behavior"),
+        static_checks=("parse_ok",),
+        notes="IEX is three characters so alternating case yields IeX; still a distinct token from both IEX and iex.",
+    ),
+    "downloadstring_alternating_case": EvasionTechnique(
+        technique_id="downloadstring_alternating_case",
+        family="keyword_hiding",
+        description="Rewrite direct .DownloadString() method name to alternating-case .DoWnLoAdStRiNg().",
+        runtime_target="cross_runtime",
+        target_indicators=("DownloadString",),
+        preconditions=("script contains a direct .DownloadString(...) method call",),
+        forbidden_if=("DownloadString appears only inside strings or already alternating-cased",),
+        expected_indicator_delta="no_change",
+        semantic_invariants=("download URL arguments remain identical", ".NET method dispatch is case-insensitive in PowerShell"),
+        static_checks=("parse_ok", "request_args_preserved"),
+        notes="Alternating case produces a distinct token sequence from canonical and lowercase forms.",
+    ),
+    "downloadfile_alternating_case": EvasionTechnique(
+        technique_id="downloadfile_alternating_case",
+        family="keyword_hiding",
+        description="Rewrite direct .DownloadFile() method name to alternating-case .DoWnLoAdFiLe().",
+        runtime_target="cross_runtime",
+        target_indicators=("DownloadFile",),
+        preconditions=("script contains a direct .DownloadFile(...) method call",),
+        forbidden_if=("DownloadFile appears only inside strings or already alternating-cased",),
+        expected_indicator_delta="no_change",
+        semantic_invariants=("download URL and output path arguments remain identical", ".NET method dispatch is case-insensitive in PowerShell"),
+        static_checks=("parse_ok", "request_args_preserved", "process_args_preserved"),
+        notes="Alternating case produces a distinct token sequence from canonical and lowercase forms.",
+    ),
 }
 
 EVASION_BASELINE_TECHNIQUES: Tuple[str, ...] = (
@@ -1713,10 +1927,35 @@ EVASION_REALISTIC_V2_TECHNIQUES: Tuple[str, ...] = (
     "encodedcommand_zero_width_strip",
 )
 
+EVASION_LOWERCASE_TECHNIQUES: Tuple[str, ...] = (
+    "invoke_webrequest_lowercase",
+    "invoke_expression_lowercase",
+    "iex_lowercase",
+    "downloadstring_lowercase",
+    "downloadfile_lowercase",
+    "downloadfile_base64_ascii",
+    "downloadfile_subexpression_string",
+)
+
+EVASION_ALTERNATING_CASE_TECHNIQUES: Tuple[str, ...] = (
+    "invoke_webrequest_alternating_case",
+    "invoke_expression_alternating_case",
+    "iex_alternating_case",
+    "downloadstring_alternating_case",
+    "downloadfile_alternating_case",
+)
+
 EVASION_TECHNIQUE_PRESETS: Dict[str, Tuple[str, ...]] = {
     "baseline_v1": EVASION_BASELINE_TECHNIQUES,
     "realistic_v2": EVASION_REALISTIC_V2_TECHNIQUES,
-    "all": tuple(dict.fromkeys(EVASION_BASELINE_TECHNIQUES + EVASION_REALISTIC_V2_TECHNIQUES)),
+    "lowercase_v3": EVASION_LOWERCASE_TECHNIQUES,
+    "alternating_case_v3": EVASION_ALTERNATING_CASE_TECHNIQUES,
+    "all": tuple(dict.fromkeys(
+        EVASION_BASELINE_TECHNIQUES
+        + EVASION_REALISTIC_V2_TECHNIQUES
+        + EVASION_LOWERCASE_TECHNIQUES
+        + EVASION_ALTERNATING_CASE_TECHNIQUES
+    )),
 }
 
 

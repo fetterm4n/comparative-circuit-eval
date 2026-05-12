@@ -1,0 +1,11 @@
+{
+  "review_counts": {
+    "needs_review": 43
+  },
+  "runtime_availability": {
+    "pwsh_7": null,
+    "windows_powershell_5_1": null
+  },
+  "tree_sitter_powershell_available": true,
+  "variant_count": 43
+}

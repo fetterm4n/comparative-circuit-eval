@@ -1,0 +1,13 @@
+{
+  "candidate_count": 20,
+  "candidate_tier_requested": "provisional_iex",
+  "provisional_count": 20,
+  "strict_count": 0,
+  "technique_counts": {
+    "iex_alternating_case": 4,
+    "iex_ascii_char_array": 4,
+    "iex_call_operator_string": 4,
+    "iex_format_string": 4,
+    "iex_scriptblock_create": 4
+  }
+}

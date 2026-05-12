@@ -1,0 +1,18 @@
+{
+  "candidate_count": 43,
+  "candidate_tier_requested": "strict",
+  "provisional_count": 0,
+  "strict_count": 43,
+  "technique_counts": {
+    "downloadfile_alternating_case": 4,
+    "downloadfile_lowercase": 4,
+    "downloadstring_alternating_case": 6,
+    "downloadstring_lowercase": 4,
+    "iex_alternating_case": 6,
+    "iex_lowercase": 3,
+    "invoke_expression_alternating_case": 4,
+    "invoke_expression_lowercase": 4,
+    "invoke_webrequest_alternating_case": 4,
+    "invoke_webrequest_lowercase": 4
+  }
+}

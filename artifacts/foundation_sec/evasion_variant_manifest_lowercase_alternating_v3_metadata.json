@@ -1,0 +1,355 @@
+{
+  "generated_counts": {
+    "downloadfile_alternating_case": 4,
+    "downloadfile_base64_ascii": 0,
+    "downloadfile_lowercase": 4,
+    "downloadfile_subexpression_string": 0,
+    "downloadstring_alternating_case": 6,
+    "downloadstring_lowercase": 4,
+    "iex_alternating_case": 6,
+    "iex_lowercase": 3,
+    "invoke_expression_alternating_case": 4,
+    "invoke_expression_lowercase": 4,
+    "invoke_webrequest_alternating_case": 4,
+    "invoke_webrequest_lowercase": 4
+  },
+  "registry": [
+    {
+      "description": "Rewrite Invoke-WebRequest command tokens to all-lowercase invoke-webrequest.",
+      "expected_indicator_delta": "no_change",
+      "family": "keyword_hiding",
+      "forbidden_if": [
+        "indicator appears only inside strings or comments"
+      ],
+      "notes": "PowerShell command names are case-insensitive; lowercase form executes identically but tokenizes differently.",
+      "preconditions": [
+        "script contains a standalone Invoke-WebRequest command token"
+      ],
+      "runtime_target": "cross_runtime",
+      "semantic_invariants": [
+        "request arguments remain identical",
+        "network target remains identical",
+        "PowerShell case-insensitive resolution preserves behavior"
+      ],
+      "static_checks": [
+        "parse_ok",
+        "request_args_preserved"
+      ],
+      "target_indicators": [
+        "Invoke-WebRequest"
+      ],
+      "technique_id": "invoke_webrequest_lowercase"
+    },
+    {
+      "description": "Rewrite Invoke-Expression command tokens to all-lowercase invoke-expression.",
+      "expected_indicator_delta": "no_change",
+      "family": "keyword_hiding",
+      "forbidden_if": [
+        "indicator appears only inside strings or comments"
+      ],
+      "notes": "PowerShell command names are case-insensitive; lowercase form executes identically but tokenizes differently.",
+      "preconditions": [
+        "script contains a standalone Invoke-Expression command token"
+      ],
+      "runtime_target": "cross_runtime",
+      "semantic_invariants": [
+        "command operands remain identical",
+        "execution order remains identical",
+        "PowerShell case-insensitive resolution preserves behavior"
+      ],
+      "static_checks": [
+        "parse_ok"
+      ],
+      "target_indicators": [
+        "Invoke-Expression"
+      ],
+      "technique_id": "invoke_expression_lowercase"
+    },
+    {
+      "description": "Rewrite IEX command tokens to all-lowercase iex.",
+      "expected_indicator_delta": "no_change",
+      "family": "keyword_hiding",
+      "forbidden_if": [
+        "IEX occurs only inside strings or comments"
+      ],
+      "notes": "PowerShell command names are case-insensitive; lowercase form executes identically but tokenizes differently.",
+      "preconditions": [
+        "script contains a standalone IEX command token"
+      ],
+      "runtime_target": "cross_runtime",
+      "semantic_invariants": [
+        "scriptblock or string operand to IEX stays unchanged",
+        "execution remains in-process",
+        "PowerShell case-insensitive resolution preserves behavior"
+      ],
+      "static_checks": [
+        "parse_ok"
+      ],
+      "target_indicators": [
+        "IEX"
+      ],
+      "technique_id": "iex_lowercase"
+    },
+    {
+      "description": "Rewrite direct .DownloadString() method name to all-lowercase .downloadstring().",
+      "expected_indicator_delta": "no_change",
+      "family": "keyword_hiding",
+      "forbidden_if": [
+        "DownloadString appears only inside strings or already lowercased"
+      ],
+      "notes": ".NET method names are case-insensitive in PowerShell; lowercase form executes identically but tokenizes differently.",
+      "preconditions": [
+        "script contains a direct .DownloadString(...) method call"
+      ],
+      "runtime_target": "cross_runtime",
+      "semantic_invariants": [
+        "download URL arguments remain identical",
+        ".NET method dispatch is case-insensitive in PowerShell"
+      ],
+      "static_checks": [
+        "parse_ok",
+        "request_args_preserved"
+      ],
+      "target_indicators": [
+        "DownloadString"
+      ],
+      "technique_id": "downloadstring_lowercase"
+    },
+    {
+      "description": "Rewrite direct .DownloadFile() method name to all-lowercase .downloadfile().",
+      "expected_indicator_delta": "no_change",
+      "family": "keyword_hiding",
+      "forbidden_if": [
+        "DownloadFile appears only inside strings or already lowercased"
+      ],
+      "notes": ".NET method names are case-insensitive in PowerShell; lowercase form executes identically but tokenizes differently.",
+      "preconditions": [
+        "script contains a direct .DownloadFile(...) method call"
+      ],
+      "runtime_target": "cross_runtime",
+      "semantic_invariants": [
+        "download URL and output path arguments remain identical",
+        ".NET method dispatch is case-insensitive in PowerShell"
+      ],
+      "static_checks": [
+        "parse_ok",
+        "request_args_preserved",
+        "process_args_preserved"
+      ],
+      "target_indicators": [
+        "DownloadFile"
+      ],
+      "technique_id": "downloadfile_lowercase"
+    },
+    {
+      "description": "Rewrite quoted DownloadFile literals into a Base64-to-ASCII reconstruction expression.",
+      "expected_indicator_delta": "remove_literal",
+      "family": "string_construction",
+      "forbidden_if": [
+        "indicator is not represented as a quoted literal"
+      ],
+      "notes": "Parallel to downloadstring_base64_ascii; covers quoted method-name dispatch patterns.",
+      "preconditions": [
+        "script contains a quoted DownloadFile string literal"
+      ],
+      "runtime_target": "cross_runtime",
+      "semantic_invariants": [
+        "resolved string value remains identical",
+        "surrounding evaluation semantics remain identical"
+      ],
+      "static_checks": [
+        "parse_ok",
+        "string_literal_rewritten",
+        "resolved_string_equivalent"
+      ],
+      "target_indicators": [
+        "DownloadFile"
+      ],
+      "technique_id": "downloadfile_base64_ascii"
+    },
+    {
+      "description": "Rewrite quoted DownloadFile literals into a double-quoted subexpression string.",
+      "expected_indicator_delta": "remove_literal",
+      "family": "string_construction",
+      "forbidden_if": [
+        "indicator is not represented as a quoted literal"
+      ],
+      "notes": "Parallel to downloadfile_subexpression_string; covers alternate quoting and subexpressions.",
+      "preconditions": [
+        "script contains a quoted DownloadFile string literal"
+      ],
+      "runtime_target": "cross_runtime",
+      "semantic_invariants": [
+        "resolved string value remains identical",
+        "surrounding evaluation semantics remain identical"
+      ],
+      "static_checks": [
+        "parse_ok",
+        "string_literal_rewritten",
+        "resolved_string_equivalent"
+      ],
+      "target_indicators": [
+        "DownloadFile"
+      ],
+      "technique_id": "downloadfile_subexpression_string"
+    },
+    {
+      "description": "Rewrite Invoke-WebRequest command tokens to alternating-case InVoKe-WeBrEqUeSt.",
+      "expected_indicator_delta": "no_change",
+      "family": "keyword_hiding",
+      "forbidden_if": [
+        "indicator appears only inside strings or comments"
+      ],
+      "notes": "Alternating case produces a distinct subword-token sequence from both canonical and lowercase forms while remaining valid PowerShell.",
+      "preconditions": [
+        "script contains a standalone Invoke-WebRequest command token"
+      ],
+      "runtime_target": "cross_runtime",
+      "semantic_invariants": [
+        "request arguments remain identical",
+        "network target remains identical",
+        "PowerShell case-insensitive resolution preserves behavior"
+      ],
+      "static_checks": [
+        "parse_ok",
+        "request_args_preserved"
+      ],
+      "target_indicators": [
+        "Invoke-WebRequest"
+      ],
+      "technique_id": "invoke_webrequest_alternating_case"
+    },
+    {
+      "description": "Rewrite Invoke-Expression command tokens to alternating-case InVoKe-ExPrEsSiOn.",
+      "expected_indicator_delta": "no_change",
+      "family": "keyword_hiding",
+      "forbidden_if": [
+        "indicator appears only inside strings or comments"
+      ],
+      "notes": "Alternating case produces a distinct subword-token sequence from both canonical and lowercase forms while remaining valid PowerShell.",
+      "preconditions": [
+        "script contains a standalone Invoke-Expression command token"
+      ],
+      "runtime_target": "cross_runtime",
+      "semantic_invariants": [
+        "command operands remain identical",
+        "execution order remains identical",
+        "PowerShell case-insensitive resolution preserves behavior"
+      ],
+      "static_checks": [
+        "parse_ok"
+      ],
+      "target_indicators": [
+        "Invoke-Expression"
+      ],
+      "technique_id": "invoke_expression_alternating_case"
+    },
+    {
+      "description": "Rewrite IEX command tokens to alternating-case IeX (three chars, upper-lower-upper).",
+      "expected_indicator_delta": "no_change",
+      "family": "keyword_hiding",
+      "forbidden_if": [
+        "IEX occurs only inside strings or comments"
+      ],
+      "notes": "IEX is three characters so alternating case yields IeX; still a distinct token from both IEX and iex.",
+      "preconditions": [
+        "script contains a standalone IEX command token"
+      ],
+      "runtime_target": "cross_runtime",
+      "semantic_invariants": [
+        "scriptblock or string operand to IEX stays unchanged",
+        "execution remains in-process",
+        "PowerShell case-insensitive resolution preserves behavior"
+      ],
+      "static_checks": [
+        "parse_ok"
+      ],
+      "target_indicators": [
+        "IEX"
+      ],
+      "technique_id": "iex_alternating_case"
+    },
+    {
+      "description": "Rewrite direct .DownloadString() method name to alternating-case .DoWnLoAdStRiNg().",
+      "expected_indicator_delta": "no_change",
+      "family": "keyword_hiding",
+      "forbidden_if": [
+        "DownloadString appears only inside strings or already alternating-cased"
+      ],
+      "notes": "Alternating case produces a distinct token sequence from canonical and lowercase forms.",
+      "preconditions": [
+        "script contains a direct .DownloadString(...) method call"
+      ],
+      "runtime_target": "cross_runtime",
+      "semantic_invariants": [
+        "download URL arguments remain identical",
+        ".NET method dispatch is case-insensitive in PowerShell"
+      ],
+      "static_checks": [
+        "parse_ok",
+        "request_args_preserved"
+      ],
+      "target_indicators": [
+        "DownloadString"
+      ],
+      "technique_id": "downloadstring_alternating_case"
+    },
+    {
+      "description": "Rewrite direct .DownloadFile() method name to alternating-case .DoWnLoAdFiLe().",
+      "expected_indicator_delta": "no_change",
+      "family": "keyword_hiding",
+      "forbidden_if": [
+        "DownloadFile appears only inside strings or already alternating-cased"
+      ],
+      "notes": "Alternating case produces a distinct token sequence from canonical and lowercase forms.",
+      "preconditions": [
+        "script contains a direct .DownloadFile(...) method call"
+      ],
+      "runtime_target": "cross_runtime",
+      "semantic_invariants": [
+        "download URL and output path arguments remain identical",
+        ".NET method dispatch is case-insensitive in PowerShell"
+      ],
+      "static_checks": [
+        "parse_ok",
+        "request_args_preserved",
+        "process_args_preserved"
+      ],
+      "target_indicators": [
+        "DownloadFile"
+      ],
+      "technique_id": "downloadfile_alternating_case"
+    }
+  ],
+  "seed_count": 26,
+  "seed_manifest": "artifacts/foundation_sec/evasion_seed_manifest_v2.csv",
+  "skipped_counts": {
+    "downloadfile_alternating_case": 22,
+    "downloadfile_base64_ascii": 26,
+    "downloadfile_lowercase": 22,
+    "downloadfile_subexpression_string": 26,
+    "downloadstring_alternating_case": 20,
+    "downloadstring_lowercase": 22,
+    "iex_alternating_case": 20,
+    "iex_lowercase": 23,
+    "invoke_expression_alternating_case": 22,
+    "invoke_expression_lowercase": 22,
+    "invoke_webrequest_alternating_case": 22,
+    "invoke_webrequest_lowercase": 22
+  },
+  "techniques_requested": [
+    "invoke_webrequest_lowercase",
+    "invoke_expression_lowercase",
+    "iex_lowercase",
+    "downloadstring_lowercase",
+    "downloadfile_lowercase",
+    "downloadfile_base64_ascii",
+    "downloadfile_subexpression_string",
+    "invoke_webrequest_alternating_case",
+    "invoke_expression_alternating_case",
+    "iex_alternating_case",
+    "downloadstring_alternating_case",
+    "downloadfile_alternating_case"
+  ],
+  "variant_count": 43
+}
